@@ -49,7 +49,7 @@ export default function SelectCropLandScreen({ navigation }) {
   ];
 
   const [selectedCrop, setSelectedCrop] = useState(crops[0]);
-  const [selectedSeason, setSelectedSeason] = useState('Rabi 2026-27 (Active)');
+  const [selectedSeason] = useState('Rabi 2026-27 (Active)');
   const [selectedLand, setSelectedLand] = useState(landHoldings[0]);
 
   const topPadding = Math.max(
@@ -58,8 +58,12 @@ export default function SelectCropLandScreen({ navigation }) {
   ) + 8;
 
   const handleNext = () => {
-    if (!selectedCrop || !selectedLand) {
-      Alert.alert('कृपया चयन करें', 'कृपया फसल और खेत का चयन करें।');
+    if (!selectedCrop) {
+      Alert.alert('कृपया चुनें', 'कृपया पहले फसल का चयन करें।');
+      return;
+    }
+    if (!selectedLand) {
+      Alert.alert('कृपया चुनें', 'कृपया पहले खेत का चयन करें।');
       return;
     }
 
@@ -76,11 +80,19 @@ export default function SelectCropLandScreen({ navigation }) {
   const calculatedQuintals = (calculatedKg / 100).toFixed(1);
   const calculatedPayout = Math.round((calculatedKg / 100) * (selectedCrop?.mspRate || 2275));
 
+  // Determine CTA Button State
+  const isFormComplete = selectedCrop && selectedLand;
+  const ctaButtonText = !selectedCrop
+    ? 'पहले फसल चुनें'
+    : !selectedLand
+    ? 'पहले खेत चुनें'
+    : 'आगे: मंडी चुनें →';
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
 
-      {/* ─── COMPACT TOP HEADER ─── */}
+      {/* ─── 1. COMPACT HEADER ─── */}
       <View style={[styles.header, { paddingTop: topPadding }]}>
         <View style={styles.headerTopRow}>
           <TouchableOpacity
@@ -93,8 +105,8 @@ export default function SelectCropLandScreen({ navigation }) {
           </TouchableOpacity>
 
           <View style={styles.headerTitleBox}>
-            <Text style={styles.headerTitleText}>फसल बेचने का समय लें</Text>
-            <Text style={styles.headerSubText}>चरण 1 / 4 • फसल व खेत का चयन</Text>
+            <Text style={styles.headerTitleText}>फसल बेचने का स्लॉट</Text>
+            <Text style={styles.headerSubText}>चरण 1 / 4 • फसल और खेत</Text>
           </View>
 
           <View style={styles.brandBadge}>
@@ -104,73 +116,70 @@ export default function SelectCropLandScreen({ navigation }) {
         </View>
       </View>
 
-      {/* ─── 4-STEP WIZARD PROGRESS TRACKER ─── */}
-      <View style={styles.wizardBar}>
-        <View style={[styles.stepItem, styles.stepItemActive]}>
-          <View style={[styles.stepCircle, styles.stepCircleActive]}>
-            <MaterialCommunityIcons name="barley" size={14} color={COLORS.white} />
+      {/* ─── 2. MINIMAL STEPPER ─── */}
+      <View style={styles.stepperBar}>
+        <View style={styles.stepperRow}>
+          <View style={styles.stepItem}>
+            <View style={[styles.stepDot, styles.stepDotActive]}>
+              <Text style={styles.stepDotTextActive}>1</Text>
+            </View>
+            <Text style={styles.stepLabelActive}>फसल</Text>
           </View>
-          <Text style={styles.stepLabelActive}>① फसल व खेत</Text>
-        </View>
 
-        <View style={[styles.stepConnector, styles.stepConnectorActive]} />
+          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.primaryLight} />
 
-        <View style={styles.stepItem}>
-          <View style={styles.stepCircle}>
-            <Text style={styles.stepNum}>2</Text>
+          <View style={styles.stepItem}>
+            <View style={styles.stepDot}>
+              <Text style={styles.stepDotText}>2</Text>
+            </View>
+            <Text style={styles.stepLabel}>मंडी</Text>
           </View>
-          <Text style={styles.stepLabel}>② मंडी</Text>
-        </View>
 
-        <View style={styles.stepConnector} />
+          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.divider} />
 
-        <View style={styles.stepItem}>
-          <View style={styles.stepCircle}>
-            <Text style={styles.stepNum}>3</Text>
+          <View style={styles.stepItem}>
+            <View style={styles.stepDot}>
+              <Text style={styles.stepDotText}>3</Text>
+            </View>
+            <Text style={styles.stepLabel}>समय</Text>
           </View>
-          <Text style={styles.stepLabel}>③ समय</Text>
-        </View>
 
-        <View style={styles.stepConnector} />
+          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.divider} />
 
-        <View style={styles.stepItem}>
-          <View style={styles.stepCircle}>
-            <Text style={styles.stepNum}>4</Text>
+          <View style={styles.stepItem}>
+            <View style={styles.stepDot}>
+              <Text style={styles.stepDotText}>4</Text>
+            </View>
+            <Text style={styles.stepLabel}>पक्का</Text>
           </View>
-          <Text style={styles.stepLabel}>④ पक्का</Text>
         </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 90 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 95 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ─── ACTIVE SEASON NOTICE ─── */}
-        <View style={styles.seasonNotice}>
-          <MaterialCommunityIcons name="calendar-check" size={20} color={COLORS.primary} />
-          <View style={styles.seasonNoticeContent}>
-            <Text style={styles.seasonNoticeTitle}>चालू खरीद सत्र (Rabi 2026-27)</Text>
-            <Text style={styles.seasonNoticeSub}>शासकीय उपार्जन केन्द्रों पर समर्थन मूल्य (MSP) पर तौल</Text>
+        {/* ─── 3. PROCUREMENT SEASON STATUS STRIP ─── */}
+        <View style={styles.seasonStatusStrip}>
+          <View style={styles.seasonStatusLeft}>
+            <MaterialCommunityIcons name="barley" size={18} color={COLORS.accentDark} />
+            <Text style={styles.seasonStatusText}>रबी खरीद 2026–27</Text>
           </View>
-          <View style={styles.activePill}>
-            <Text style={styles.activePillText}>सक्रिय</Text>
+          <View style={styles.seasonActiveBadge}>
+            <View style={styles.greenPulseDot} />
+            <Text style={styles.seasonActiveText}>खरीद चालू है</Text>
           </View>
         </View>
 
-        {/* ─── STEP 1: CROP SELECTION ─── */}
+        {/* ─── 4. STEP 1: CROP SELECTION ─── */}
         <View style={styles.sectionHeader}>
-          <View style={styles.sectionNumberCircle}>
-            <Text style={styles.sectionNumberText}>1</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.sectionMainTitle}>🌾 कौन सी फसल बेचनी है?</Text>
-            <Text style={styles.sectionSubTitle}>Select your crop for procurement</Text>
-          </View>
+          <Text style={styles.sectionMainTitle}>🌾 कौन सी फसल बेचनी है?</Text>
+          <Text style={styles.sectionSubTitle}>अपनी फसल चुनें</Text>
         </View>
 
         <View style={styles.cardGroup}>
           {crops.map((crop) => {
-            const isSelected = selectedCrop.id === crop.id;
+            const isSelected = selectedCrop?.id === crop.id;
             return (
               <TouchableOpacity
                 key={crop.id}
@@ -191,7 +200,7 @@ export default function SelectCropLandScreen({ navigation }) {
                 <View style={[styles.cropIconBox, isSelected && styles.cropIconBoxSelected]}>
                   <MaterialCommunityIcons
                     name={crop.icon}
-                    size={28}
+                    size={30}
                     color={crop.active ? (isSelected ? COLORS.primary : COLORS.accentDark) : COLORS.textMuted}
                   />
                 </View>
@@ -201,35 +210,33 @@ export default function SelectCropLandScreen({ navigation }) {
                     <Text style={[styles.cropHindiName, isSelected && styles.cropHindiNameSelected]}>
                       {crop.hindiName}
                     </Text>
-                    <Text style={styles.cropEngName}>({crop.engName})</Text>
+                    <Text style={styles.cropEngName}>{crop.engName}</Text>
                   </View>
 
-                  <Text style={styles.cropVarietyText}>
-                    किस्म: {crop.variety}
-                  </Text>
-
                   <View style={styles.mspRow}>
-                    <Text style={styles.mspLabel}>MSP:</Text>
-                    <Text style={styles.mspValue}>{crop.msp}</Text>
+                    <Text style={styles.mspLabel}>MSP</Text>
+                    <Text style={[styles.mspValue, isSelected && styles.mspValueSelected]}>
+                      {crop.msp}
+                    </Text>
                   </View>
                 </View>
 
-                <View style={styles.cropStatusCol}>
+                <View style={styles.cropBadgeCol}>
                   {crop.active ? (
-                    <View style={[styles.eligibilityBadge, isSelected && styles.eligibilityBadgeSelected]}>
-                      <MaterialCommunityIcons
-                        name={isSelected ? "check-circle" : "check"}
-                        size={15}
-                        color={isSelected ? COLORS.white : COLORS.success}
-                      />
-                      <Text style={[styles.eligibilityText, isSelected && styles.eligibilityTextSelected]}>
-                        {isSelected ? 'चुनी गई' : 'पात्र'}
-                      </Text>
-                    </View>
+                    isSelected ? (
+                      <View style={styles.selectedBadge}>
+                        <MaterialCommunityIcons name="check-bold" size={14} color={COLORS.white} />
+                        <Text style={styles.selectedBadgeText}>चुनी गई</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.eligibleBadge}>
+                        <Text style={styles.eligibleBadgeText}>चुनें</Text>
+                      </View>
+                    )
                   ) : (
-                    <View style={styles.comingSoonBadge}>
-                      <MaterialCommunityIcons name="clock-outline" size={13} color={COLORS.textSecondary} />
-                      <Text style={styles.comingSoonText}>जल्द शुरू</Text>
+                    <View style={styles.lockedBadge}>
+                      <MaterialCommunityIcons name="lock-outline" size={13} color={COLORS.textSecondary} />
+                      <Text style={styles.lockedBadgeText}>जल्द आएगा</Text>
                     </View>
                   )}
                 </View>
@@ -238,15 +245,10 @@ export default function SelectCropLandScreen({ navigation }) {
           })}
         </View>
 
-        {/* ─── STEP 2: LAND PARCEL SELECTION ─── */}
+        {/* ─── 5. STEP 2: LAND SELECTION ─── */}
         <View style={[styles.sectionHeader, { marginTop: SPACING.lg }]}>
-          <View style={styles.sectionNumberCircle}>
-            <Text style={styles.sectionNumberText}>2</Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.sectionMainTitle}>🌱 आपका खेत चुनें</Text>
-            <Text style={styles.sectionSubTitle}>किस खेत का अनाज बेच रहे हैं?</Text>
-          </View>
+          <Text style={styles.sectionMainTitle}>🌱 कौन सा खेत?</Text>
+          <Text style={styles.sectionSubTitle}>जिस खेत का अनाज बेचना है, उसे चुनें</Text>
         </View>
 
         <View style={styles.cardGroup}>
@@ -263,41 +265,35 @@ export default function SelectCropLandScreen({ navigation }) {
                 onPress={() => setSelectedLand(land)}
                 activeOpacity={0.8}
               >
-                <View style={styles.landCardTop}>
-                  <View style={styles.landHeaderLeft}>
-                    <View style={[styles.radioOutline, isSelected && styles.radioOutlineSelected]}>
-                      {isSelected && <View style={styles.radioDot} />}
+                <View style={styles.landCardContent}>
+                  <View style={styles.landLeftSection}>
+                    <View style={[styles.checkCircle, isSelected && styles.checkCircleSelected]}>
+                      {isSelected ? (
+                        <MaterialCommunityIcons name="check" size={16} color={COLORS.white} />
+                      ) : (
+                        <View style={styles.uncheckDot} />
+                      )}
                     </View>
-                    <View>
-                      <Text style={[styles.khasraTitle, isSelected && styles.khasraTitleSelected]}>
+
+                    <View style={styles.landInfoBox}>
+                      <Text style={[styles.khasraText, isSelected && styles.khasraTextSelected]}>
                         खसरा नं. {land.khasra}
                       </Text>
-                      <Text style={styles.khasraLocation}>
-                        📍 {land.village}, {land.tehsil} ({land.district})
+                      <Text style={styles.locationText}>
+                        📍 {land.village}, {land.tehsil}
                       </Text>
+
+                      {/* Prominent Quantity Display */}
+                      <View style={styles.yieldRow}>
+                        <MaterialCommunityIcons name="scale" size={17} color={COLORS.accentDark} />
+                        <Text style={styles.yieldBoldText}>लगभग {yieldKg.toLocaleString('en-IN')} kg</Text>
+                      </View>
                     </View>
                   </View>
 
-                  <View style={[styles.areaBadge, isSelected && styles.areaBadgeSelected]}>
-                    <MaterialCommunityIcons
-                      name="texture-box"
-                      size={14}
-                      color={isSelected ? COLORS.white : COLORS.primary}
-                    />
-                    <Text style={[styles.areaBadgeText, isSelected && styles.areaBadgeTextSelected]}>
-                      {land.area} हेक्टेयर
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.landCardDivider} />
-
-                <View style={styles.landCardBottom}>
-                  <View style={styles.quotaBox}>
-                    <MaterialCommunityIcons name="scale" size={18} color={COLORS.accentDark} />
-                    <Text style={styles.quotaLabel}>अनुमानित अनाज कोटा:</Text>
-                    <Text style={styles.quotaValue}>{yieldKg.toLocaleString('en-IN')} kg</Text>
-                    <Text style={styles.quotaSub}>({(yieldKg / 100).toFixed(1)} क्विंटल)</Text>
+                  {/* Subdued Hectare Tag */}
+                  <View style={styles.hectareBadge}>
+                    <Text style={styles.hectareBadgeText}>{land.area} हेक्टेयर</Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -305,79 +301,57 @@ export default function SelectCropLandScreen({ navigation }) {
           })}
         </View>
 
-        {/* Revenue Record Subtle Assurance */}
-        <View style={styles.govAssuranceBanner}>
-          <MaterialCommunityIcons name="shield-check" size={16} color={COLORS.success} />
-          <Text style={styles.govAssuranceText}>
-            म.प्र. भू-अभिलेख एवं आधार से सत्यापित पंजीकृत भूमि रिकॉर्ड
-          </Text>
-        </View>
-
-        {/* ─── LIVE CALCULATION & SUMMARY CARD ─── */}
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryHeader}>
-            <MaterialCommunityIcons name="scale-balance" size={22} color={COLORS.accentDark} />
-            <Text style={styles.summaryHeading}>⚖️ आप इतना अनाज बेच सकते हैं</Text>
-          </View>
-
-          <View style={styles.summaryMainRow}>
-            <View style={styles.summaryQuantityBox}>
-              <Text style={styles.summaryBigNumber}>
-                {calculatedKg.toLocaleString('en-IN')}
-                <Text style={styles.summaryBigUnit}> kg</Text>
-              </Text>
-              <Text style={styles.summarySubCrop}>
-                {selectedCrop.hindiName} ({calculatedQuintals} क्विंटल)
-              </Text>
+        {/* ─── 6. SMART SUMMARY (REASSURANCE) ─── */}
+        {selectedCrop && selectedLand && (
+          <View style={styles.summaryBox}>
+            <View style={styles.summaryTopRow}>
+              <MaterialCommunityIcons name="check-decagram" size={18} color={COLORS.success} />
+              <Text style={styles.summaryTitle}>आपकी जानकारी</Text>
             </View>
 
-            <View style={styles.summaryDividerVert} />
+            <View style={styles.summaryChipsRow}>
+              <View style={styles.summaryPill}>
+                <Text style={styles.summaryPillText}>🌾 {selectedCrop.hindiName}</Text>
+              </View>
+              <View style={styles.summaryPill}>
+                <Text style={styles.summaryPillText}>🌱 खसरा {selectedLand.khasra}</Text>
+              </View>
+              <View style={styles.summaryPill}>
+                <Text style={styles.summaryPillText}>⚖️ {calculatedKg.toLocaleString('en-IN')} kg ({calculatedQuintals} क्विंटल)</Text>
+              </View>
+            </View>
 
-            <View style={styles.summaryPayoutBox}>
-              <Text style={styles.summaryPayoutLabel}>अनुमानित MSP राशि</Text>
-              <Text style={styles.summaryPayoutAmount}>
+            <View style={styles.summaryAmountDivider} />
+
+            <View style={styles.summaryAmountRow}>
+              <Text style={styles.summaryAmountLabel}>लगभग मिलने वाली राशि:</Text>
+              <Text style={styles.summaryAmountValue}>
                 ₹{calculatedPayout.toLocaleString('en-IN')}
               </Text>
-              <Text style={styles.summaryPayoutRate}>
-                @{selectedCrop.msp}
-              </Text>
             </View>
           </View>
-
-          {/* Quick Selection Confirmation Strip */}
-          <View style={styles.summaryStrip}>
-            <Text style={styles.summaryStripLabel}>आपने चुना:</Text>
-            <View style={styles.summaryChips}>
-              <View style={styles.summaryChip}>
-                <Text style={styles.summaryChipText}>🌾 {selectedCrop.hindiName}</Text>
-              </View>
-              <View style={styles.summaryChip}>
-                <Text style={styles.summaryChipText}>🌱 खसरा {selectedLand?.khasra}</Text>
-              </View>
-              <View style={styles.summaryChip}>
-                <Text style={styles.summaryChipText}>⚖️ {calculatedKg} kg</Text>
-              </View>
-            </View>
-          </View>
-        </View>
+        )}
       </ScrollView>
 
-      {/* ─── STICKY BOTTOM ACTION CTA ─── */}
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      {/* ─── 7. STICKY BOTTOM ACTION CTA ─── */}
+      <View style={[styles.bottomStickyBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <TouchableOpacity
-          style={styles.actionButton}
+          style={[
+            styles.ctaButton,
+            !isFormComplete && styles.ctaButtonDisabled,
+          ]}
           onPress={handleNext}
+          disabled={!isFormComplete}
           activeOpacity={0.85}
         >
-          <View style={styles.actionButtonContent}>
-            <View>
-              <Text style={styles.actionButtonMainText}>आगे: मंडी केंद्र चुनें →</Text>
-              <Text style={styles.actionButtonSubText}>चरण 2: AI दूरी व कम कतार वाली मंडी</Text>
+          <Text style={[styles.ctaButtonText, !isFormComplete && styles.ctaButtonTextDisabled]}>
+            {ctaButtonText}
+          </Text>
+          {isFormComplete && (
+            <View style={styles.ctaArrowCircle}>
+              <MaterialCommunityIcons name="arrow-right" size={20} color={COLORS.primary} />
             </View>
-            <View style={styles.actionButtonIconCircle}>
-              <MaterialCommunityIcons name="arrow-right" size={22} color={COLORS.primary} />
-            </View>
-          </View>
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -390,7 +364,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
 
-  /* ─── COMPACT HEADER ─── */
+  /* ─── 1. HEADER ─── */
   header: {
     backgroundColor: COLORS.primary,
     paddingBottom: SPACING.sm + 4,
@@ -417,15 +391,15 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.sm,
   },
   headerTitleText: {
-    fontSize: 17,
-    fontWeight: '800',
+    fontSize: 18,
+    fontWeight: '900',
     color: COLORS.white,
     letterSpacing: 0.3,
   },
   headerSubText: {
     fontSize: 12,
     color: COLORS.accentLight,
-    fontWeight: '500',
+    fontWeight: '600',
     marginTop: 1,
   },
   brandBadge: {
@@ -445,133 +419,120 @@ const styles = StyleSheet.create({
     color: COLORS.accentLight,
   },
 
-  /* ─── 4-STEP WIZARD TRACKER ─── */
-  wizardBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  /* ─── 2. STEPPER ─── */
+  stepperBar: {
     backgroundColor: COLORS.white,
     paddingVertical: 10,
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     ...SHADOWS.sm,
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   stepItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
   },
-  stepItemActive: {},
-  stepCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+  stepDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepCircleActive: {
+  stepDotActive: {
     backgroundColor: COLORS.primary,
   },
-  stepNum: {
+  stepDotText: {
     fontSize: 11,
     fontWeight: '700',
     color: COLORS.textSecondary,
   },
-  stepLabel: {
+  stepDotTextActive: {
     fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.white,
+  },
+  stepLabel: {
+    fontSize: 12,
     fontWeight: '600',
     color: COLORS.textSecondary,
   },
   stepLabelActive: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '800',
     color: COLORS.primary,
   },
-  stepConnector: {
-    flex: 1,
-    height: 2,
-    backgroundColor: COLORS.border,
-    marginHorizontal: 4,
-  },
-  stepConnectorActive: {
-    backgroundColor: COLORS.primary,
-  },
 
-  /* ─── CONTENT ─── */
+  /* ─── SCROLL CONTENT ─── */
   scrollContent: {
     padding: SPACING.md,
   },
 
-  /* ─── SEASON NOTICE ─── */
-  seasonNotice: {
+  /* ─── 3. SEASON STATUS STRIP ─── */
+  seasonStatusStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
+    justifyContent: 'space-between',
+    backgroundColor: '#FEF9C3',
     borderRadius: RADIUS.md,
-    padding: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: '#FDE047',
     marginBottom: SPACING.md,
-    gap: 8,
   },
-  seasonNoticeContent: {
-    flex: 1,
+  seasonStatusLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  seasonNoticeTitle: {
+  seasonStatusText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primary,
+    fontWeight: '800',
+    color: '#854D0E',
   },
-  seasonNoticeSub: {
-    fontSize: 10,
-    color: COLORS.textSecondary,
-    marginTop: 1,
-  },
-  activePill: {
-    backgroundColor: COLORS.successLight,
-    paddingHorizontal: 7,
+  seasonActiveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: COLORS.success,
+    borderRadius: RADIUS.full,
   },
-  activePillText: {
-    fontSize: 10,
+  greenPulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.success,
+  },
+  seasonActiveText: {
+    fontSize: 11,
     fontWeight: '800',
     color: COLORS.success,
   },
 
   /* ─── SECTION HEADERS ─── */
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
     marginBottom: SPACING.sm + 2,
   },
-  sectionNumberCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sectionNumberText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.white,
-  },
   sectionMainTitle: {
-    fontSize: 16,
-    fontWeight: '800',
+    fontSize: 17,
+    fontWeight: '900',
     color: COLORS.text,
   },
   sectionSubTitle: {
     fontSize: 12,
     color: COLORS.textSecondary,
-    marginTop: 1,
+    fontWeight: '500',
+    marginTop: 2,
   },
 
   /* ─── CARD GROUPS ─── */
@@ -579,7 +540,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 
-  /* ─── CROP CARDS ─── */
+  /* ─── 4. CROP CARDS ─── */
   cropCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -601,8 +562,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   cropIconBox: {
-    width: 48,
-    height: 48,
+    width: 52,
+    height: 52,
     borderRadius: RADIUS.md,
     backgroundColor: '#FEF3C7',
     alignItems: 'center',
@@ -616,7 +577,7 @@ const styles = StyleSheet.create({
   },
   cropDetails: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 14,
   },
   cropNameRow: {
     flexDirection: 'row',
@@ -624,28 +585,23 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   cropHindiName: {
-    fontSize: 17,
-    fontWeight: '800',
+    fontSize: 19,
+    fontWeight: '900',
     color: COLORS.text,
   },
   cropHindiNameSelected: {
     color: COLORS.primary,
   },
   cropEngName: {
-    fontSize: 12,
+    fontSize: 13,
     color: COLORS.textSecondary,
     fontWeight: '600',
-  },
-  cropVarietyText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
   },
   mspRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
-    gap: 4,
+    marginTop: 3,
+    gap: 5,
   },
   mspLabel: {
     fontSize: 11,
@@ -657,48 +613,56 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: COLORS.accentDark,
   },
-  cropStatusCol: {
+  mspValueSelected: {
+    color: COLORS.primary,
+  },
+  cropBadgeCol: {
     alignItems: 'flex-end',
   },
-  eligibilityBadge: {
+  selectedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: COLORS.successLight,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: RADIUS.sm,
-    borderWidth: 1,
-    borderColor: COLORS.success,
-  },
-  eligibilityBadgeSelected: {
     backgroundColor: COLORS.primary,
-    borderColor: COLORS.primaryDark,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: RADIUS.md,
+    ...SHADOWS.sm,
   },
-  eligibilityText: {
-    fontSize: 11,
+  selectedBadgeText: {
+    fontSize: 12,
     fontWeight: '800',
-    color: COLORS.success,
-  },
-  eligibilityTextSelected: {
     color: COLORS.white,
   },
-  comingSoonBadge: {
+  eligibleBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  eligibleBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  lockedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
     backgroundColor: '#E2E8F0',
-    paddingHorizontal: 7,
-    paddingVertical: 4,
-    borderRadius: RADIUS.sm,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: RADIUS.md,
   },
-  comingSoonText: {
-    fontSize: 10,
+  lockedBadgeText: {
+    fontSize: 11,
     fontWeight: '700',
     color: COLORS.textSecondary,
   },
 
-  /* ─── LAND PARCEL CARDS ─── */
+  /* ─── 5. LAND PARCEL CARDS ─── */
   landCard: {
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
@@ -712,231 +676,141 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFDF5',
     ...SHADOWS.md,
   },
-  landCardTop: {
+  landCardContent: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
-  landHeaderLeft: {
+  landLeftSection: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
+    alignItems: 'center',
+    gap: 12,
     flex: 1,
   },
-  radioOutline: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+  checkCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     borderWidth: 2,
     borderColor: COLORS.textMuted,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 2,
   },
-  radioOutlineSelected: {
-    borderColor: COLORS.accentDark,
-    backgroundColor: '#FFFBEB',
-  },
-  radioDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+  checkCircleSelected: {
     backgroundColor: COLORS.accentDark,
+    borderColor: COLORS.accentDark,
   },
-  khasraTitle: {
+  uncheckDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E2E8F0',
+  },
+  landInfoBox: {
+    flex: 1,
+  },
+  khasraText: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     color: COLORS.text,
   },
-  khasraTitleSelected: {
+  khasraTextSelected: {
     color: COLORS.primary,
   },
-  khasraLocation: {
+  locationText: {
     fontSize: 12,
     color: COLORS.textSecondary,
+    fontWeight: '500',
     marginTop: 2,
   },
-  areaBadge: {
+  yieldRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
+    marginTop: 4,
+  },
+  yieldBoldText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
+  },
+  hectareBadge: {
     backgroundColor: '#F1F5F9',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: RADIUS.sm,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  areaBadgeSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primaryDark,
+  hectareBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
   },
-  areaBadgeText: {
+
+  /* ─── 6. SMART SUMMARY (REASSURANCE) ─── */
+  summaryBox: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    marginTop: SPACING.lg,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    ...SHADOWS.sm,
+  },
+  summaryTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  summaryTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  summaryChipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  summaryPill: {
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  summaryPillText: {
     fontSize: 12,
     fontWeight: '700',
     color: COLORS.text,
   },
-  areaBadgeTextSelected: {
-    color: COLORS.white,
-  },
-  landCardDivider: {
+  summaryAmountDivider: {
     height: 1,
     backgroundColor: '#F1F5F9',
     marginVertical: 10,
   },
-  landCardBottom: {
+  summaryAmountRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  quotaBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  quotaLabel: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  quotaValue: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-  quotaSub: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-  },
-
-  /* ─── GOV ASSURANCE ─── */
-  govAssuranceBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    marginTop: 4,
-  },
-  govAssuranceText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-
-  /* ─── LIVE CALCULATION & SUMMARY CARD ─── */
-  summaryCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginTop: SPACING.md,
-    borderWidth: 1.5,
-    borderColor: COLORS.accentLight,
-    ...SHADOWS.md,
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#FEF3C7',
-    paddingBottom: 8,
-    marginBottom: 10,
-  },
-  summaryHeading: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.primaryDark,
-  },
-  summaryMainRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-  },
-  summaryQuantityBox: {
-    flex: 1,
-  },
-  summaryBigNumber: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: COLORS.primary,
-  },
-  summaryBigUnit: {
-    fontSize: 16,
+  summaryAmountLabel: {
+    fontSize: 13,
     fontWeight: '700',
     color: COLORS.textSecondary,
   },
-  summarySubCrop: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  summaryDividerVert: {
-    width: 1,
-    height: 48,
-    backgroundColor: COLORS.border,
-    marginHorizontal: 12,
-  },
-  summaryPayoutBox: {
-    flex: 1,
-    alignItems: 'flex-end',
-  },
-  summaryPayoutLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  summaryPayoutAmount: {
-    fontSize: 22,
+  summaryAmountValue: {
+    fontSize: 19,
     fontWeight: '900',
     color: COLORS.success,
-    marginTop: 2,
-  },
-  summaryPayoutRate: {
-    fontSize: 10,
-    color: COLORS.textSecondary,
-    marginTop: 1,
-  },
-  summaryStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.md,
-    padding: 8,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 6,
-    flexWrap: 'wrap',
-  },
-  summaryStripLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  summaryChips: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
-  },
-  summaryChip: {
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  summaryChipText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.primary,
   },
 
-  /* ─── STICKY BOTTOM CTA ─── */
-  bottomBar: {
+  /* ─── 7. STICKY BOTTOM ACTION CTA ─── */
+  bottomStickyBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -948,33 +822,35 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.border,
     ...SHADOWS.lg,
   },
-  actionButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.lg,
-    paddingVertical: 14,
-    paddingHorizontal: SPACING.md,
-    ...SHADOWS.md,
-  },
-  actionButtonContent: {
+  ctaButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.lg,
+    paddingVertical: 15,
+    paddingHorizontal: SPACING.md,
+    gap: 10,
+    ...SHADOWS.md,
   },
-  actionButtonMainText: {
+  ctaButtonDisabled: {
+    backgroundColor: '#CBD5E1',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  ctaButtonText: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     color: COLORS.white,
     letterSpacing: 0.3,
   },
-  actionButtonSubText: {
-    fontSize: 11,
-    color: COLORS.accentLight,
-    marginTop: 2,
+  ctaButtonTextDisabled: {
+    color: '#64748B',
   },
-  actionButtonIconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  ctaArrowCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: COLORS.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
