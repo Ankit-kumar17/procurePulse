@@ -7,14 +7,15 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  StatusBar,
-  Platform,
-  ActivityIndicator,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY, SHADOWS } from '../../utils/theme';
 import { useFarmer } from '../../context/FarmerContext';
+import Header from '../../components/Header';
+import Card from '../../components/Card';
+import Badge from '../../components/Badge';
+import Button from '../../components/Button';
 
 const CATEGORIES = [
   { id: 'Payment Delay', label: 'पैसा नहीं मिला / देरी', icon: 'cash-clock', color: '#B45309' },
@@ -50,12 +51,12 @@ export default function GrievanceFormScreen({ navigation, route }) {
 
   const handleVoiceInput = () => {
     Alert.alert(
-      '🎤 बोलकर शिकायत दर्ज करें',
+      'बोलकर शिकायत दर्ज करें',
       'अपनी समस्या बोलें (उदा.: "5 अप्रैल का गेहूं का भुगतान नहीं मिला")',
       [
         { text: 'रद्द करें', style: 'cancel' },
         {
-          text: '✅ आवाज दर्ज करें (Mock)',
+          text: 'आवाज दर्ज करें',
           onPress: () => {
             setDescription('5 अप्रैल को बैरसिया केंद्र पर गेहूं बेचा था, ₹18,200 का भुगतान अभी तक बैंक खाते में नहीं आया है।');
           },
@@ -66,7 +67,7 @@ export default function GrievanceFormScreen({ navigation, route }) {
 
   const handleAttachPhoto = () => {
     setHasPhoto(true);
-    Alert.alert('✅ फोटो जोड़ी गई', 'तौल पर्ची / रसीद की फोटो सफलतापूर्वक संलग्न हो गई है।');
+    Alert.alert('फोटो जोड़ी गई', 'तौल पर्ची / रसीद की फोटो सफलतापूर्वक संलग्न हो गई है।');
   };
 
   const handleSubmit = async () => {
@@ -87,7 +88,7 @@ export default function GrievanceFormScreen({ navigation, route }) {
 
     if (result.success) {
       Alert.alert(
-        '✅ शिकायत दर्ज हो गई',
+        'शिकायत दर्ज हो गई',
         `शिकायत क्र.: #${result.grievance.id}\n\nआपकी शिकायत जिला उपार्जन नोडल अधिकारी को भेज दी गई है। 48 घंटे के भीतर समाधान किया जाएगा।`,
         [{ text: 'ठीक है (OK)', onPress: () => navigation.goBack() }]
       );
@@ -96,39 +97,22 @@ export default function GrievanceFormScreen({ navigation, route }) {
     }
   };
 
-  const topPadding = Math.max(
-    insets.top,
-    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
-  ) + 8;
-
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
-
-      {/* ─── 1. TOP HEADER WITH BACK ─── */}
-      <View style={[styles.header, { paddingTop: topPadding }]}>
-        <View style={styles.headerTopRow}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={COLORS.white} />
-          </TouchableOpacity>
-
-          <View style={styles.headerTitleBox}>
-            <Text style={styles.headerTitleText}>➕ नई शिकायत दर्ज करें</Text>
-            <Text style={styles.headerSubText}>48 घंटे के भीतर समाधान की गारंटी</Text>
-          </View>
-        </View>
-      </View>
+      {/* ─── HEADER ─── */}
+      <Header
+        title="नई शिकायत दर्ज करें"
+        subtitle="48 घंटे में समाधान की गारंटी"
+        showBack={true}
+        onBackPress={() => navigation.goBack()}
+      />
 
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ─── 2. CATEGORY SELECTION ─── */}
-        <View style={styles.sectionCard}>
+        {/* ─── 1. CATEGORY SELECTION ─── */}
+        <Card style={styles.card}>
           <Text style={styles.sectionHeading}>1. समस्या का प्रकार चुनें:</Text>
           <View style={styles.categoriesGrid}>
             {CATEGORIES.map((cat) => {
@@ -142,7 +126,7 @@ export default function GrievanceFormScreen({ navigation, route }) {
                 >
                   <MaterialCommunityIcons
                     name={cat.icon}
-                    size={22}
+                    size={20}
                     color={isSelected ? COLORS.white : cat.color}
                   />
                   <Text
@@ -157,10 +141,10 @@ export default function GrievanceFormScreen({ navigation, route }) {
               );
             })}
           </View>
-        </View>
+        </Card>
 
-        {/* ─── 3. QUICK TEMPLATE CHIPS ─── */}
-        <View style={styles.sectionCard}>
+        {/* ─── 2. QUICK TEMPLATES ─── */}
+        <Card style={styles.card}>
           <Text style={styles.sectionHeading}>2. फटाफट समस्या चुनें (1-टैप):</Text>
           <View style={styles.templatesList}>
             {QUICK_TEMPLATES.map((tmpl, idx) => (
@@ -174,10 +158,10 @@ export default function GrievanceFormScreen({ navigation, route }) {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </Card>
 
-        {/* ─── 4. DESCRIPTION INPUT ─── */}
-        <View style={styles.sectionCard}>
+        {/* ─── 3. DESCRIPTION INPUT ─── */}
+        <Card style={styles.card}>
           <View style={styles.descHeaderRow}>
             <Text style={styles.sectionHeading}>3. अपनी समस्या बताएं:</Text>
             <TouchableOpacity
@@ -199,10 +183,10 @@ export default function GrievanceFormScreen({ navigation, route }) {
             value={description}
             onChangeText={setDescription}
           />
-        </View>
+        </Card>
 
-        {/* ─── 5. PHOTO ATTACHMENT ─── */}
-        <View style={styles.sectionCard}>
+        {/* ─── 4. PHOTO ATTACHMENT ─── */}
+        <Card style={styles.card}>
           <Text style={styles.sectionHeading}>4. तौल पर्ची या रसीद की फोटो (वैकल्पिक):</Text>
           <TouchableOpacity
             style={[styles.photoAttachBox, hasPhoto && styles.photoAttachBoxActive]}
@@ -211,42 +195,38 @@ export default function GrievanceFormScreen({ navigation, route }) {
           >
             <MaterialCommunityIcons
               name={hasPhoto ? 'check-circle' : 'camera-plus'}
-              size={28}
-              color={hasPhoto ? '#15803D' : COLORS.primary}
+              size={26}
+              color={hasPhoto ? COLORS.success : COLORS.primary}
             />
             <Text style={[styles.photoAttachText, hasPhoto && styles.photoAttachTextActive]}>
-              {hasPhoto ? '✓ रसीद की फोटो जोड़ी गई (weighment_slip.jpg)' : '📷 फोटो खींचें या गैलरी से चुनें'}
+              {hasPhoto ? 'रसीद की फोटो जोड़ी गई (weighment_slip.jpg)' : 'फोटो खींचें या गैलरी से चुनें'}
             </Text>
           </TouchableOpacity>
-        </View>
+        </Card>
 
-        {/* ─── 6. PUBLIC SERVICE GUARANTEE ─── */}
-        <View style={styles.guaranteeBox}>
-          <MaterialCommunityIcons name="shield-check" size={24} color="#15803D" />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.guaranteeTitle}>म.प्र. लोक सेवा गारंटी अधिनियम</Text>
-            <Text style={styles.guaranteeSub}>
-              आपकी शिकायत का समाधान 48 घंटे के भीतर जिला नोडल अधिकारी द्वारा अनिवार्य रूप से किया जाएगा।
-            </Text>
+        {/* ─── 5. PUBLIC SERVICE GUARANTEE ─── */}
+        <Card variant="success" style={styles.guaranteeCard}>
+          <View style={styles.guaranteeRow}>
+            <MaterialCommunityIcons name="shield-check" size={24} color={COLORS.success} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.guaranteeTitle}>म.प्र. लोक सेवा गारंटी अधिनियम</Text>
+              <Text style={styles.guaranteeSub}>
+                आपकी शिकायत का समाधान 48 घंटे के भीतर जिला नोडल अधिकारी द्वारा अनिवार्य रूप से किया जाएगा।
+              </Text>
+            </View>
           </View>
-        </View>
+        </Card>
 
-        {/* ─── 7. SUBMIT BUTTON ─── */}
-        <TouchableOpacity
-          style={styles.submitBtn}
+        {/* ─── 6. SUBMIT BUTTON ─── */}
+        <Button
+          title="शिकायत दर्ज करें"
+          variant="primary"
+          size="lg"
+          icon="send"
+          loading={loading}
+          fullWidth
           onPress={handleSubmit}
-          disabled={loading}
-          activeOpacity={0.85}
-        >
-          {loading ? (
-            <ActivityIndicator color={COLORS.white} size="small" />
-          ) : (
-            <>
-              <MaterialCommunityIcons name="send" size={20} color={COLORS.white} />
-              <Text style={styles.submitBtnText}>शिकायत दर्ज करें</Text>
-            </>
-          )}
-        </TouchableOpacity>
+        />
       </ScrollView>
     </View>
   );
@@ -255,66 +235,21 @@ export default function GrievanceFormScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
-
-  /* ─── 1. HEADER ─── */
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingBottom: SPACING.sm + 4,
-    paddingHorizontal: SPACING.md,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    ...SHADOWS.md,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  backButton: {
-    padding: 6,
-    borderRadius: RADIUS.sm,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-  },
-  headerTitleBox: {
-    flex: 1,
-  },
-  headerTitleText: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: COLORS.white,
-  },
-  headerSubText: {
-    fontSize: 12,
-    color: COLORS.accentLight,
-    fontWeight: '600',
-    marginTop: 1,
-  },
-
-  /* ─── SCROLL CONTENT ─── */
   scrollContent: {
     padding: SPACING.md,
-    gap: 14,
+    gap: SPACING.md,
   },
-
-  /* ─── SECTION CARD ─── */
-  sectionCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    ...SHADOWS.sm,
+  card: {
+    padding: SPACING.md,
   },
   sectionHeading: {
+    ...TYPOGRAPHY.label,
     fontSize: 14,
-    fontWeight: '800',
     color: COLORS.text,
-    marginBottom: 10,
+    marginBottom: SPACING.sm,
   },
-
-  /* ─── 2. CATEGORIES GRID ─── */
   categoriesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -325,28 +260,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.surfaceHighlight,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
     paddingVertical: 10,
     paddingHorizontal: 8,
     borderRadius: RADIUS.md,
+    minHeight: 46,
   },
   categoryTileSelected: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
   categoryTileText: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '800',
     color: COLORS.text,
     flex: 1,
   },
   categoryTileTextSelected: {
     color: COLORS.white,
   },
-
-  /* ─── 3. TEMPLATES ─── */
   templatesList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -365,13 +299,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#92400E',
   },
-
-  /* ─── 4. DESCRIPTION ─── */
   descHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: SPACING.xs,
   },
   voiceBtn: {
     flexDirection: 'row',
@@ -384,87 +316,63 @@ const styles = StyleSheet.create({
   },
   voiceBtnText: {
     fontSize: 11,
-    fontWeight: '900',
+    fontWeight: '800',
     color: COLORS.primaryDark,
   },
   textInput: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.surfaceHighlight,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: COLORS.border,
     borderRadius: RADIUS.md,
-    padding: 12,
+    padding: SPACING.sm + 2,
     fontSize: 13,
     color: COLORS.text,
     textAlignVertical: 'top',
-    minHeight: 90,
+    minHeight: 88,
   },
-
-  /* ─── 5. PHOTO ATTACH ─── */
   photoAttachBox: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.surfaceHighlight,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: '#CBD5E1',
+    borderColor: COLORS.border,
     borderRadius: RADIUS.md,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
   },
   photoAttachBoxActive: {
     backgroundColor: '#DCFCE7',
-    borderColor: '#15803D',
+    borderColor: COLORS.success,
     borderStyle: 'solid',
   },
   photoAttachText: {
+    ...TYPOGRAPHY.label,
     fontSize: 13,
-    fontWeight: '700',
     color: COLORS.primary,
   },
   photoAttachTextActive: {
-    color: '#15803D',
+    color: COLORS.success,
   },
-
-  /* ─── 6. GUARANTEE BOX ─── */
-  guaranteeBox: {
+  guaranteeCard: {
+    padding: SPACING.sm + 4,
+  },
+  guaranteeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#DCFCE7',
-    borderRadius: RADIUS.md,
-    padding: 12,
     gap: 10,
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
   },
   guaranteeTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '900',
-    color: '#15803D',
+    color: COLORS.success,
   },
   guaranteeSub: {
-    fontSize: 11,
+    ...TYPOGRAPHY.bodySmall,
     color: '#166534',
     lineHeight: 16,
     marginTop: 2,
-  },
-
-  /* ─── 7. SUBMIT BUTTON ─── */
-  submitBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    borderRadius: RADIUS.md,
-    gap: 8,
-    marginTop: 4,
-    ...SHADOWS.md,
-  },
-  submitBtnText: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: COLORS.white,
   },
 });

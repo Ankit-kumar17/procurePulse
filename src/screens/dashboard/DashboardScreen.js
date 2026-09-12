@@ -7,12 +7,11 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
-  Platform,
-  StatusBar,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../../utils/theme';
+import { Header, Card, Badge, Button, InfoRow, MetricCard } from '../../components';
 import Loader from '../../components/Loader';
 import { useFarmer } from '../../context/FarmerContext';
 import { useAuth } from '../../context/AuthContext';
@@ -39,7 +38,7 @@ export default function DashboardScreen({ navigation }) {
       'क्या आप ProcurePulse से लॉगआउट करना चाहते हैं?',
       [
         { text: 'रद्द करें', style: 'cancel' },
-        { text: 'लॉगआउट', style: 'destructive', onPress: logout }
+        { text: 'लॉगआउट', style: 'destructive', onPress: logout },
       ]
     );
   };
@@ -56,48 +55,18 @@ export default function DashboardScreen({ navigation }) {
     return <Loader message="किसान प्रोफाइल लोड हो रही है..." />;
   }
 
-  const topPadding = Math.max(
-    insets.top,
-    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
-  ) + 8;
-
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
-
       {/* ─── 1. TOP HEADER ─── */}
-      <View style={[styles.header, { paddingTop: topPadding }]}>
-        <View style={styles.headerTopRow}>
-          <View style={styles.farmerProfileBox}>
-            <View style={styles.logoCircle}>
-              <MaterialCommunityIcons name="grain" size={20} color={COLORS.accent} />
-            </View>
-            <View>
-              <Text style={styles.greetingText}>
-                नमस्ते, {farmer?.name?.split(' ')[0] || 'रमेश'} जी 🙏
-              </Text>
-              <Text style={styles.subGreetingText}>
-                ई-उपार्जन 2.0 • रबी 2026-27
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.headerRightActions}>
-            <TouchableOpacity
-              style={styles.voiceBtn}
-              onPress={handlePlayVoiceGuide}
-              activeOpacity={0.8}
-            >
-              <MaterialCommunityIcons name="volume-high" size={17} color={COLORS.primaryDark} />
-              <Text style={styles.voiceBtnText}>सुनें</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
-              <MaterialCommunityIcons name="logout" size={18} color={COLORS.white} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      <Header
+        farmerName={farmer?.name || 'रमेश कुमार'}
+        farmerId={farmer?.farmerId || 'MP-FR-2026-0001'}
+        onVoiceGuidePress={handlePlayVoiceGuide}
+        rightIcon="logout"
+        onRightPress={handleLogout}
+        title={`नमस्ते, ${farmer?.name?.split(' ')[0] || 'रमेश'} जी 🙏`}
+        subtitle="ई-उपार्जन 2.0 • मध्य प्रदेश रबी 2026-27"
+      />
 
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 90 }]}
@@ -108,49 +77,54 @@ export default function DashboardScreen({ navigation }) {
       >
         {/* ─── 2. ACTIVE BOOKING STATUS HERO CARD ─── */}
         {activeBooking ? (
-          <View style={styles.heroCard}>
+          <Card
+            variant="hero"
+            style={styles.heroCard}
+          >
             <View style={styles.heroHeaderRow}>
-              <View style={styles.confirmedBadge}>
-                <MaterialCommunityIcons name="check-circle" size={14} color="#15803D" />
-                <Text style={styles.confirmedBadgeText}>बुकिंग पक्की है</Text>
-              </View>
+              <Badge
+                label="बुकिंग पक्की है"
+                variant="success"
+                icon="check-circle"
+                size="md"
+              />
 
-              <TouchableOpacity
-                style={styles.gatePassBtn}
+              <Button
+                title="गेट पास"
+                icon="qrcode-scan"
+                size="sm"
+                variant="gold"
                 onPress={() => navigation.navigate('LiveQueue')}
-                activeOpacity={0.75}
-              >
-                <MaterialCommunityIcons name="qrcode-scan" size={14} color={COLORS.primary} />
-                <Text style={styles.gatePassBtnText}>गेट पास</Text>
-              </TouchableOpacity>
+              />
             </View>
 
             {/* Token ID */}
             <Text style={styles.tokenLabel}>टोकन नंबर (Token ID)</Text>
             <Text style={styles.tokenValue}>{activeBooking.token}</Text>
 
-            {/* Details List */}
+            {/* Booking Key-Value Details */}
             <View style={styles.bookingDetailsBox}>
-              <View style={styles.detailRow}>
-                <MaterialCommunityIcons name="storefront" size={16} color={COLORS.primary} />
-                <Text style={styles.detailText} numberOfLines={1}>
-                  {activeBooking.centre?.split('(')[0] || 'बैरसिया उपार्जन केंद्र'}
-                </Text>
-              </View>
-
-              <View style={styles.detailRow}>
-                <MaterialCommunityIcons name="calendar-clock" size={16} color={COLORS.primary} />
-                <Text style={styles.detailText}>
-                  {activeBooking.date || '18 अप्रैल 2026'} • {activeBooking.timeSlot || '11:00 AM - 12:00 PM'}
-                </Text>
-              </View>
-
-              <View style={styles.detailRow}>
-                <MaterialCommunityIcons name="scale-balance" size={16} color={COLORS.primary} />
-                <Text style={styles.detailText}>
-                  {activeBooking.quantity || '2,000 kg (20 क्विंटल)'} • {activeBooking.crop || 'गेहूं'}
-                </Text>
-              </View>
+              <InfoRow
+                icon="storefront"
+                iconColor={COLORS.primary}
+                label="उपार्जन केंद्र"
+                value={activeBooking.centre?.split('(')[0] || 'बैरसिया केंद्र'}
+                showDivider={true}
+              />
+              <InfoRow
+                icon="calendar-clock"
+                iconColor={COLORS.primary}
+                label="तारीख व समय"
+                value={`${activeBooking.date || '18 अप्रैल'} • ${activeBooking.timeSlot || '11:00 AM'}`}
+                showDivider={true}
+              />
+              <InfoRow
+                icon="scale-balance"
+                iconColor={COLORS.primary}
+                label="फसल व मात्रा"
+                value={`${activeBooking.crop || 'गेहूं'} (${activeBooking.quantity || '20 क्विंटल'})`}
+                showDivider={false}
+              />
             </View>
 
             {/* Departure Guidance Banner */}
@@ -163,28 +137,30 @@ export default function DashboardScreen({ navigation }) {
             </View>
 
             {/* Live Queue Action */}
-            <TouchableOpacity
-              style={styles.heroActionBtn}
+            <Button
+              title="लाइव कतार व अपनी बारी देखें →"
+              icon="radar"
+              size="lg"
+              variant="primary"
+              fullWidth
               onPress={() => navigation.navigate('LiveQueue')}
-              activeOpacity={0.88}
-            >
-              <MaterialCommunityIcons name="radar" size={18} color={COLORS.white} />
-              <Text style={styles.heroActionBtnText}>लाइव कतार व अपनी बारी देखें →</Text>
-            </TouchableOpacity>
-          </View>
+              style={styles.heroActionBtn}
+            />
+          </Card>
         ) : (
-          <View style={styles.noBookingCard}>
+          <Card style={styles.noBookingCard}>
             <MaterialCommunityIcons name="calendar-plus" size={36} color={COLORS.primary} />
             <Text style={styles.noBookingTitle}>कोई स्लॉट बुक नहीं है</Text>
             <Text style={styles.noBookingSub}>मंडी में फसल बेचने के लिए तारीख व समय चुनें।</Text>
-            <TouchableOpacity
-              style={styles.bookSlotBtn}
+            <Button
+              title="➕ नया स्लॉट बुक करें"
+              size="lg"
+              variant="primary"
+              fullWidth
               onPress={() => navigation.navigate('BookSlot')}
-              activeOpacity={0.88}
-            >
-              <Text style={styles.bookSlotBtnText}>➕ नया स्लॉट बुक करें</Text>
-            </TouchableOpacity>
-          </View>
+              style={{ marginTop: SPACING.md }}
+            />
+          </Card>
         )}
 
         {/* ─── 3. QUICK ACTION TILES ─── */}
@@ -252,14 +228,16 @@ export default function DashboardScreen({ navigation }) {
             <MaterialCommunityIcons name="bank-check" size={24} color="#15803D" />
             <View>
               <Text style={styles.passbookTitle}>कुल मिला पैसा: ₹{totalReceived.toLocaleString('en-IN')}</Text>
-              <Text style={styles.passbookSub}>SBI ••••8392 में जमा • {totalPending > 0 ? `₹${totalPending.toLocaleString('en-IN')} आ रहा है` : 'सभी भुगतान पूर्ण'}</Text>
+              <Text style={styles.passbookSub}>
+                SBI ••••8392 में जमा • {totalPending > 0 ? `₹${totalPending.toLocaleString('en-IN')} आ रहा है` : 'सभी भुगतान पूर्ण'}
+              </Text>
             </View>
           </View>
           <MaterialCommunityIcons name="chevron-right" size={20} color={COLORS.textSecondary} />
         </TouchableOpacity>
 
         {/* ─── 5. COLLAPSIBLE FARMER PROFILE CARD ─── */}
-        <View style={styles.farmerCard}>
+        <Card style={styles.farmerCard}>
           <View style={styles.farmerHeader}>
             <View style={styles.farmerAvatar}>
               <MaterialCommunityIcons name="account-check" size={22} color={COLORS.primary} />
@@ -286,22 +264,27 @@ export default function DashboardScreen({ navigation }) {
 
           {detailsExpanded && (
             <View style={styles.expandedSection}>
-              <View style={styles.divider} />
-              <View style={styles.infoLine}>
-                <Text style={styles.infoLabel}>गांव व तहसील</Text>
-                <Text style={styles.infoVal}>{farmer?.address || 'पिपलिया, बैरसिया, भोपाल'}</Text>
-              </View>
-              <View style={styles.infoLine}>
-                <Text style={styles.infoLabel}>खसरा व जमीन</Text>
-                <Text style={styles.infoVal}>खसरा #123/1 (2.5 हेक्टेयर)</Text>
-              </View>
-              <View style={styles.infoLine}>
-                <Text style={styles.infoLabel}>समग्र आईडी</Text>
-                <Text style={styles.infoVal}>198472910 ✓ सत्यापित</Text>
-              </View>
+              <InfoRow
+                icon="home-city"
+                label="गांव व तहसील"
+                value={farmer?.address || 'पिपलिया, बैरसिया, भोपाल'}
+                showDivider={true}
+              />
+              <InfoRow
+                icon="terrain"
+                label="खसरा व जमीन"
+                value="खसरा #123/1 (2.5 हेक्टेयर)"
+                showDivider={true}
+              />
+              <InfoRow
+                icon="shield-check"
+                label="समग्र आईडी"
+                value="198472910 ✓ सत्यापित"
+                showDivider={false}
+              />
             </View>
           )}
-        </View>
+        </Card>
       </ScrollView>
     </View>
   );
@@ -310,286 +293,140 @@ export default function DashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: COLORS.background,
   },
-
-  /* ─── 1. HEADER ─── */
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingBottom: SPACING.sm + 4,
-    paddingHorizontal: SPACING.md,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    ...SHADOWS.md,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  farmerProfileBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  logoCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(212,168,67,0.4)',
-  },
-  greetingText: {
-    fontSize: 17,
-    fontWeight: '900',
-    color: COLORS.white,
-  },
-  subGreetingText: {
-    fontSize: 12,
-    color: COLORS.accentLight,
-    fontWeight: '600',
-    marginTop: 1,
-  },
-  headerRightActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  voiceBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: RADIUS.sm,
-  },
-  voiceBtnText: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: COLORS.primaryDark,
-  },
-  logoutBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  /* ─── SCROLL CONTENT ─── */
   scrollContent: {
     padding: SPACING.md,
-    gap: 14,
   },
-
-  /* ─── 2. HERO BOOKING CARD ─── */
   heroCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#DDE4EC',
-    ...SHADOWS.sm,
+    marginBottom: SPACING.lg,
+    padding: SPACING.md + 2,
   },
   heroHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  confirmedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  confirmedBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#15803D',
-  },
-  gatePassBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  gatePassBtnText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: COLORS.primary,
+    marginBottom: SPACING.sm,
   },
   tokenLabel: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
   },
   tokenValue: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '900',
-    color: COLORS.text,
-    letterSpacing: 0.5,
-    marginVertical: 2,
+    color: COLORS.white,
+    letterSpacing: 1,
+    marginBottom: SPACING.sm + 2,
   },
   bookingDetailsBox: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: RADIUS.md,
-    padding: 10,
-    marginVertical: 10,
-    gap: 6,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  detailText: {
-    fontSize: 13,
-    color: COLORS.text,
-    fontWeight: '600',
-    flex: 1,
+    borderColor: COLORS.border,
   },
   departureBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     backgroundColor: '#FEF3C7',
-    padding: 10,
+    padding: SPACING.sm + 2,
     borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: '#FDE68A',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   departureTitle: {
-    fontSize: 12,
-    fontWeight: '900',
+    fontSize: 13,
+    fontWeight: '800',
     color: '#92400E',
   },
   departureSub: {
     fontSize: 11,
-    color: '#78350F',
+    fontWeight: '500',
+    color: '#B45309',
     marginTop: 1,
   },
   heroActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.primary,
-    paddingVertical: 12,
-    borderRadius: RADIUS.md,
-    gap: 6,
-    ...SHADOWS.md,
+    backgroundColor: COLORS.accent,
   },
-  heroActionBtnText: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: COLORS.white,
-  },
-
-  /* No Booking Card */
   noBookingCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: 20,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#DDE4EC',
-    ...SHADOWS.sm,
+    padding: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
   noBookingTitle: {
-    fontSize: 16,
-    fontWeight: '900',
+    fontSize: 18,
+    fontWeight: '800',
     color: COLORS.text,
-    marginTop: 8,
+    marginTop: SPACING.sm,
   },
   noBookingSub: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 2,
-    marginBottom: 12,
-  },
-  bookSlotBtn: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 11,
-    borderRadius: RADIUS.md,
-  },
-  bookSlotBtnText: {
     fontSize: 13,
-    fontWeight: '900',
-    color: COLORS.white,
-  },
-
-  /* ─── 3. SECTION & GRID ─── */
-  sectionTitleRow: {
+    fontWeight: '500',
+    color: COLORS.textSecondary,
     marginTop: 4,
+    textAlign: 'center',
+  },
+  sectionTitleRow: {
+    marginBottom: SPACING.sm,
   },
   sectionHeading: {
     fontSize: 15,
-    fontWeight: '900',
+    fontWeight: '800',
     color: COLORS.text,
   },
   quickGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
+    marginBottom: SPACING.lg,
   },
   quickTile: {
-    width: '48.2%',
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.md,
-    padding: 12,
+    width: '48%',
+    backgroundColor: COLORS.surface,
+    padding: SPACING.md,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: '#DDE4EC',
-    alignItems: 'flex-start',
+    borderColor: COLORS.border,
+    alignItems: 'center',
     ...SHADOWS.sm,
   },
   tileIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   tileTitle: {
-    fontSize: 13,
-    fontWeight: '900',
+    fontSize: 14,
+    fontWeight: '800',
     color: COLORS.text,
   },
   tileSub: {
     fontSize: 11,
+    fontWeight: '500',
     color: COLORS.textSecondary,
-    fontWeight: '600',
     marginTop: 1,
   },
-
-  /* ─── 4. PASSBOOK STRIP ─── */
   passbookStrip: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#DCFCE7',
-    borderRadius: RADIUS.md,
-    padding: 12,
+    backgroundColor: '#F0FDF4',
+    padding: SPACING.md,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: '#BBF7D0',
+    marginBottom: SPACING.lg,
+    ...SHADOWS.sm,
   },
   passbookLeft: {
     flexDirection: 'row',
@@ -598,12 +435,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   passbookTitle: {
-    fontSize: 13,
-    fontWeight: '900',
+    fontSize: 14,
+    fontWeight: '800',
     color: '#15803D',
   },
   passbookSub: {
     fontSize: 11,
+    fontWeight: '500',
     color: '#166534',
     marginTop: 1,
   },

@@ -5,12 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  StatusBar,
-  Platform,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../../utils/theme';
+import { Header, Card, Badge, Button, StepIndicator } from '../../components';
 import ExplainModal from '../../components/ExplainModal';
 import { useFarmer } from '../../context/FarmerContext';
 
@@ -52,10 +52,13 @@ export default function CentreRecommendationScreen({ route, navigation }) {
     setExplainModalVisible(true);
   };
 
-  const topPadding = Math.max(
-    insets.top,
-    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
-  ) + 6;
+  const handlePlayVoiceGuide = () => {
+    Alert.alert(
+      '🔊 मंडी सहायक (Voice Guide)',
+      'नमस्ते किसान भाई!\n\n• बैरसिया केंद्र सबसे तेज है — यहां तौल 40 मिनट में पूरी हो जाएगी।\n• कोलार मंडी में 2 घंटे से अधिक की भारी भीड़ है।\n• हम आपको बैरसिया केंद्र चुनने की सलाह देते हैं।',
+      [{ text: 'समझ गया (OK)' }]
+    );
+  };
 
   // Clean Hindi metadata helper
   const getMandiDetails = (centre) => {
@@ -63,9 +66,8 @@ export default function CentreRecommendationScreen({ route, navigation }) {
       return {
         hindiName: 'बेरसिया उपार्जन केंद्र',
         location: 'NH-46 जंक्शन · 8.4 km',
-        waitBadge: '🟢 कम भीड़ • लगभग 41 मिनट इंतजार',
-        waitBg: '#DCFCE7',
-        waitColor: '#15803D',
+        waitBadge: 'कम भीड़ • लगभग 41 मिनट इंतजार',
+        badgeVariant: 'success',
         slotsText: '📅 48 स्लॉट उपलब्ध',
       };
     }
@@ -73,60 +75,36 @@ export default function CentreRecommendationScreen({ route, navigation }) {
       return {
         hindiName: 'कोलार कृषि उपज मंडी',
         location: 'मंडी कॉम्प्लेक्स, भोपाल · 5.2 km',
-        waitBadge: '🔴 बहुत भीड़ • लगभग 2.3 घंटे इंतजार',
-        waitBg: '#FEE2E2',
-        waitColor: '#B91C1C',
+        waitBadge: 'बहुत भीड़ • लगभग 2.3 घंटे इंतजार',
+        badgeVariant: 'error',
         slotsText: '📅 12 स्लॉट उपलब्ध',
       };
     }
     return {
       hindiName: 'सूखी सेवनिया उपार्जन केंद्र',
       location: 'वेयरहाउस रोड · 11.8 km',
-      waitBadge: '🟡 कम भीड़ • लगभग 27 मिनट इंतजार',
-      waitBg: '#FEF3C7',
-      waitColor: '#92400E',
+      waitBadge: 'सामान्य भीड़ • लगभग 27 मिनट इंतजार',
+      badgeVariant: 'warning',
       slotsText: '📅 60 स्लॉट उपलब्ध',
     };
   };
 
+  const bookingSteps = ['फसल व खेत', 'मंडी चुनें', 'तारीख व समय', 'पुष्टि'];
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
-
       {/* ─── 1. COMPACT HEADER ─── */}
-      <View style={[styles.header, { paddingTop: topPadding }]}>
-        <View style={styles.headerTopRow}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-            accessibilityLabel="पीछे जाएं"
-          >
-            <MaterialCommunityIcons name="arrow-left" size={22} color={COLORS.white} />
-          </TouchableOpacity>
+      <Header
+        showBack={true}
+        onBack={() => navigation.goBack()}
+        onVoiceGuidePress={handlePlayVoiceGuide}
+        title="मंडी चुनें"
+        subtitle="चरण 2 / 4 • सबसे अच्छी मंडी"
+      />
 
-          <View style={styles.headerTitleBox}>
-            <Text style={styles.headerTitleText}>मंडी चुनें</Text>
-            <Text style={styles.headerSubText}>चरण 2 / 4 • सबसे अच्छी मंडी</Text>
-          </View>
-
-          <View style={styles.brandBadge}>
-            <Text style={styles.brandBadgeText}>e-Uparjan</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* ─── 2. COMPACT STEPPER (Minimal & Clean) ─── */}
-      <View style={styles.stepperBar}>
-        <View style={styles.stepperRow}>
-          <Text style={styles.stepDone}>✓ फसल</Text>
-          <Text style={styles.stepArrow}>→</Text>
-          <Text style={styles.stepActive}>● मंडी</Text>
-          <Text style={styles.stepArrow}>→</Text>
-          <Text style={styles.stepFuture}>○ समय</Text>
-          <Text style={styles.stepArrow}>→</Text>
-          <Text style={styles.stepFuture}>○ पक्का</Text>
-        </View>
+      {/* ─── 2. COMPACT STEPPER ─── */}
+      <View style={styles.stepperContainer}>
+        <StepIndicator steps={bookingSteps} currentStep={2} />
       </View>
 
       <ScrollView
@@ -135,7 +113,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
       >
         {/* ─── 3. COMPACT AI RECOMMENDATION BANNER ─── */}
         <View style={styles.adviceBanner}>
-          <Text style={styles.adviceTag}>⭐ हमारी सलाह</Text>
+          <Badge label="⭐ हमारी सलाह" variant="gold" size="sm" />
           <Text style={styles.adviceTitle}>
             बैरसिया मंडी चुनें — यहां इंतजार कम है और तौल जल्दी होगी
           </Text>
@@ -143,8 +121,8 @@ export default function CentreRecommendationScreen({ route, navigation }) {
 
         {/* ─── 4. SECTION HEADING ─── */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>🏪 मंडी चुनें</Text>
-          <Text style={styles.sectionSub}>आपके लिए उपलब्ध केंद्र</Text>
+          <Text style={styles.sectionTitle}>🏪 उपलब्ध उपार्जन केंद्र</Text>
+          <Text style={styles.sectionSub}>अपनी सुविधानुसार केंद्र चुनें</Text>
         </View>
 
         {/* ─── 5. CLEAN WHITE MANDI CARDS ─── */}
@@ -154,14 +132,11 @@ export default function CentreRecommendationScreen({ route, navigation }) {
             const details = getMandiDetails(centre);
 
             return (
-              <TouchableOpacity
+              <Card
                 key={centre.id}
-                style={[
-                  styles.mandiCard,
-                  isSelected ? styles.mandiCardSelected : styles.mandiCardNormal,
-                ]}
+                selected={isSelected}
+                style={styles.mandiCard}
                 onPress={() => handleSelectCentre(centre)}
-                activeOpacity={0.88}
               >
                 {/* Top Row: Mandi Name + Subtle Recommendation Badge */}
                 <View style={styles.cardHeaderRow}>
@@ -170,9 +145,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
                   </Text>
 
                   {centre.recommended && (
-                    <View style={styles.recommendedBadge}>
-                      <Text style={styles.recommendedBadgeText}>⭐ हमारी सलाह</Text>
-                    </View>
+                    <Badge label="⭐ हमारी सलाह" variant="gold" size="sm" />
                   )}
                 </View>
 
@@ -182,10 +155,13 @@ export default function CentreRecommendationScreen({ route, navigation }) {
                 </Text>
 
                 {/* Waiting Time & Crowd Status Pill */}
-                <View style={[styles.waitPill, { backgroundColor: details.waitBg }]}>
-                  <Text style={[styles.waitPillText, { color: details.waitColor }]}>
-                    {details.waitBadge}
-                  </Text>
+                <View style={{ marginVertical: SPACING.xs }}>
+                  <Badge
+                    label={details.waitBadge}
+                    variant={details.badgeVariant}
+                    size="md"
+                    icon={details.badgeVariant === 'success' ? 'check-circle' : 'clock-alert'}
+                  />
                 </View>
 
                 {/* Divider */}
@@ -207,31 +183,20 @@ export default function CentreRecommendationScreen({ route, navigation }) {
                   </View>
 
                   {/* Single Clean Select Button */}
-                  <TouchableOpacity
-                    style={[
-                      styles.selectBtn,
-                      isSelected ? styles.selectBtnActive : styles.selectBtnInactive,
-                    ]}
+                  <Button
+                    title={isSelected ? 'चुनी गई ✓' : 'चुनें'}
+                    size="sm"
+                    variant={isSelected ? 'success' : 'outline'}
                     onPress={() => handleSelectCentre(centre)}
-                    activeOpacity={0.85}
-                  >
-                    <Text
-                      style={[
-                        styles.selectBtnText,
-                        isSelected ? styles.selectBtnTextActive : styles.selectBtnTextInactive,
-                      ]}
-                    >
-                      {isSelected ? 'चुनी गई ✓' : 'चुनें'}
-                    </Text>
-                  </TouchableOpacity>
+                  />
                 </View>
-              </TouchableOpacity>
+              </Card>
             );
           })}
         </View>
       </ScrollView>
 
-      {/* ─── 6. STICKY BOTTOM ACTION BAR (Clean & Uncluttered) ─── */}
+      {/* ─── 6. STICKY BOTTOM ACTION BAR ─── */}
       <View style={[styles.stickyBottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         {selectedCentre && (
           <Text style={styles.confirmationText} numberOfLines={1}>
@@ -239,19 +204,20 @@ export default function CentreRecommendationScreen({ route, navigation }) {
           </Text>
         )}
 
-        <TouchableOpacity
-          style={styles.ctaButton}
+        <Button
+          title="आगे: तारीख चुनें →"
+          size="lg"
+          variant="primary"
+          fullWidth
           onPress={handleProceed}
-          activeOpacity={0.88}
-        >
-          <Text style={styles.ctaButtonText}>आगे: तारीख चुनें →</Text>
-        </TouchableOpacity>
+        />
       </View>
 
-      {/* ─── EXPLAINABILITY MODAL ─── */}
+      {/* ─── 7. EXPLAIN MODAL ─── */}
       <ExplainModal
         visible={explainModalVisible}
         centre={modalCentre}
+        cropName={crop || 'गेहूं'}
         onClose={() => setExplainModalVisible(false)}
       />
     </View>
@@ -261,153 +227,51 @@ export default function CentreRecommendationScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
-
-  /* ─── 1. HEADER ─── */
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingBottom: SPACING.sm + 2,
-    paddingHorizontal: SPACING.md,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    ...SHADOWS.md,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  backButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitleBox: {
-    flex: 1,
-    marginHorizontal: SPACING.sm,
-  },
-  headerTitleText: {
-    fontSize: 19,
-    fontWeight: '900',
-    color: COLORS.white,
-    letterSpacing: 0.3,
-  },
-  headerSubText: {
-    fontSize: 11,
-    color: COLORS.accentLight,
-    fontWeight: '600',
-    marginTop: 1,
-  },
-  brandBadge: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  brandBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.accentLight,
-  },
-
-  /* ─── 2. PROGRESS STEPPER (Compact & Clean) ─── */
-  stepperBar: {
-    backgroundColor: COLORS.white,
-    paddingVertical: 8,
-    paddingHorizontal: SPACING.lg,
+  stepperContainer: {
+    backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.border,
   },
-  stepperRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  stepDone: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#15803D',
-  },
-  stepActive: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: COLORS.primaryDark,
-  },
-  stepFuture: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#94A3B8',
-  },
-  stepArrow: {
-    fontSize: 12,
-    color: '#CBD5E1',
-  },
-
-  /* ─── SCROLL CONTENT ─── */
   scrollContent: {
     padding: SPACING.md,
   },
-
-  /* ─── 3. COMPACT ADVICE BANNER ─── */
   adviceBanner: {
-    backgroundColor: '#FEFCE8',
+    backgroundColor: '#FFFBEB',
+    padding: SPACING.md,
     borderRadius: RADIUS.md,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#FEF08A',
-    marginBottom: 14,
-  },
-  adviceTag: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#854D0E',
-    marginBottom: 2,
+    borderColor: '#FDE68A',
+    marginBottom: SPACING.md,
+    gap: 6,
   },
   adviceTitle: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#713F12',
-    lineHeight: 17,
+    color: '#92400E',
+    lineHeight: 18,
   },
-
-  /* ─── 4. SECTION HEADING ─── */
   sectionHeader: {
-    marginBottom: 10,
+    marginBottom: SPACING.sm,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '900',
+    fontSize: 15,
+    fontWeight: '800',
     color: COLORS.text,
   },
   sectionSub: {
     fontSize: 12,
+    fontWeight: '500',
     color: COLORS.textSecondary,
-    fontWeight: '600',
     marginTop: 1,
   },
-
-  /* ─── 5. MANDI CARDS ─── */
   cardsList: {
-    gap: 12,
+    gap: SPACING.sm,
   },
   mandiCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.md + 2,
-    padding: 14,
-    borderWidth: 1.5,
-    ...SHADOWS.sm,
-  },
-  mandiCardNormal: {
-    borderColor: '#E2E8F0',
-  },
-  mandiCardSelected: {
-    borderColor: '#15803D',
-    borderWidth: 2,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -417,42 +281,20 @@ const styles = StyleSheet.create({
   },
   mandiName: {
     fontSize: 16,
-    fontWeight: '900',
+    fontWeight: '800',
     color: COLORS.text,
     flex: 1,
   },
-  recommendedBadge: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  recommendedBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#854D0E',
-  },
   locationText: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  waitPill: {
-    alignSelf: 'flex-start',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    marginBottom: 10,
-  },
-  waitPillText: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+    marginBottom: 6,
   },
   cardDivider: {
     height: 1,
-    backgroundColor: '#F1F5F9',
-    marginBottom: 8,
+    backgroundColor: COLORS.divider,
+    marginVertical: SPACING.sm,
   },
   cardBottomRow: {
     flexDirection: 'row',
@@ -465,72 +307,33 @@ const styles = StyleSheet.create({
   slotsText: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.text,
+    color: COLORS.textSecondary,
   },
   whyLink: {
     marginTop: 3,
   },
   whyLinkText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
-  },
-  selectBtn: {
-    paddingVertical: 7,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selectBtnActive: {
-    backgroundColor: '#15803D',
-  },
-  selectBtnInactive: {
-    backgroundColor: '#F1F5F9',
-  },
-  selectBtnText: {
-    fontSize: 12,
     fontWeight: '800',
+    color: COLORS.primary,
   },
-  selectBtnTextActive: {
-    color: COLORS.white,
-  },
-  selectBtnTextInactive: {
-    color: COLORS.textSecondary,
-  },
-
-  /* ─── 6. STICKY BOTTOM BAR ─── */
   stickyBottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     paddingHorizontal: SPACING.md,
-    paddingTop: 8,
+    paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    borderTopColor: COLORS.border,
     ...SHADOWS.lg,
   },
   confirmationText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#15803D',
+    color: COLORS.success,
     textAlign: 'center',
     marginBottom: 6,
-  },
-  ctaButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 13,
-    borderRadius: RADIUS.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOWS.md,
-  },
-  ctaButtonText: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: COLORS.white,
   },
 });

@@ -7,23 +7,17 @@ import {
   TouchableOpacity,
   Linking,
   Alert,
-  StatusBar,
-  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../../utils/theme';
+import { Header, Card, Badge, Button, InfoRow } from '../../components';
 import { useFarmer } from '../../context/FarmerContext';
 
 export default function GrievanceListScreen({ navigation }) {
   const { grievances } = useFarmer();
   const insets = useSafeAreaInsets();
   const [selectedTab, setSelectedTab] = useState('ALL'); // ALL, IN_PROGRESS, RESOLVED
-
-  const topPadding = Math.max(
-    insets.top,
-    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
-  ) + 8;
 
   const handleCallHelpline = () => {
     Alert.alert(
@@ -65,12 +59,12 @@ export default function GrievanceListScreen({ navigation }) {
   const getCleanStatus = (status) => {
     const lower = (status || '').toLowerCase();
     if (lower.includes('resolved') || lower.includes('हल')) {
-      return { label: '🟢 समाधान हो गया', bg: '#DCFCE7', text: '#15803D', isResolved: true };
+      return { label: 'समाधान हो गया', variant: 'success', icon: 'check-circle' };
     }
     if (lower.includes('progress') || lower.includes('जांच')) {
-      return { label: '🟡 जांच जारी है', bg: '#FEF3C7', text: '#B45309', isInProgress: true };
+      return { label: 'जांच जारी है', variant: 'warning', icon: 'clock-outline' };
     }
-    return { label: '🔵 दर्ज हुई', bg: '#E0F2FE', text: '#0369A1', isOpen: true };
+    return { label: 'दर्ज हुई', variant: 'info', icon: 'file-document' };
   };
 
   // Helper to format Hindi date
@@ -114,35 +108,19 @@ export default function GrievanceListScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
-
       {/* ─── 1. TOP HEADER ─── */}
-      <View style={[styles.header, { paddingTop: topPadding }]}>
-        <View style={styles.headerTopRow}>
-          <View style={styles.headerTitleBox}>
-            <Text style={styles.headerTitleText}>📢 सहायता व शिकायत</Text>
-            <Text style={styles.headerSubText}>समस्या का सीधा समाधान नोडल अधिकारी द्वारा</Text>
-          </View>
-
-          {/* Voice Assistant Button */}
-          <TouchableOpacity
-            style={styles.voiceButton}
-            onPress={handlePlayVoiceGuide}
-            activeOpacity={0.8}
-            accessibilityLabel="आवाज से सुनें"
-          >
-            <MaterialCommunityIcons name="volume-high" size={18} color={COLORS.primaryDark} />
-            <Text style={styles.voiceButtonText}>सुनें</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <Header
+        title="📢 सहायता व शिकायत"
+        subtitle="समस्या का सीधा समाधान नोडल अधिकारी द्वारा"
+        onVoiceGuidePress={handlePlayVoiceGuide}
+      />
 
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 100 }]}
         showsVerticalScrollIndicator={false}
       >
         {/* ─── 2. DIRECT HELPLINE CALL CARD (181) ─── */}
-        <View style={styles.helplineCard}>
+        <Card variant="warning" style={styles.helplineCard}>
           <View style={styles.helpIconBox}>
             <MaterialCommunityIcons name="phone-in-talk" size={24} color="#854D0E" />
           </View>
@@ -151,15 +129,14 @@ export default function GrievanceListScreen({ navigation }) {
             <Text style={styles.helpPhone}>181 / 1800-233-0000</Text>
             <Text style={styles.helpSub}>सीएम किसान हेल्पलाइन पर सीधे बात करें</Text>
           </View>
-          <TouchableOpacity
-            style={styles.callNowBtn}
+          <Button
+            title="कॉल करें"
+            icon="phone"
+            size="sm"
+            variant="success"
             onPress={handleCallHelpline}
-            activeOpacity={0.85}
-          >
-            <MaterialCommunityIcons name="phone" size={16} color={COLORS.white} />
-            <Text style={styles.callNowBtnText}>कॉल करें</Text>
-          </TouchableOpacity>
-        </View>
+          />
+        </Card>
 
         {/* ─── 3. QUICK 1-TAP ISSUE TILES ─── */}
         <View style={styles.quickSection}>
@@ -246,54 +223,55 @@ export default function GrievanceListScreen({ navigation }) {
             const response = getCleanResponse(item);
 
             return (
-              <View key={item.id} style={styles.cleanCard}>
+              <Card key={item.id} style={styles.cleanCard}>
                 {/* Header Row: Category & Status */}
                 <View style={styles.cardHeaderRow}>
-                  <View style={styles.categoryBadge}>
-                    <Text style={styles.categoryTitle}>{catInfo.title}</Text>
-                  </View>
-                  <View style={[styles.statusPill, { backgroundColor: statusInfo.bg }]}>
-                    <Text style={[styles.statusPillText, { color: statusInfo.text }]}>
-                      {statusInfo.label}
-                    </Text>
-                  </View>
+                  <Text style={styles.categoryTitle}>{catInfo.title}</Text>
+                  <Badge
+                    label={statusInfo.label}
+                    variant={statusInfo.variant}
+                    icon={statusInfo.icon}
+                    size="sm"
+                  />
+                </View>
+
+                {/* Complaint Number & Date */}
+                <View style={styles.metaRow}>
+                  <Text style={styles.grievanceId}>क्र.: {item.id}</Text>
+                  <Text style={styles.dateText}>📅 {dateStr}</Text>
                 </View>
 
                 {/* Complaint Description */}
-                <Text style={styles.cardDescText}>{desc}</Text>
+                <View style={styles.descBox}>
+                  <Text style={styles.descLabel}>किसान का विवरण:</Text>
+                  <Text style={styles.descText}>{desc}</Text>
+                </View>
 
-                {/* Officer Official Response Box */}
-                {response ? (
-                  <View style={styles.responseContainer}>
-                    <View style={styles.responseHeaderRow}>
+                {/* Officer Resolution Response */}
+                {response && (
+                  <View style={styles.responseBox}>
+                    <View style={styles.responseHeader}>
                       <MaterialCommunityIcons name="account-tie" size={16} color={COLORS.primary} />
-                      <Text style={styles.responseOfficerTitle}>👨‍💼 नोडल अधिकारी का समाधान:</Text>
+                      <Text style={styles.responseOfficer}>👨‍💼 नोडल अधिकारी का समाधान:</Text>
                     </View>
                     <Text style={styles.responseText}>{response}</Text>
                   </View>
-                ) : null}
-
-                {/* Footer: Ticket ID & Date */}
-                <View style={styles.cardFooter}>
-                  <Text style={styles.ticketIdText}>क्र.: {item.id}</Text>
-                  <Text style={styles.dateText}>📅 {dateStr}</Text>
-                </View>
-              </View>
+                )}
+              </Card>
             );
           })}
         </View>
       </ScrollView>
 
-      {/* ─── 6. BIG BOTTOM ACTION BUTTON ─── */}
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) + 4 }]}>
-        <TouchableOpacity
-          style={styles.bigRaiseButton}
+      {/* ─── 6. STICKY BOTTOM BUTTON ─── */}
+      <View style={[styles.stickyBottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+        <Button
+          title="✍️ नई शिकायत दर्ज करें (Register Complaint)"
+          size="lg"
+          variant="gold"
+          fullWidth
           onPress={() => navigation.navigate('GrievanceForm')}
-          activeOpacity={0.88}
-        >
-          <MaterialCommunityIcons name="plus-circle" size={22} color={COLORS.primaryDark} />
-          <Text style={styles.bigRaiseButtonText}>➕ नई शिकायत दर्ज करें</Text>
-        </TouchableOpacity>
+        />
       </View>
     </View>
   );
@@ -302,77 +280,23 @@ export default function GrievanceListScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
-
-  /* ─── 1. HEADER ─── */
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingBottom: SPACING.sm + 4,
-    paddingHorizontal: SPACING.md,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    ...SHADOWS.md,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerTitleBox: {
-    flex: 1,
-  },
-  headerTitleText: {
-    fontSize: 21,
-    fontWeight: '900',
-    color: COLORS.white,
-    letterSpacing: 0.3,
-  },
-  headerSubText: {
-    fontSize: 12,
-    color: COLORS.accentLight,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  voiceButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: RADIUS.md,
-    ...SHADOWS.sm,
-  },
-  voiceButtonText: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: COLORS.primaryDark,
-  },
-
-  /* ─── SCROLL CONTENT ─── */
   scrollContent: {
     padding: SPACING.md,
   },
-
-  /* ─── 2. HELPLINE CARD ─── */
   helplineCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF3C7',
-    borderRadius: RADIUS.lg,
-    padding: 14,
-    borderWidth: 1.5,
-    borderColor: '#FDE68A',
-    marginBottom: 16,
-    gap: 10,
-    ...SHADOWS.sm,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+    gap: 8,
   },
   helpIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#FCD34D',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(212,168,67,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -382,211 +306,164 @@ const styles = StyleSheet.create({
   helpTag: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#92400E',
+    color: '#854D0E',
   },
   helpPhone: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
-    color: '#78350F',
-    marginTop: 1,
+    color: '#713F12',
+    marginVertical: 1,
   },
-  helpSub: {
-    fontSize: 11,
-    color: '#92400E',
-    marginTop: 1,
-  },
-  callNowBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#15803D',
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: RADIUS.md,
-    ...SHADOWS.sm,
-  },
-  callNowBtnText: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: COLORS.white,
-  },
-
-  /* ─── 3. QUICK TILES ─── */
   quickSection: {
-    marginBottom: 16,
+    marginBottom: SPACING.md,
   },
   quickSectionTitle: {
     fontSize: 14,
     fontWeight: '800',
     color: COLORS.text,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   quickTilesGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   quickTile: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.md,
-    paddingVertical: 10,
-    paddingHorizontal: 4,
+    width: '48.5%',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+    padding: SPACING.sm + 2,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
+    gap: 6,
     ...SHADOWS.sm,
   },
   quickTileIcon: {
-    fontSize: 20,
-    marginBottom: 4,
+    fontSize: 18,
   },
   quickTileText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.text,
-    textAlign: 'center',
+    flex: 1,
   },
-
-  /* ─── 4. FILTER TABS ─── */
   filterTabsRow: {
     flexDirection: 'row',
     gap: 6,
-    marginBottom: 14,
+    marginBottom: SPACING.md,
   },
   filterTab: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: '#E2E8F0',
+    paddingVertical: 7,
+    paddingHorizontal: 4,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   filterTabActive: {
     backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   filterTabText: {
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '700',
     color: COLORS.textSecondary,
   },
   filterTabTextActive: {
     color: COLORS.white,
+    fontWeight: '800',
   },
-
-  /* ─── 5. COMPLAINT CARDS ─── */
   cardsList: {
-    gap: 12,
+    gap: SPACING.sm,
   },
   cleanCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    ...SHADOWS.sm,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   cardHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  categoryBadge: {
-    flex: 1,
+    alignItems: 'center',
+    marginBottom: 4,
   },
   categoryTitle: {
     fontSize: 15,
-    fontWeight: '900',
-    color: COLORS.text,
-  },
-  statusPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  statusPillText: {
-    fontSize: 11,
-    fontWeight: '900',
-  },
-  cardDescText: {
-    fontSize: 13,
-    color: COLORS.text,
-    lineHeight: 19,
-    fontWeight: '500',
-    marginBottom: 8,
-  },
-  responseContainer: {
-    backgroundColor: '#F0FDF4',
-    borderRadius: RADIUS.md,
-    padding: 10,
-    marginTop: 4,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-  },
-  responseHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 4,
-  },
-  responseOfficerTitle: {
-    fontSize: 12,
     fontWeight: '800',
-    color: '#15803D',
+    color: COLORS.text,
+    flex: 1,
   },
-  responseText: {
-    fontSize: 12,
-    color: '#166534',
-    lineHeight: 17,
-    fontWeight: '600',
-  },
-  cardFooter: {
+  metaRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
+    marginBottom: 8,
   },
-  ticketIdText: {
+  grievanceId: {
     fontSize: 11,
     fontWeight: '700',
-    color: COLORS.textMuted,
+    color: COLORS.primary,
   },
   dateText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.textSecondary,
   },
-
-  /* ─── 6. BIG BOTTOM BAR ─── */
-  bottomBar: {
+  descBox: {
+    backgroundColor: COLORS.background,
+    borderRadius: RADIUS.sm,
+    padding: SPACING.sm,
+    marginBottom: 8,
+  },
+  descLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    marginBottom: 2,
+  },
+  descText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.text,
+    lineHeight: 18,
+  },
+  responseBox: {
+    backgroundColor: '#F0FDF4',
+    borderRadius: RADIUS.sm,
+    padding: SPACING.sm,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    gap: 2,
+  },
+  responseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  responseOfficer: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  responseText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#166534',
+    lineHeight: 17,
+  },
+  stickyBottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     paddingHorizontal: SPACING.md,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    borderTopColor: COLORS.border,
     ...SHADOWS.lg,
-  },
-  bigRaiseButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.accent,
-    paddingVertical: 14,
-    borderRadius: RADIUS.md,
-    gap: 8,
-    ...SHADOWS.gold,
-  },
-  bigRaiseButtonText: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: COLORS.primaryDark,
   },
 });

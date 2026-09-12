@@ -6,12 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Platform,
-  StatusBar,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../../utils/theme';
+import { Header, Card, Badge, Button, MetricCard, InfoRow } from '../../components';
 import { useFarmer } from '../../context/FarmerContext';
 
 export default function LiveQueueScreen({ navigation }) {
@@ -59,46 +58,26 @@ export default function LiveQueueScreen({ navigation }) {
     );
   };
 
-  const topPadding = Math.max(
-    insets.top,
-    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
-  ) + 8;
-
   const { nowServing, yourTokenNumber, farmersAhead, hasDelayAlert, delayMinutes, estimatedTurnTime } = queueState;
-
   const isMyTurn = farmersAhead === 0;
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
-
       {/* ─── 1. HEADER ─── */}
-      <View style={[styles.header, { paddingTop: topPadding }]}>
-        <View style={styles.headerTopRow}>
-          <View style={styles.headerLeft}>
-            <View style={styles.liveDot} />
-            <Text style={styles.headerTitleText}>लाइव टोकन व कतार</Text>
-          </View>
-
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.voiceBtn} onPress={handlePlayVoiceGuide} activeOpacity={0.8}>
-              <MaterialCommunityIcons name="volume-high" size={16} color={COLORS.primaryDark} />
-              <Text style={styles.voiceBtnText}>सुनें</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.callBtn} onPress={handleCallCentre} activeOpacity={0.8}>
-              <MaterialCommunityIcons name="phone" size={18} color={COLORS.white} />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      <Header
+        title="लाइव टोकन व कतार"
+        subtitle="वास्तविक समय टोकन स्थिति (Live Updates)"
+        onVoiceGuidePress={handlePlayVoiceGuide}
+        rightIcon="phone"
+        onRightPress={handleCallCentre}
+      />
 
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 90 }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Mandi Strip */}
-        <View style={styles.mandiCard}>
+        <Card style={styles.mandiCard}>
           <View style={styles.mandiInfo}>
             <Text style={styles.mandiNameText}>
               🏪 {activeBooking?.centre?.split('(')[0] || 'बैरसिया उपार्जन केंद्र'}
@@ -107,17 +86,20 @@ export default function LiveQueueScreen({ navigation }) {
               📍 {activeBooking?.centreAddress || 'NH-46 जंक्शन, बैरसिया, भोपाल'}
             </Text>
           </View>
-          <TouchableOpacity style={styles.dirBtn} onPress={handleOpenMap} activeOpacity={0.75}>
-            <MaterialCommunityIcons name="directions" size={16} color={COLORS.primary} />
-            <Text style={styles.dirBtnText}>रास्ता</Text>
-          </TouchableOpacity>
-        </View>
+          <Button
+            title="रास्ता"
+            icon="directions"
+            size="sm"
+            variant="soft"
+            onPress={handleOpenMap}
+          />
+        </Card>
 
         {/* ─── DELAY ALERT IF ACTIVE ─── */}
         {hasDelayAlert && (
           <View style={styles.delayBanner}>
             <View style={styles.delayTop}>
-              <MaterialCommunityIcons name="alert-circle" size={20} color="#DC2626" />
+              <MaterialCommunityIcons name="alert-circle" size={20} color={COLORS.error} />
               <Text style={styles.delayTitle}>मंडी में {delayMinutes} मिनट की देरी है</Text>
               <TouchableOpacity onPress={() => triggerManualDelayAlert(false)}>
                 <MaterialCommunityIcons name="close" size={18} color="#991B1B" />
@@ -130,11 +112,11 @@ export default function LiveQueueScreen({ navigation }) {
         )}
 
         {/* ─── 2. MAIN QUEUE STATUS HERO ─── */}
-        <View style={styles.queueHeroCard}>
+        <Card variant="hero" style={styles.queueHeroCard}>
           <View style={styles.queueTokensRow}>
             {/* Now Serving */}
             <View style={styles.tokenBoxServing}>
-              <Text style={styles.tokenServingLabel}>🟢 अभी तौल चल रही है</Text>
+              <Badge label="तौल जारी है" variant="success" size="sm" icon="check-circle" />
               <Text style={styles.tokenServingNum}>#{nowServing}</Text>
               <Text style={styles.tokenServingSub}>कांटे पर मौजूद</Text>
             </View>
@@ -144,7 +126,7 @@ export default function LiveQueueScreen({ navigation }) {
 
             {/* Your Token */}
             <View style={styles.tokenBoxYour}>
-              <Text style={styles.tokenYourLabel}>🎫 आपका टोकन</Text>
+              <Badge label="आपका टोकन" variant="gold" size="sm" icon="ticket-account" />
               <Text style={styles.tokenYourNum}>#{yourTokenNumber}</Text>
               <Text style={styles.tokenYourSub}>गेट पास टोकन</Text>
             </View>
@@ -154,7 +136,7 @@ export default function LiveQueueScreen({ navigation }) {
           <View style={styles.turnStatusStrip}>
             {isMyTurn ? (
               <View style={styles.myTurnBox}>
-                <MaterialCommunityIcons name="check-decagram" size={24} color="#15803D" />
+                <MaterialCommunityIcons name="check-decagram" size={24} color={COLORS.success} />
                 <Text style={styles.myTurnText}>🎉 आपकी बारी आ गई! सीधे कांटे पर जाएं।</Text>
               </View>
             ) : (
@@ -171,12 +153,12 @@ export default function LiveQueueScreen({ navigation }) {
               </View>
             )}
           </View>
-        </View>
+        </Card>
 
         {/* ─── 3. DEPARTURE GUIDANCE CARD ─── */}
-        <View style={styles.departureCard}>
+        <Card variant="success" style={styles.departureCard}>
           <View style={styles.departureHeader}>
-            <MaterialCommunityIcons name="tractor" size={22} color="#15803D" />
+            <MaterialCommunityIcons name="tractor" size={22} color={COLORS.success} />
             <Text style={styles.departureTitle}>घर से निकलने का सही समय</Text>
           </View>
 
@@ -184,28 +166,32 @@ export default function LiveQueueScreen({ navigation }) {
           <Text style={styles.departureSub}>
             इस समय निकलने पर आप सीधे 11:35 AM पर कांटे पर पहुंचेंगे और बिना इंतजार तौल होगी।
           </Text>
-        </View>
+        </Card>
 
         {/* ─── 4. WEIGHBRIDGE FACILITY STATUS ─── */}
-        <View style={styles.facilityCard}>
+        <Card style={styles.facilityCard}>
           <Text style={styles.facilityCardTitle}>मंडी तौल व्यवस्था (Live Updates):</Text>
           <View style={styles.facilityGrid}>
             <View style={styles.facilityItem}>
-              <Text style={styles.facilityVal}>🟢 चालू (2 कांटे)</Text>
+              <Badge label="🟢 2 कांटे चालू" variant="success" size="md" />
               <Text style={styles.facilityLabel}>इलेक्ट्रॉनिक वे-ब्रिज</Text>
             </View>
             <View style={styles.facilityItem}>
-              <Text style={styles.facilityVal}>⚡ तेज़ (3 मिनट/नमूना)</Text>
+              <Badge label="⚡ 3 मिनट / नमूना" variant="info" size="md" />
               <Text style={styles.facilityLabel}>नमी परीक्षण लैब</Text>
             </View>
           </View>
-        </View>
+        </Card>
 
         {/* Advance Token Demo Button */}
-        <TouchableOpacity style={styles.demoAdvanceBtn} onPress={advanceQueueToken} activeOpacity={0.7}>
-          <MaterialCommunityIcons name="fast-forward" size={16} color={COLORS.primary} />
-          <Text style={styles.demoAdvanceText}>टोकन आगे बढ़ाएं (Demo Test)</Text>
-        </TouchableOpacity>
+        <Button
+          title="टोकन आगे बढ़ाएं (Demo Test)"
+          icon="fast-forward"
+          size="md"
+          variant="outline"
+          onPress={advanceQueueToken}
+          style={{ marginTop: SPACING.sm }}
+        />
       </ScrollView>
     </View>
   );
@@ -214,118 +200,40 @@ export default function LiveQueueScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: COLORS.background,
   },
-
-  /* ─── 1. HEADER ─── */
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingBottom: SPACING.sm + 4,
-    paddingHorizontal: SPACING.md,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    ...SHADOWS.md,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  liveDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#22C55E',
-  },
-  headerTitleText: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: COLORS.white,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  voiceBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: RADIUS.sm,
-  },
-  voiceBtnText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: COLORS.primaryDark,
-  },
-  callBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  /* ─── SCROLL CONTENT ─── */
   scrollContent: {
     padding: SPACING.md,
-    gap: 12,
   },
-
   mandiCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.white,
-    padding: 12,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: '#DDE4EC',
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
   },
   mandiInfo: {
     flex: 1,
+    marginRight: 8,
   },
   mandiNameText: {
-    fontSize: 14,
-    fontWeight: '900',
+    fontSize: 15,
+    fontWeight: '800',
     color: COLORS.text,
   },
   mandiSubText: {
     fontSize: 11,
+    fontWeight: '500',
     color: COLORS.textSecondary,
     marginTop: 2,
   },
-  dirBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: RADIUS.sm,
-  },
-  dirBtnText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-
-  /* Delay Banner */
   delayBanner: {
     backgroundColor: '#FEE2E2',
+    padding: SPACING.md,
     borderRadius: RADIUS.md,
-    padding: 12,
     borderWidth: 1,
     borderColor: '#FECACA',
+    marginBottom: SPACING.md,
   },
   delayTop: {
     flexDirection: 'row',
@@ -334,95 +242,83 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   delayTitle: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#B91C1C',
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#991B1B',
     flex: 1,
     marginLeft: 6,
   },
   delayDesc: {
-    fontSize: 11,
-    color: '#991B1B',
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#7F1D1D',
     lineHeight: 16,
   },
-
-  /* Queue Hero */
   queueHeroCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#DDE4EC',
-    ...SHADOWS.sm,
+    padding: SPACING.md + 2,
+    marginBottom: SPACING.md,
   },
   queueTokensRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
+    justifyContent: 'space-around',
+    paddingVertical: SPACING.sm,
   },
   tokenBoxServing: {
-    flex: 1,
     alignItems: 'center',
-  },
-  tokenServingLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#15803D',
+    flex: 1,
   },
   tokenServingNum: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: '900',
-    color: '#15803D',
-    marginVertical: 2,
+    color: COLORS.white,
+    marginVertical: 4,
   },
   tokenServingSub: {
     fontSize: 11,
-    color: COLORS.textSecondary,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.75)',
   },
   tokenDivider: {
     width: 1,
     height: 60,
-    backgroundColor: '#E2E8F0',
-    marginHorizontal: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    marginHorizontal: SPACING.sm,
   },
   tokenBoxYour: {
-    flex: 1,
     alignItems: 'center',
-  },
-  tokenYourLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: COLORS.primary,
+    flex: 1,
   },
   tokenYourNum: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: '900',
-    color: COLORS.primaryDark,
-    marginVertical: 2,
+    color: COLORS.accent,
+    marginVertical: 4,
   },
   tokenYourSub: {
     fontSize: 11,
-    color: COLORS.textSecondary,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.75)',
   },
-
   turnStatusStrip: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.md,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    marginTop: SPACING.md,
+    paddingTop: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.15)',
   },
   myTurnBox: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
+    backgroundColor: '#DCFCE7',
+    padding: SPACING.sm + 2,
+    borderRadius: RADIUS.md,
   },
   myTurnText: {
-    fontSize: 13,
-    fontWeight: '900',
+    fontSize: 14,
+    fontWeight: '800',
     color: '#15803D',
-    flex: 1,
   },
   waitingStatusBox: {
     flexDirection: 'row',
@@ -433,28 +329,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statMetricNum: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '900',
-    color: COLORS.text,
+    color: COLORS.white,
   },
   statMetricLabel: {
     fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 1,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
   },
   statMetricDivider: {
     width: 1,
     height: 30,
-    backgroundColor: '#CBD5E1',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
-
-  /* Departure Card */
   departureCard: {
-    backgroundColor: '#DCFCE7',
-    borderRadius: RADIUS.lg,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
   },
   departureHeader: {
     flexDirection: 'row',
