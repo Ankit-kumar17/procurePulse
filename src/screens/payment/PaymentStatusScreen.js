@@ -108,7 +108,7 @@ export default function PaymentStatusScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* ─── 1. TOP HEADER ─── */}
+      {/* ─── 1. COMPACT FOREST GREEN HEADER ─── */}
       <Header
         title="फसल भुगतान"
         subtitle="खाते में आया पैसा व सरकारी रसीदें"
@@ -119,11 +119,11 @@ export default function PaymentStatusScreen({ navigation }) {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 95 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ─── 2. TOTAL PASSBOOK HERO CARD ─── */}
-        <Card variant="hero" style={styles.passbookCard}>
+        {/* ─── 2. TOTAL PASSBOOK WHITE CARD ─── */}
+        <Card style={styles.passbookCard}>
           <View style={styles.passbookHeader}>
             <View style={styles.bankTag}>
-              <MaterialCommunityIcons name="bank" size={16} color={COLORS.accent} />
+              <MaterialCommunityIcons name="bank" size={16} color={COLORS.primary} />
               <Text style={styles.bankTagText}>SBI खाता (••••8392)</Text>
             </View>
             <Badge label="सत्यापित" variant="success" size="sm" icon="check-circle" />
@@ -134,12 +134,15 @@ export default function PaymentStatusScreen({ navigation }) {
             <Text style={styles.passbookAmount}>₹{totalReceived.toLocaleString('en-IN')}</Text>
           </View>
 
-          {/* 3 Quick Filter / Summary Pills */}
+          {/* 3 Quick Filter Pills */}
           <View style={styles.overviewPillsRow}>
             <TouchableOpacity
               style={[
                 styles.overviewPill,
-                { backgroundColor: selectedFilter === 'SUCCESS' ? COLORS.success : COLORS.successLight },
+                {
+                  backgroundColor: selectedFilter === 'SUCCESS' ? COLORS.success : COLORS.successLight,
+                  borderColor: selectedFilter === 'SUCCESS' ? COLORS.success : '#C0E2CD',
+                },
               ]}
               onPress={() => setSelectedFilter(selectedFilter === 'SUCCESS' ? 'ALL' : 'SUCCESS')}
               activeOpacity={0.7}
@@ -157,7 +160,10 @@ export default function PaymentStatusScreen({ navigation }) {
             <TouchableOpacity
               style={[
                 styles.overviewPill,
-                { backgroundColor: selectedFilter === 'INITIATED' ? COLORS.warning : COLORS.warningLight },
+                {
+                  backgroundColor: selectedFilter === 'INITIATED' ? COLORS.warning : COLORS.warningLight,
+                  borderColor: selectedFilter === 'INITIATED' ? COLORS.warning : '#F8E4A0',
+                },
               ]}
               onPress={() => setSelectedFilter(selectedFilter === 'INITIATED' ? 'ALL' : 'INITIATED')}
               activeOpacity={0.7}
@@ -175,7 +181,10 @@ export default function PaymentStatusScreen({ navigation }) {
             <TouchableOpacity
               style={[
                 styles.overviewPill,
-                { backgroundColor: selectedFilter === 'FAILED' ? COLORS.error : COLORS.errorLight },
+                {
+                  backgroundColor: selectedFilter === 'FAILED' ? COLORS.error : COLORS.errorLight,
+                  borderColor: selectedFilter === 'FAILED' ? COLORS.error : '#F7C7C7',
+                },
               ]}
               onPress={() => setSelectedFilter(selectedFilter === 'FAILED' ? 'ALL' : 'FAILED')}
               activeOpacity={0.7}
@@ -202,7 +211,7 @@ export default function PaymentStatusScreen({ navigation }) {
           </Text>
         </View>
 
-        {/* ─── 4. ULTRA-EASY PAYMENT CARDS ─── */}
+        {/* ─── 4. ULTRA-EASY WHITE PAYMENT CARDS ─── */}
         <View style={styles.cardsList}>
           {filteredPayments.map((item) => {
             const isSuccess = item.status === 'SUCCESS';
@@ -421,8 +430,11 @@ const styles = StyleSheet.create({
   },
   passbookCard: {
     padding: SPACING.md + 2,
-    marginBottom: SPACING.lg,
-    backgroundColor: COLORS.primaryDark,
+    marginBottom: SPACING.md,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
   },
   passbookHeader: {
     flexDirection: 'row',
@@ -434,23 +446,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    backgroundColor: COLORS.primarySoft,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: RADIUS.sm,
   },
   bankTagText: {
     ...TYPOGRAPHY.label,
     fontSize: 12,
-    color: COLORS.white,
+    color: COLORS.primary,
   },
   passbookBody: {
     marginVertical: SPACING.xs,
   },
   passbookLabel: {
     ...TYPOGRAPHY.caption,
-    color: 'rgba(255,255,255,0.8)',
+    color: COLORS.textSecondary,
+    fontWeight: '700',
   },
   passbookAmount: {
     ...TYPOGRAPHY.metricHero,
-    fontSize: 30,
-    color: COLORS.white,
+    fontSize: 28,
+    color: COLORS.text,
     marginVertical: 2,
   },
   overviewPillsRow: {
@@ -463,6 +480,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 6,
     borderRadius: RADIUS.sm,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },

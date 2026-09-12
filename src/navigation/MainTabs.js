@@ -89,7 +89,7 @@ export default function MainTabs() {
             <MaterialCommunityIcons
               name={focused ? 'radar' : 'radar'}
               size={24}
-              color={queueState.hasDelayAlert ? COLORS.error : color}
+              color={color}
             />
           ),
         }}

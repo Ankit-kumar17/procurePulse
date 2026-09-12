@@ -63,10 +63,10 @@ export default function LiveQueueScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* ─── 1. HEADER ─── */}
+      {/* ─── 1. COMPACT FOREST GREEN HEADER ─── */}
       <Header
         title="लाइव टोकन व कतार"
-        subtitle="वास्तविक समय टोकन स्थिति (Live Updates)"
+        subtitle="वास्तविक समय टोकन स्थिति"
         onVoiceGuidePress={handlePlayVoiceGuide}
         rightIcon="phone"
         onRightPress={handleCallCentre}
@@ -76,7 +76,7 @@ export default function LiveQueueScreen({ navigation }) {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 90 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Mandi Strip */}
+        {/* Mandi Location Strip - White Card */}
         <Card style={styles.mandiCard}>
           <View style={styles.mandiInfo}>
             <Text style={styles.mandiNameText}>
@@ -101,7 +101,7 @@ export default function LiveQueueScreen({ navigation }) {
             <View style={styles.delayTop}>
               <MaterialCommunityIcons name="alert-circle" size={20} color={COLORS.error} />
               <Text style={styles.delayTitle}>मंडी में {delayMinutes} मिनट की देरी है</Text>
-              <TouchableOpacity onPress={() => triggerManualDelayAlert(false)}>
+              <TouchableOpacity onPress={() => triggerManualDelayAlert(false)} activeOpacity={0.7}>
                 <MaterialCommunityIcons name="close" size={18} color={COLORS.errorDark} />
               </TouchableOpacity>
             </View>
@@ -111,64 +111,69 @@ export default function LiveQueueScreen({ navigation }) {
           </View>
         )}
 
-        {/* ─── 2. MAIN QUEUE STATUS HERO ─── */}
-        <Card variant="hero" style={styles.queueHeroCard}>
-          <View style={styles.queueTokensRow}>
-            {/* Now Serving */}
-            <View style={styles.tokenBoxServing}>
-              <Badge label="तौल जारी है" variant="success" size="sm" icon="check-circle" />
-              <Text style={styles.tokenServingNum}>#{nowServing}</Text>
-              <Text style={styles.tokenServingSub}>कांटे पर मौजूद</Text>
+        {/* ─── 2. MAIN QUEUE STATUS CARD (Crisp White Card with High-Contrast Typography) ─── */}
+        <Card style={styles.queueMainCard}>
+          <View style={styles.tokensComparisonRow}>
+            {/* Currently Serving Token */}
+            <View style={styles.servingTokenCol}>
+              <Badge label="तौल चल रही है" variant="success" size="sm" icon="check-circle" />
+              <Text style={styles.servingTokenNum}>#{nowServing}</Text>
+              <Text style={styles.servingTokenCaption}>कांटे पर मौजूद</Text>
             </View>
 
-            {/* Divider */}
-            <View style={styles.tokenDivider} />
+            {/* Vertical Divider */}
+            <View style={styles.tokenVerticalDivider} />
 
-            {/* Your Token */}
-            <View style={styles.tokenBoxYour}>
-              <Badge label="आपका टोकन" variant="gold" size="sm" icon="ticket-account" />
-              <Text style={styles.tokenYourNum}>#{yourTokenNumber}</Text>
-              <Text style={styles.tokenYourSub}>गेट पास टोकन</Text>
+            {/* User's Own Token (The Visual Hero) */}
+            <View style={styles.userTokenCol}>
+              <Badge label="⭐ आपका टोकन" variant="gold" size="sm" />
+              <Text style={styles.userTokenNum}>#{yourTokenNumber}</Text>
+              <Text style={styles.userTokenCaption}>गेट पास टोकन</Text>
             </View>
           </View>
 
-          {/* Turn status */}
+          {/* Turn Status & Estimated Time Strip */}
           <View style={styles.turnStatusStrip}>
             {isMyTurn ? (
-              <View style={styles.myTurnBox}>
-                <MaterialCommunityIcons name="check-decagram" size={24} color={COLORS.success} />
+              <View style={styles.myTurnBanner}>
+                <MaterialCommunityIcons name="check-decagram" size={22} color={COLORS.success} />
                 <Text style={styles.myTurnText}>🎉 आपकी बारी आ गई! सीधे कांटे पर जाएं।</Text>
               </View>
             ) : (
-              <View style={styles.waitingStatusBox}>
-                <View style={styles.statMetric}>
-                  <Text style={styles.statMetricNum}>{farmersAhead}</Text>
-                  <Text style={styles.statMetricLabel}>किसान आपसे आगे</Text>
+              <View style={styles.statsRow}>
+                <View style={styles.statBox}>
+                  <Text style={styles.statNum}>{farmersAhead}</Text>
+                  <Text style={styles.statLabel}>किसान आपसे आगे</Text>
                 </View>
-                <View style={styles.statMetricDivider} />
-                <View style={styles.statMetric}>
-                  <Text style={styles.statMetricNum}>{estimatedTurnTime}</Text>
-                  <Text style={styles.statMetricLabel}>अनुमानित समय</Text>
+
+                <View style={styles.statDivider} />
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statNum}>{estimatedTurnTime}</Text>
+                  <Text style={styles.statLabel}>अनुमानित समय</Text>
                 </View>
               </View>
             )}
           </View>
         </Card>
 
-        {/* ─── 3. DEPARTURE GUIDANCE CARD ─── */}
-        <Card variant="success" style={styles.departureCard}>
-          <View style={styles.departureHeader}>
-            <MaterialCommunityIcons name="tractor" size={22} color={COLORS.success} />
-            <Text style={styles.departureTitle}>घर से निकलने का सही समय</Text>
+        {/* ─── 3. ARRIVAL RECOMMENDATION CARD (Light Neutral #F3F7F1) ─── */}
+        <View style={styles.arrivalAdviceCard}>
+          <View style={styles.arrivalHeader}>
+            <MaterialCommunityIcons name="tractor" size={20} color={COLORS.primary} />
+            <Text style={styles.arrivalTitle}>घर से निकलने का सही समय</Text>
           </View>
 
-          <Text style={styles.departureTimeBig}>11:15 AM (लगभग {formatCountdown(secondsRemaining)} बाद)</Text>
-          <Text style={styles.departureSub}>
+          <Text style={styles.arrivalTimeText}>
+            11:15 AM <Text style={styles.arrivalCountdownText}>({formatCountdown(secondsRemaining)} बाद)</Text>
+          </Text>
+
+          <Text style={styles.arrivalSubText}>
             इस समय निकलने पर आप सीधे 11:35 AM पर कांटे पर पहुंचेंगे और बिना इंतजार तौल होगी।
           </Text>
-        </Card>
+        </View>
 
-        {/* ─── 4. WEIGHBRIDGE FACILITY STATUS ─── */}
+        {/* ─── 4. WEIGHBRIDGE FACILITY STATUS (White Card) ─── */}
         <Card style={styles.facilityCard}>
           <Text style={styles.facilityCardTitle}>मंडी तौल व्यवस्था (Live Updates):</Text>
           <View style={styles.facilityGrid}>
@@ -183,14 +188,14 @@ export default function LiveQueueScreen({ navigation }) {
           </View>
         </Card>
 
-        {/* Advance Token Demo Button */}
+        {/* Demo Advance Token Button */}
         <Button
           title="टोकन आगे बढ़ाएं (Demo Test)"
           icon="fast-forward"
           size="md"
           variant="secondary"
           onPress={advanceQueueToken}
-          style={{ marginTop: SPACING.sm }}
+          style={{ marginTop: SPACING.xs }}
         />
       </ScrollView>
     </View>
@@ -204,13 +209,14 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.md,
+    gap: SPACING.sm,
   },
   mandiCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: SPACING.md,
-    marginBottom: SPACING.md,
+    backgroundColor: COLORS.white,
   },
   mandiInfo: {
     flex: 1,
@@ -232,7 +238,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: '#F7C7C7',
-    marginBottom: SPACING.md,
   },
   delayTop: {
     flexDirection: 'row',
@@ -252,58 +257,70 @@ const styles = StyleSheet.create({
     color: COLORS.errorDark,
     lineHeight: 16,
   },
-  queueHeroCard: {
+
+  /* ─── 2. MAIN QUEUE STATUS CARD ─── */
+  queueMainCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
     padding: SPACING.md + 2,
-    marginBottom: SPACING.md,
-    backgroundColor: COLORS.primaryDark,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
   },
-  queueTokensRow: {
+  tokensComparisonRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.xs,
   },
-  tokenBoxServing: {
+  servingTokenCol: {
     alignItems: 'center',
     flex: 1,
   },
-  tokenServingNum: {
+  servingTokenNum: {
     ...TYPOGRAPHY.metricHero,
-    fontSize: 32,
-    color: COLORS.white,
+    fontSize: 30,
+    color: COLORS.textSecondary,
     marginVertical: 4,
   },
-  tokenServingSub: {
+  servingTokenCaption: {
     ...TYPOGRAPHY.caption,
-    color: 'rgba(255,255,255,0.75)',
+    color: COLORS.textMuted,
   },
-  tokenDivider: {
+  tokenVerticalDivider: {
     width: 1,
-    height: 60,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    height: 64,
+    backgroundColor: COLORS.divider,
     marginHorizontal: SPACING.sm,
   },
-  tokenBoxYour: {
+  userTokenCol: {
     alignItems: 'center',
     flex: 1,
+    backgroundColor: COLORS.accentLight,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.xs,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: '#F8E4A0',
   },
-  tokenYourNum: {
+  userTokenNum: {
     ...TYPOGRAPHY.metricHero,
     fontSize: 32,
-    color: COLORS.accent,
-    marginVertical: 4,
+    color: COLORS.accentDark,
+    marginVertical: 2,
   },
-  tokenYourSub: {
+  userTokenCaption: {
     ...TYPOGRAPHY.caption,
-    color: 'rgba(255,255,255,0.75)',
+    fontWeight: '700',
+    color: COLORS.accentDark,
   },
   turnStatusStrip: {
     marginTop: SPACING.md,
-    paddingTop: SPACING.md,
+    paddingTop: SPACING.sm + 2,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.15)',
+    borderTopColor: COLORS.divider,
   },
-  myTurnBox: {
+  myTurnBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -311,63 +328,80 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.successLight,
     padding: SPACING.sm + 2,
     borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: '#C0E2CD',
   },
   myTurnText: {
     ...TYPOGRAPHY.label,
     fontSize: 14,
     color: COLORS.successDark,
   },
-  waitingStatusBox: {
+  statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
   },
-  statMetric: {
+  statBox: {
     alignItems: 'center',
   },
-  statMetricNum: {
+  statNum: {
     ...TYPOGRAPHY.metricLarge,
     fontSize: 22,
-    color: COLORS.white,
+    color: COLORS.text,
   },
-  statMetricLabel: {
+  statLabel: {
     ...TYPOGRAPHY.caption,
-    color: 'rgba(255,255,255,0.8)',
+    color: COLORS.textSecondary,
     marginTop: 2,
   },
-  statMetricDivider: {
+  statDivider: {
     width: 1,
-    height: 30,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    height: 28,
+    backgroundColor: COLORS.divider,
   },
-  departureCard: {
+
+  /* ─── 3. ARRIVAL RECOMMENDATION CARD ─── */
+  arrivalAdviceCard: {
+    backgroundColor: '#F3F7F1',
+    borderRadius: RADIUS.lg,
     padding: SPACING.md,
-    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: '#DDE7DD',
+    ...SHADOWS.sm,
   },
-  departureHeader: {
+  arrivalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     marginBottom: 4,
   },
-  departureTitle: {
+  arrivalTitle: {
     ...TYPOGRAPHY.label,
     fontSize: 13,
-    color: COLORS.successDark,
+    color: COLORS.primary,
   },
-  departureTimeBig: {
+  arrivalTimeText: {
     ...TYPOGRAPHY.title,
     fontSize: 18,
-    color: COLORS.successDark,
+    color: COLORS.primaryDark,
     marginVertical: 2,
   },
-  departureSub: {
-    ...TYPOGRAPHY.bodySmall,
-    color: '#166534',
-    lineHeight: 16,
+  arrivalCountdownText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
   },
+  arrivalSubText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.textSecondary,
+    lineHeight: 16,
+    marginTop: 2,
+  },
+
+  /* ─── 4. FACILITY CARD ─── */
   facilityCard: {
     padding: SPACING.md,
+    backgroundColor: COLORS.white,
   },
   facilityCardTitle: {
     ...TYPOGRAPHY.label,
