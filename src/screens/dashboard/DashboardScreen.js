@@ -32,17 +32,6 @@ export default function DashboardScreen({ navigation }) {
     .filter((p) => p.status === 'INITIATED')
     .reduce((acc, p) => acc + p.netAmount, 0);
 
-  const handleLogout = () => {
-    Alert.alert(
-      'लॉगआउट',
-      'क्या आप ProcurePulse से लॉगआउट करना चाहते हैं?',
-      [
-        { text: 'रद्द करें', style: 'cancel' },
-        { text: 'लॉगआउट', style: 'destructive', onPress: logout },
-      ]
-    );
-  };
-
   const handlePlayVoiceGuide = () => {
     Alert.alert(
       '🔊 होम सहायक (Voice Guide)',
@@ -57,15 +46,16 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* ─── 1. TOP HEADER ─── */}
+      {/* ─── 1. TOP MOBILE-OPTIMIZED HEADER ─── */}
       <Header
+        isHome={true}
         farmerName={farmer?.name || 'रमेश कुमार'}
         farmerId={farmer?.farmerId || 'MP-FR-2026-0001'}
+        farmer={farmer}
+        onLogout={logout}
         onVoiceGuidePress={handlePlayVoiceGuide}
-        rightIcon="logout"
-        onRightPress={handleLogout}
         title={`नमस्ते, ${farmer?.name?.split(' ')[0] || 'रमेश'} जी 🙏`}
-        subtitle="ई-उपार्जन 2.0 • मध्य प्रदेश रबी 2026-27"
+        subtitle="रबी सीजन 2026–27"
       />
 
       <ScrollView
@@ -75,7 +65,7 @@ export default function DashboardScreen({ navigation }) {
           <RefreshControl refreshing={isLoadingData} onRefresh={refreshData} colors={[COLORS.primary]} />
         }
       >
-        {/* ─── 2. ACTIVE BOOKING STATUS CARD (Crisp White Card with Forest Details) ─── */}
+        {/* ─── 2. ACTIVE BOOKING STATUS CARD ─── */}
         {activeBooking ? (
           <Card style={styles.heroCard}>
             <View style={styles.heroHeaderRow}>
@@ -299,7 +289,7 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
   },
   heroCard: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
     padding: SPACING.md + 2,
     backgroundColor: COLORS.white,
     borderWidth: 1,
@@ -367,7 +357,7 @@ const styles = StyleSheet.create({
   noBookingCard: {
     alignItems: 'center',
     padding: SPACING.xl,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   noBookingTitle: {
     ...TYPOGRAPHY.title,
@@ -393,7 +383,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   quickTile: {
     width: '48%',
@@ -432,7 +422,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: '#C0E2CD',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
     ...SHADOWS.sm,
   },
   passbookLeft: {
