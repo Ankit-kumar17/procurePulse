@@ -11,7 +11,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../../utils/theme';
-import { Header, Card, Badge, Button, InfoRow } from '../../components';
+import { Header, Card, Badge, Button } from '../../components';
 import { useFarmer } from '../../context/FarmerContext';
 
 export default function GrievanceListScreen({ navigation }) {
@@ -45,17 +45,15 @@ export default function GrievanceListScreen({ navigation }) {
     );
   };
 
-  // Helper to get clean Hindi category & icon
   const getCleanCategory = (cat) => {
     const lower = (cat || '').toLowerCase();
-    if (lower.includes('payment')) return { icon: 'cash-clock', title: '💰 भुगतान में देरी', color: '#B45309' };
-    if (lower.includes('weight') || lower.includes('tare')) return { icon: 'scale-balance', title: '⚖️ तौल / वजन में अंतर', color: '#1E40AF' };
-    if (lower.includes('moisture') || lower.includes('quality')) return { icon: 'water-percent', title: '💧 नमी / गुणवत्ता विवाद', color: '#0369A1' };
-    if (lower.includes('slot') || lower.includes('booking')) return { icon: 'calendar-clock', title: '🌾 स्लॉट / टोकन समस्या', color: '#15803D' };
-    return { icon: 'alert-circle-outline', title: '📢 सामान्य शिकायत', color: '#475569' };
+    if (lower.includes('payment')) return { icon: 'cash-clock', title: '💰 भुगतान में देरी', color: COLORS.warning };
+    if (lower.includes('weight') || lower.includes('tare')) return { icon: 'scale-balance', title: '⚖️ तौल / वजन में अंतर', color: COLORS.info };
+    if (lower.includes('moisture') || lower.includes('quality')) return { icon: 'water-percent', title: '💧 नमी / गुणवत्ता विवाद', color: COLORS.info };
+    if (lower.includes('slot') || lower.includes('booking')) return { icon: 'calendar-clock', title: '🌾 स्लॉट / टोकन समस्या', color: COLORS.primary };
+    return { icon: 'alert-circle-outline', title: '📢 सामान्य शिकायत', color: COLORS.textSecondary };
   };
 
-  // Helper to translate status
   const getCleanStatus = (status) => {
     const lower = (status || '').toLowerCase();
     if (lower.includes('resolved') || lower.includes('हल')) {
@@ -67,14 +65,12 @@ export default function GrievanceListScreen({ navigation }) {
     return { label: 'दर्ज हुई', variant: 'info', icon: 'file-document' };
   };
 
-  // Helper to format Hindi date
   const getCleanDate = (rawDate) => {
     if (rawDate === '2026-04-10') return '10 अप्रैल 2026';
     if (rawDate === '2026-03-30') return '30 मार्च 2026';
     return rawDate;
   };
 
-  // Clean description mapper
   const getCleanDesc = (item) => {
     if (item.id === 'GRV-2026-0041') {
       return '5 अप्रैल को बैरसिया केंद्र पर गेहूं बेचा था। ₹18,200 का भुगतान अभी तक SBI बैंक खाते में नहीं आया है।';
@@ -85,7 +81,6 @@ export default function GrievanceListScreen({ navigation }) {
     return item.description;
   };
 
-  // Clean response mapper
   const getCleanResponse = (item) => {
     if (item.id === 'GRV-2026-0041') {
       return 'PFMS व बैंक नोडल अधिकारी द्वारा खाते का सत्यापन जारी है। 24 घंटे में ₹18,200 जमा हो जाएगा।';
@@ -110,7 +105,7 @@ export default function GrievanceListScreen({ navigation }) {
     <View style={styles.container}>
       {/* ─── 1. TOP HEADER ─── */}
       <Header
-        title="📢 सहायता व शिकायत"
+        title="सहायता व शिकायत"
         subtitle="समस्या का सीधा समाधान नोडल अधिकारी द्वारा"
         onVoiceGuidePress={handlePlayVoiceGuide}
       />
@@ -122,7 +117,7 @@ export default function GrievanceListScreen({ navigation }) {
         {/* ─── 2. DIRECT HELPLINE CALL CARD (181) ─── */}
         <Card variant="warning" style={styles.helplineCard}>
           <View style={styles.helpIconBox}>
-            <MaterialCommunityIcons name="phone-in-talk" size={24} color="#854D0E" />
+            <MaterialCommunityIcons name="phone-in-talk" size={24} color={COLORS.accentDark} />
           </View>
           <View style={styles.helpContent}>
             <Text style={styles.helpTag}>📞 24x7 टोल-फ्री सहायता</Text>
@@ -157,7 +152,7 @@ export default function GrievanceListScreen({ navigation }) {
               activeOpacity={0.8}
             >
               <Text style={styles.quickTileIcon}>⚖️</Text>
-              <Text style={styles.quickTileText}>तौल में गड़बड़ी</Text>
+              <Text style={styles.quickTileText}>तौल में फर्क</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -175,7 +170,7 @@ export default function GrievanceListScreen({ navigation }) {
               activeOpacity={0.8}
             >
               <Text style={styles.quickTileIcon}>✍️</Text>
-              <Text style={styles.quickTileText}>अन्य शिकायत</Text>
+              <Text style={styles.quickTileText}>अन्य समस्या</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -266,9 +261,9 @@ export default function GrievanceListScreen({ navigation }) {
       {/* ─── 6. STICKY BOTTOM BUTTON ─── */}
       <View style={[styles.stickyBottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <Button
-          title="✍️ नई शिकायत दर्ज करें (Register Complaint)"
+          title="✍️ नई शिकायत दर्ज करें"
           size="lg"
-          variant="gold"
+          variant="primary"
           fullWidth
           onPress={() => navigation.navigate('GrievanceForm')}
         />
@@ -291,12 +286,15 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     marginBottom: SPACING.md,
     gap: 8,
+    backgroundColor: COLORS.accentLight,
+    borderWidth: 1,
+    borderColor: '#F8E4A0',
   },
   helpIconBox: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(212,168,67,0.2)',
+    backgroundColor: 'rgba(214,166,44,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -304,22 +302,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   helpTag: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     fontWeight: '700',
-    color: '#854D0E',
+    color: COLORS.accentDark,
   },
   helpPhone: {
+    ...TYPOGRAPHY.title,
     fontSize: 15,
-    fontWeight: '900',
-    color: '#713F12',
+    color: COLORS.text,
     marginVertical: 1,
+  },
+  helpSub: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textSecondary,
   },
   quickSection: {
     marginBottom: SPACING.md,
   },
   quickSectionTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 14,
-    fontWeight: '800',
     color: COLORS.text,
     marginBottom: SPACING.sm,
   },
@@ -344,8 +346,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   quickTileText: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '800',
     color: COLORS.text,
     flex: 1,
   },
@@ -356,7 +358,7 @@ const styles = StyleSheet.create({
   },
   filterTab: {
     flex: 1,
-    paddingVertical: 7,
+    paddingVertical: 8,
     paddingHorizontal: 4,
     borderRadius: RADIUS.sm,
     backgroundColor: COLORS.surface,
@@ -384,6 +386,7 @@ const styles = StyleSheet.create({
   cleanCard: {
     padding: SPACING.md,
     marginBottom: SPACING.sm,
+    backgroundColor: COLORS.white,
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -392,8 +395,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   categoryTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 15,
-    fontWeight: '800',
     color: COLORS.text,
     flex: 1,
   },
@@ -403,17 +406,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   grievanceId: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     fontWeight: '700',
     color: COLORS.primary,
   },
   dateText: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
   },
   descBox: {
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.surfaceHighlight || '#F7F5EE',
     borderRadius: RADIUS.sm,
     padding: SPACING.sm,
     marginBottom: 8,
@@ -425,17 +427,17 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   descText: {
+    ...TYPOGRAPHY.bodySmall,
     fontSize: 13,
-    fontWeight: '500',
     color: COLORS.text,
     lineHeight: 18,
   },
   responseBox: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: COLORS.successLight,
     borderRadius: RADIUS.sm,
     padding: SPACING.sm,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: '#C0E2CD',
     gap: 2,
   },
   responseHeader: {
@@ -449,9 +451,9 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   responseText: {
+    ...TYPOGRAPHY.bodySmall,
     fontSize: 12,
-    fontWeight: '600',
-    color: '#166534',
+    color: COLORS.successDark,
     lineHeight: 17,
   },
   stickyBottomBar: {

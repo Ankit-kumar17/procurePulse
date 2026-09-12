@@ -12,7 +12,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../../utils/theme';
-import { Header, Card, Badge, Button, InfoRow, MetricCard } from '../../components';
+import { Header, Card, Badge, Button, InfoRow } from '../../components';
 import { useFarmer } from '../../context/FarmerContext';
 
 export default function PaymentStatusScreen({ navigation }) {
@@ -35,7 +35,7 @@ export default function PaymentStatusScreen({ navigation }) {
     setRetryingId(null);
     if (res.success) {
       Alert.alert(
-        '✅ दोबारा पैसा भेजा गया',
+        'दोबारा पैसा भेजा गया',
         'बैंक विवरण अपडेट कर दिया गया है। PFMS द्वारा सीधे आपके आधार लिंक SBI खाते में राशि भेजी जा रही है।'
       );
     }
@@ -60,7 +60,6 @@ export default function PaymentStatusScreen({ navigation }) {
     );
   };
 
-  // Compute clean totals
   const totalReceived = payments
     .filter((p) => p.status === 'SUCCESS')
     .reduce((acc, p) => acc + p.netAmount, 0);
@@ -73,7 +72,6 @@ export default function PaymentStatusScreen({ navigation }) {
     .filter((p) => p.status === 'FAILED')
     .reduce((acc, p) => acc + p.netAmount, 0);
 
-  // Helper to format crop names cleanly
   const getCleanCropInfo = (rawCrop) => {
     if (rawCrop.includes('Wheat') || rawCrop.includes('गेहूं')) {
       const variety = rawCrop.includes('Lokwan')
@@ -89,7 +87,6 @@ export default function PaymentStatusScreen({ navigation }) {
     return { icon: '🌾', name: rawCrop, variety: '' };
   };
 
-  // Helper to format mandi names cleanly
   const getCleanMandiName = (rawMandi) => {
     if (rawMandi.includes('Kolar')) return 'Kolar Mandi';
     if (rawMandi.includes('Berasia')) return 'Berasia Mandi';
@@ -97,7 +94,6 @@ export default function PaymentStatusScreen({ navigation }) {
     return rawMandi.split('(')[0].trim();
   };
 
-  // Helper to format dates cleanly
   const getCleanDate = (rawDate) => {
     if (rawDate === '2026-03-29') return '29 मार्च';
     if (rawDate === '2026-04-05') return '05 अप्रैल';
@@ -114,7 +110,7 @@ export default function PaymentStatusScreen({ navigation }) {
     <View style={styles.container}>
       {/* ─── 1. TOP HEADER ─── */}
       <Header
-        title="₹ फसल भुगतान"
+        title="फसल भुगतान"
         subtitle="खाते में आया पैसा व सरकारी रसीदें"
         onVoiceGuidePress={handlePlayVoiceGuide}
       />
@@ -143,7 +139,7 @@ export default function PaymentStatusScreen({ navigation }) {
             <TouchableOpacity
               style={[
                 styles.overviewPill,
-                { backgroundColor: selectedFilter === 'SUCCESS' ? COLORS.success : '#DCFCE7' },
+                { backgroundColor: selectedFilter === 'SUCCESS' ? COLORS.success : COLORS.successLight },
               ]}
               onPress={() => setSelectedFilter(selectedFilter === 'SUCCESS' ? 'ALL' : 'SUCCESS')}
               activeOpacity={0.7}
@@ -151,7 +147,7 @@ export default function PaymentStatusScreen({ navigation }) {
               <Text
                 style={[
                   styles.overviewPillText,
-                  { color: selectedFilter === 'SUCCESS' ? '#FFFFFF' : '#15803D' },
+                  { color: selectedFilter === 'SUCCESS' ? COLORS.white : COLORS.successDark },
                 ]}
               >
                 🟢 ₹{totalReceived.toLocaleString('en-IN')} मिला
@@ -161,7 +157,7 @@ export default function PaymentStatusScreen({ navigation }) {
             <TouchableOpacity
               style={[
                 styles.overviewPill,
-                { backgroundColor: selectedFilter === 'INITIATED' ? COLORS.warning : '#FEF3C7' },
+                { backgroundColor: selectedFilter === 'INITIATED' ? COLORS.warning : COLORS.warningLight },
               ]}
               onPress={() => setSelectedFilter(selectedFilter === 'INITIATED' ? 'ALL' : 'INITIATED')}
               activeOpacity={0.7}
@@ -169,7 +165,7 @@ export default function PaymentStatusScreen({ navigation }) {
               <Text
                 style={[
                   styles.overviewPillText,
-                  { color: selectedFilter === 'INITIATED' ? '#FFFFFF' : '#B45309' },
+                  { color: selectedFilter === 'INITIATED' ? COLORS.white : COLORS.warningDark },
                 ]}
               >
                 🟡 ₹{totalPending.toLocaleString('en-IN')} आ रहा है
@@ -179,7 +175,7 @@ export default function PaymentStatusScreen({ navigation }) {
             <TouchableOpacity
               style={[
                 styles.overviewPill,
-                { backgroundColor: selectedFilter === 'FAILED' ? COLORS.error : '#FEE2E2' },
+                { backgroundColor: selectedFilter === 'FAILED' ? COLORS.error : COLORS.errorLight },
               ]}
               onPress={() => setSelectedFilter(selectedFilter === 'FAILED' ? 'ALL' : 'FAILED')}
               activeOpacity={0.7}
@@ -187,7 +183,7 @@ export default function PaymentStatusScreen({ navigation }) {
               <Text
                 style={[
                   styles.overviewPillText,
-                  { color: selectedFilter === 'FAILED' ? '#FFFFFF' : '#B91C1C' },
+                  { color: selectedFilter === 'FAILED' ? COLORS.white : COLORS.errorDark },
                 ]}
               >
                 🔴 ₹{totalFailed.toLocaleString('en-IN')} अटका है
@@ -281,7 +277,7 @@ export default function PaymentStatusScreen({ navigation }) {
                       title="रसीद देखें"
                       icon="file-document-outline"
                       size="sm"
-                      variant="outline"
+                      variant="secondary"
                       onPress={() => handleOpenReceipt(item)}
                     />
                   </View>
@@ -298,7 +294,7 @@ export default function PaymentStatusScreen({ navigation }) {
                       title="रसीद देखें"
                       icon="file-document-outline"
                       size="sm"
-                      variant="outline"
+                      variant="secondary"
                       onPress={() => handleOpenReceipt(item)}
                     />
                   </View>
@@ -329,7 +325,7 @@ export default function PaymentStatusScreen({ navigation }) {
                         title="रसीद"
                         icon="file-document-outline"
                         size="sm"
-                        variant="outline"
+                        variant="secondary"
                         onPress={() => handleOpenReceipt(item)}
                       />
                     </View>
@@ -396,7 +392,7 @@ export default function PaymentStatusScreen({ navigation }) {
                 title="रसीद शेयर करें"
                 icon="share-variant"
                 size="md"
-                variant="gold"
+                variant="primary"
                 onPress={handleShareReceipt}
                 style={{ flex: 1 }}
               />
@@ -404,7 +400,7 @@ export default function PaymentStatusScreen({ navigation }) {
               <Button
                 title="बंद करें"
                 size="md"
-                variant="outline"
+                variant="secondary"
                 onPress={() => setReceiptModalVisible(false)}
               />
             </View>
@@ -426,6 +422,7 @@ const styles = StyleSheet.create({
   passbookCard: {
     padding: SPACING.md + 2,
     marginBottom: SPACING.lg,
+    backgroundColor: COLORS.primaryDark,
   },
   passbookHeader: {
     flexDirection: 'row',
@@ -439,21 +436,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   bankTagText: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '700',
     color: COLORS.white,
   },
   passbookBody: {
     marginVertical: SPACING.xs,
   },
   passbookLabel: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...TYPOGRAPHY.caption,
     color: 'rgba(255,255,255,0.8)',
   },
   passbookAmount: {
+    ...TYPOGRAPHY.metricHero,
     fontSize: 30,
-    fontWeight: '900',
     color: COLORS.white,
     marginVertical: 2,
   },
@@ -464,7 +460,7 @@ const styles = StyleSheet.create({
   },
   overviewPill: {
     flex: 1,
-    paddingVertical: 6,
+    paddingVertical: 7,
     paddingHorizontal: 6,
     borderRadius: RADIUS.sm,
     alignItems: 'center',
@@ -479,13 +475,12 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   sectionTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 15,
-    fontWeight: '800',
     color: COLORS.text,
   },
   sectionSub: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
     marginTop: 1,
   },
@@ -495,6 +490,7 @@ const styles = StyleSheet.create({
   cleanCard: {
     padding: SPACING.md,
     marginBottom: SPACING.sm,
+    backgroundColor: COLORS.white,
   },
   cardTopRow: {
     flexDirection: 'row',
@@ -506,24 +502,22 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
   },
   cropTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 16,
-    fontWeight: '800',
     color: COLORS.text,
   },
   cropVariety: {
-    fontSize: 12,
-    fontWeight: '500',
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
   },
   metaLine: {
-    fontSize: 12,
-    fontWeight: '500',
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     marginTop: 3,
   },
   weightLine: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '700',
     color: COLORS.primary,
     marginTop: 2,
   },
@@ -531,8 +525,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   rupeeAmount: {
+    ...TYPOGRAPHY.metricLarge,
     fontSize: 18,
-    fontWeight: '900',
     marginBottom: 4,
   },
   cardBottomRow: {
@@ -550,8 +544,8 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   successNoteText: {
+    ...TYPOGRAPHY.bodySmall,
     fontSize: 12,
-    fontWeight: '600',
     color: COLORS.success,
   },
   pendingNoteRow: {
@@ -560,15 +554,15 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   pendingNoteText: {
+    ...TYPOGRAPHY.bodySmall,
     fontSize: 12,
-    fontWeight: '600',
     color: COLORS.warning,
   },
   failedActionBox: {
     marginTop: SPACING.md,
     paddingTop: SPACING.sm,
     borderTopWidth: 1,
-    borderTopColor: '#FECACA',
+    borderTopColor: '#F7C7C7',
     gap: 8,
   },
   failedNoteRow: {
@@ -577,8 +571,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   failedNoteText: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '700',
     color: COLORS.error,
   },
   failedButtonsRow: {
@@ -608,12 +602,12 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.sm,
   },
   receiptHeaderTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 16,
-    fontWeight: '900',
     color: COLORS.text,
   },
   receiptHeaderSub: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
     marginTop: 1,
   },
@@ -641,21 +635,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#F0FDF4',
+    backgroundColor: COLORS.successLight,
     padding: SPACING.sm + 2,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: '#C0E2CD',
     marginTop: SPACING.md,
   },
   bankVerifyTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '700',
     color: COLORS.successDark,
   },
   bankVerifySub: {
+    ...TYPOGRAPHY.bodySmall,
     fontSize: 11,
-    fontWeight: '500',
     color: '#166534',
   },
   modalFooter: {

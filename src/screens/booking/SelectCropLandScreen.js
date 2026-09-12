@@ -10,7 +10,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../../utils/theme';
-import { Header, Card, Badge, Button, StepIndicator, MetricCard, InfoRow } from '../../components';
+import { Header, Card, Badge, Button, StepIndicator } from '../../components';
 import { useFarmer } from '../../context/FarmerContext';
 
 export default function SelectCropLandScreen({ navigation }) {
@@ -74,15 +74,13 @@ export default function SelectCropLandScreen({ navigation }) {
       {/* ─── 1. HEADER ─── */}
       <Header
         showBack={true}
-        onBack={() => navigation.goBack()}
+        onBackPress={() => navigation.goBack()}
         title="फसल व खेत चुनें"
         subtitle="चरण 1 / 4 • स्लॉट बुकिंग"
       />
 
       {/* ─── 2. PROGRESS STEPPER ─── */}
-      <View style={styles.stepperContainer}>
-        <StepIndicator steps={bookingSteps} currentStep={1} />
-      </View>
+      <StepIndicator steps={bookingSteps} currentStep={1} />
 
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 110 }]}
@@ -109,7 +107,7 @@ export default function SelectCropLandScreen({ navigation }) {
                     <MaterialCommunityIcons
                       name={crop.icon}
                       size={26}
-                      color={isSelected ? COLORS.success : COLORS.primary}
+                      color={isSelected ? COLORS.primary : COLORS.textSecondary}
                     />
                     {isSelected ? (
                       <Badge label="चुनी गई" variant="success" size="sm" icon="check" />
@@ -195,11 +193,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  stepperContainer: {
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
   scrollContent: {
     padding: SPACING.md,
   },
@@ -207,8 +200,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   sectionHeading: {
+    ...TYPOGRAPHY.label,
     fontSize: 15,
-    fontWeight: '800',
     color: COLORS.text,
     marginBottom: SPACING.md,
   },
@@ -227,8 +220,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   cropCardSelected: {
-    backgroundColor: '#F0FDF4',
-    borderColor: COLORS.success,
+    backgroundColor: COLORS.primarySoft,
+    borderColor: COLORS.primary,
   },
   cropTopRow: {
     flexDirection: 'row',
@@ -237,13 +230,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   cropTitleText: {
+    ...TYPOGRAPHY.label,
     fontSize: 15,
-    fontWeight: '800',
     color: COLORS.text,
   },
   cropVarietyText: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
     marginVertical: 2,
   },
@@ -271,8 +263,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   landCardSelected: {
-    backgroundColor: '#F0FDF4',
-    borderColor: COLORS.success,
+    backgroundColor: COLORS.primarySoft,
+    borderColor: COLORS.primary,
   },
   landHeaderRow: {
     flexDirection: 'row',
@@ -281,13 +273,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   landTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 15,
-    fontWeight: '800',
     color: COLORS.text,
   },
   landSub: {
-    fontSize: 12,
-    fontWeight: '500',
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     marginBottom: 4,
   },
@@ -307,18 +298,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   payoutTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 13,
-    fontWeight: '700',
     color: COLORS.successDark,
   },
   payoutAmount: {
+    ...TYPOGRAPHY.metricLarge,
     fontSize: 28,
-    fontWeight: '900',
     color: COLORS.success,
     marginVertical: 2,
   },
   payoutSub: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption,
     fontWeight: '600',
     color: COLORS.textSecondary,
   },

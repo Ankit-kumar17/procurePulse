@@ -15,19 +15,19 @@ export default function Badge({
   const getBadgeColors = () => {
     switch (variant) {
       case 'success':
-        return { bg: COLORS.successLight, text: COLORS.success, border: 'rgba(21,128,61,0.3)' };
+        return { bg: COLORS.successLight, text: COLORS.success, border: 'rgba(33,140,90,0.3)' };
       case 'warning':
-        return { bg: COLORS.warningLight, text: COLORS.warning, border: 'rgba(180,83,9,0.3)' };
+        return { bg: COLORS.warningLight, text: COLORS.warning, border: 'rgba(197,138,19,0.3)' };
       case 'error':
-        return { bg: COLORS.errorLight, text: COLORS.error, border: 'rgba(185,28,28,0.3)' };
+        return { bg: COLORS.errorLight, text: COLORS.error, border: 'rgba(199,58,58,0.3)' };
       case 'info':
-        return { bg: COLORS.infoLight, text: COLORS.info, border: 'rgba(30,64,175,0.3)' };
+        return { bg: COLORS.infoLight, text: COLORS.info, border: 'rgba(61,113,133,0.3)' };
       case 'gold':
-        return { bg: COLORS.accentLight, text: COLORS.accentDark, border: 'rgba(212,168,67,0.4)' };
+        return { bg: COLORS.accentLight, text: COLORS.accentDark, border: 'rgba(214,166,44,0.4)' };
       case 'navy':
         return { bg: COLORS.primaryDark, text: COLORS.white, border: COLORS.primary };
       default:
-        return { bg: '#F1F5F9', text: COLORS.textSecondary, border: COLORS.border };
+        return { bg: '#EAEFEA', text: COLORS.textSecondary, border: COLORS.border };
     }
   };
 
@@ -98,15 +98,14 @@ const styles = StyleSheet.create({
   },
   text: {
     fontWeight: '700',
-    letterSpacing: 0.2,
   },
   text_sm: {
     fontSize: 11,
   },
   text_md: {
-    fontSize: 13,
+    fontSize: 12,
   },
   text_lg: {
-    fontSize: 15,
+    fontSize: 14,
   },
 });

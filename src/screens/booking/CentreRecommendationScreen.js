@@ -25,7 +25,6 @@ export default function CentreRecommendationScreen({ route, navigation }) {
 
   useEffect(() => {
     if (centres && centres.length > 0) {
-      // Default select recommended centre
       const rec = centres.find((c) => c.recommended) || centres[0];
       setSelectedCentre(rec);
     }
@@ -60,7 +59,6 @@ export default function CentreRecommendationScreen({ route, navigation }) {
     );
   };
 
-  // Clean Hindi metadata helper
   const getMandiDetails = (centre) => {
     if (centre.name.includes('Berasia') || centre.recommended) {
       return {
@@ -68,7 +66,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
         location: 'NH-46 जंक्शन · 8.4 km',
         waitBadge: 'कम भीड़ • लगभग 41 मिनट इंतजार',
         badgeVariant: 'success',
-        slotsText: '📅 48 स्लॉट उपलब्ध',
+        slotsText: '48 स्लॉट उपलब्ध',
       };
     }
     if (centre.name.includes('Kolar') || centre.wait > 100) {
@@ -77,7 +75,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
         location: 'मंडी कॉम्प्लेक्स, भोपाल · 5.2 km',
         waitBadge: 'बहुत भीड़ • लगभग 2.3 घंटे इंतजार',
         badgeVariant: 'error',
-        slotsText: '📅 12 स्लॉट उपलब्ध',
+        slotsText: '12 स्लॉट उपलब्ध',
       };
     }
     return {
@@ -85,7 +83,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
       location: 'वेयरहाउस रोड · 11.8 km',
       waitBadge: 'सामान्य भीड़ • लगभग 27 मिनट इंतजार',
       badgeVariant: 'warning',
-      slotsText: '📅 60 स्लॉट उपलब्ध',
+      slotsText: '60 स्लॉट उपलब्ध',
     };
   };
 
@@ -96,16 +94,14 @@ export default function CentreRecommendationScreen({ route, navigation }) {
       {/* ─── 1. COMPACT HEADER ─── */}
       <Header
         showBack={true}
-        onBack={() => navigation.goBack()}
+        onBackPress={() => navigation.goBack()}
         onVoiceGuidePress={handlePlayVoiceGuide}
         title="मंडी चुनें"
         subtitle="चरण 2 / 4 • सबसे अच्छी मंडी"
       />
 
       {/* ─── 2. COMPACT STEPPER ─── */}
-      <View style={styles.stepperContainer}>
-        <StepIndicator steps={bookingSteps} currentStep={2} />
-      </View>
+      <StepIndicator steps={bookingSteps} currentStep={2} />
 
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 110 }]}
@@ -121,7 +117,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
 
         {/* ─── 4. SECTION HEADING ─── */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>🏪 उपलब्ध उपार्जन केंद्र</Text>
+          <Text style={styles.sectionTitle}>उपलब्ध उपार्जन केंद्र</Text>
           <Text style={styles.sectionSub}>अपनी सुविधानुसार केंद्र चुनें</Text>
         </View>
 
@@ -141,7 +137,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
                 {/* Top Row: Mandi Name + Subtle Recommendation Badge */}
                 <View style={styles.cardHeaderRow}>
                   <Text style={styles.mandiName}>
-                    🏪 {details.hindiName}
+                    {details.hindiName}
                   </Text>
 
                   {centre.recommended && (
@@ -170,7 +166,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
                 {/* Bottom Row: Slots & 1-Tap Select Action */}
                 <View style={styles.cardBottomRow}>
                   <View style={styles.slotsBox}>
-                    <Text style={styles.slotsText}>{details.slotsText}</Text>
+                    <Text style={styles.slotsText}>📅 {details.slotsText}</Text>
                     {centre.recommended && (
                       <TouchableOpacity
                         style={styles.whyLink}
@@ -186,7 +182,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
                   <Button
                     title={isSelected ? 'चुनी गई ✓' : 'चुनें'}
                     size="sm"
-                    variant={isSelected ? 'success' : 'outline'}
+                    variant={isSelected ? 'success' : 'secondary'}
                     onPress={() => handleSelectCentre(centre)}
                   />
                 </View>
@@ -229,40 +225,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  stepperContainer: {
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
   scrollContent: {
     padding: SPACING.md,
   },
   adviceBanner: {
-    backgroundColor: '#FFFBEB',
+    backgroundColor: COLORS.accentLight,
     padding: SPACING.md,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: '#F8E4A0',
     marginBottom: SPACING.md,
     gap: 6,
   },
   adviceTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 13,
-    fontWeight: '700',
-    color: '#92400E',
+    color: COLORS.accentDark,
     lineHeight: 18,
   },
   sectionHeader: {
     marginBottom: SPACING.sm,
   },
   sectionTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 15,
-    fontWeight: '800',
     color: COLORS.text,
   },
   sectionSub: {
-    fontSize: 12,
-    fontWeight: '500',
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
     marginTop: 1,
   },
@@ -280,14 +270,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   mandiName: {
+    ...TYPOGRAPHY.label,
     fontSize: 16,
-    fontWeight: '800',
     color: COLORS.text,
     flex: 1,
   },
   locationText: {
-    fontSize: 12,
-    fontWeight: '500',
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     marginBottom: 6,
   },
@@ -305,8 +294,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   slotsText: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '700',
     color: COLORS.textSecondary,
   },
   whyLink: {
@@ -330,8 +319,8 @@ const styles = StyleSheet.create({
     ...SHADOWS.lg,
   },
   confirmationText: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '800',
     color: COLORS.success,
     textAlign: 'center',
     marginBottom: 6,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../utils/theme';
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../utils/theme';
 
 export default function Card({
   title,
@@ -42,7 +42,7 @@ export default function Card({
                   styles.iconContainer,
                   {
                     backgroundColor:
-                      variant === 'hero' ? 'rgba(255,255,255,0.15)' : (iconColor + '15'),
+                      variant === 'hero' ? 'rgba(255,255,255,0.15)' : (iconColor + '18'),
                   },
                 ]}
               >
@@ -84,7 +84,7 @@ export default function Card({
                   styles.badgePill,
                   {
                     backgroundColor:
-                      badgeColor ? (badgeColor + '22') : (variant === 'hero' ? 'rgba(212,168,67,0.25)' : COLORS.accentLight),
+                      badgeColor ? (badgeColor + '22') : (variant === 'hero' ? 'rgba(214,166,44,0.25)' : COLORS.accentLight),
                   },
                 ]}
               >
@@ -93,7 +93,7 @@ export default function Card({
                     styles.badgeText,
                     {
                       color:
-                        badgeColor || (variant === 'hero' ? COLORS.accentLight : COLORS.accentDark),
+                        badgeColor || (variant === 'hero' ? COLORS.accent : COLORS.accentDark),
                     },
                   ]}
                 >
@@ -123,26 +123,27 @@ const styles = StyleSheet.create({
   },
   variant_default: {
     backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
   },
   variant_hero: {
     backgroundColor: COLORS.primaryDark,
-    borderColor: '#245285',
+    borderColor: COLORS.primary,
     ...SHADOWS.md,
   },
   variant_success: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#BBF7D0',
+    backgroundColor: COLORS.successLight,
+    borderColor: '#C0E2CD',
   },
   variant_warning: {
-    backgroundColor: '#FFFBEB',
-    borderColor: '#FDE68A',
+    backgroundColor: COLORS.warningLight,
+    borderColor: '#F8E4A0',
   },
   variant_error: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FECACA',
+    backgroundColor: COLORS.errorLight,
+    borderColor: '#F7C7C7',
   },
   highlightCard: {
-    borderColor: COLORS.success,
+    borderColor: COLORS.primary,
     borderWidth: 1.5,
   },
   selectedCard: {
@@ -173,21 +174,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 16,
-    fontWeight: '800',
     color: COLORS.text,
   },
   cardSubtitle: {
-    fontSize: 12,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
-    fontWeight: '500',
     marginTop: 1,
   },
   textHeroTitle: {
     color: COLORS.white,
   },
   textHeroSubtitle: {
-    color: 'rgba(255,255,255,0.75)',
+    color: 'rgba(255,255,255,0.80)',
   },
   headerRight: {
     flexDirection: 'row',

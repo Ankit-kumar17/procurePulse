@@ -2,17 +2,19 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../utils/theme';
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../utils/theme';
 
 export default function Header({
   title,
   subtitle,
   showBack = false,
-  onBack,
+  onBackPress,
+  onBack, // alias
   rightIcon,
   onRightPress,
   rightBadgeCount = 0,
   rightComponent,
+  rightElement, // alias
   voiceGuideTitle,
   onVoiceGuidePress,
   bottomComponent,
@@ -22,6 +24,8 @@ export default function Header({
 }) {
   const insets = useSafeAreaInsets();
   const topPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20) + 6;
+  const handleBack = onBackPress || onBack;
+  const rightNode = rightElement || rightComponent;
 
   return (
     <View style={[styles.headerContainer, { paddingTop: topPadding }, style]}>
@@ -30,7 +34,7 @@ export default function Header({
         {showBack ? (
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={onBack}
+            onPress={handleBack}
             activeOpacity={0.7}
             accessibilityLabel="Go back"
           >
@@ -55,7 +59,7 @@ export default function Header({
               onPress={onVoiceGuidePress}
               activeOpacity={0.8}
             >
-              <MaterialCommunityIcons name="volume-high" size={16} color={COLORS.primaryDark} />
+              <MaterialCommunityIcons name="volume-high" size={16} color={COLORS.text} />
               <Text style={styles.voiceButtonText}>{voiceGuideTitle || 'सुनें'}</Text>
             </TouchableOpacity>
           )}
@@ -69,7 +73,7 @@ export default function Header({
             </View>
           )}
 
-          {rightComponent}
+          {rightNode}
 
           {rightIcon && (
             <TouchableOpacity
@@ -132,7 +136,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(212,168,67,0.4)',
+    borderColor: 'rgba(214,166,44,0.4)',
   },
   appTitle: {
     color: COLORS.white,
@@ -160,7 +164,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.full,
   },
   voiceButtonText: {
-    color: COLORS.primaryDark,
+    color: COLORS.text,
     fontSize: 12,
     fontWeight: '800',
   },
@@ -173,7 +177,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: RADIUS.full,
     borderWidth: 1,
-    borderColor: 'rgba(212,168,67,0.3)',
+    borderColor: 'rgba(214,166,44,0.35)',
   },
   farmerPillText: {
     color: COLORS.white,
@@ -184,7 +188,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -201,9 +205,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   badgeText: {
-    color: COLORS.primaryDark,
+    color: COLORS.text,
     fontSize: 9,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   titleSection: {
     marginTop: SPACING.sm,

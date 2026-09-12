@@ -100,16 +100,16 @@ export default function BookingConfirmationScreen({ route, navigation }) {
           </View>
 
           {/* Recommended Arrival Window */}
-          <Card variant="warning" style={styles.arrivalCallout}>
+          <View style={styles.arrivalCallout}>
             <View style={styles.arrivalRow}>
-              <MaterialCommunityIcons name="clock-fast" size={24} color="#854D0E" />
+              <MaterialCommunityIcons name="clock-fast" size={24} color={COLORS.accentDark} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.arrivalTitle}>मंडी पहुंचने का सही समय:</Text>
                 <Text style={styles.arrivalTime}>{booking?.recommendedArrival || '11:35 AM – 11:50 AM'}</Text>
                 <Text style={styles.arrivalNote}>इस समय पहुंचने पर आपको कतार में खड़ा नहीं रहना पड़ेगा।</Text>
               </View>
             </View>
-          </Card>
+          </View>
         </Card>
 
         {/* Action Buttons */}
@@ -124,7 +124,7 @@ export default function BookingConfirmationScreen({ route, navigation }) {
           />
 
           <Button
-            title="लाइव कतार देखें"
+            title="लाइव कतार देखें →"
             variant="primary"
             size="lg"
             icon="radar"
@@ -154,27 +154,30 @@ const styles = StyleSheet.create({
   passCard: {
     padding: SPACING.md,
     alignItems: 'stretch',
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   confirmedBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#DCFCE7',
+    backgroundColor: COLORS.successLight,
     paddingVertical: SPACING.sm + 2,
     paddingHorizontal: SPACING.md,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: '#C0E2CD',
     marginBottom: SPACING.md,
   },
   confirmedBannerText: {
     ...TYPOGRAPHY.label,
     fontSize: 14,
-    color: '#15803D',
+    color: COLORS.successDark,
   },
   tokenBox: {
-    backgroundColor: COLORS.surfaceHighlight,
+    backgroundColor: COLORS.primarySoft,
     padding: SPACING.sm + 4,
     borderRadius: RADIUS.md,
     alignItems: 'center',
@@ -185,7 +188,7 @@ const styles = StyleSheet.create({
   tokenLabel: {
     ...TYPOGRAPHY.caption,
     fontWeight: '700',
-    color: COLORS.textMuted,
+    color: COLORS.textSecondary,
   },
   tokenValue: {
     ...TYPOGRAPHY.display,
@@ -203,7 +206,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
+    borderColor: COLORS.border,
     ...SHADOWS.sm,
   },
   qrSub: {
@@ -219,6 +222,10 @@ const styles = StyleSheet.create({
   arrivalCallout: {
     marginTop: SPACING.sm,
     padding: SPACING.sm + 4,
+    backgroundColor: COLORS.accentLight,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: '#F8E4A0',
   },
   arrivalRow: {
     flexDirection: 'row',
@@ -228,17 +235,17 @@ const styles = StyleSheet.create({
   arrivalTitle: {
     ...TYPOGRAPHY.label,
     fontSize: 12,
-    color: '#854D0E',
+    color: COLORS.accentDark,
   },
   arrivalTime: {
     ...TYPOGRAPHY.title,
     fontSize: 16,
-    color: '#92400E',
+    color: COLORS.text,
     marginVertical: 2,
   },
   arrivalNote: {
     ...TYPOGRAPHY.bodySmall,
-    color: '#A16207',
+    color: COLORS.textSecondary,
     lineHeight: 16,
   },
   actionsColumn: {

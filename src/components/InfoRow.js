@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, SPACING, RADIUS } from '../utils/theme';
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../utils/theme';
 
 export default function InfoRow({
   icon,
@@ -31,7 +31,7 @@ export default function InfoRow({
     >
       <View style={styles.leftCol}>
         {icon && (
-          <View style={[styles.iconBox, { backgroundColor: iconColor + '12' }]}>
+          <View style={[styles.iconBox, { backgroundColor: iconColor + '15' }]}>
             <MaterialCommunityIcons name={icon} size={18} color={iconColor} />
           </View>
         )}
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: SPACING.sm + 2,
-    minHeight: 40,
+    minHeight: 38,
   },
   divider: {
     borderBottomWidth: 1,
@@ -99,20 +99,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
-    fontWeight: '500',
+    flex: 1,
   },
   rightCol: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    justifyContent: 'flex-end',
   },
   value: {
+    ...TYPOGRAPHY.label,
     fontSize: 14,
     color: COLORS.text,
-    fontWeight: '700',
     textAlign: 'right',
   },
   highlightValue: {
@@ -121,16 +120,16 @@ const styles = StyleSheet.create({
   },
   badgeBox: {
     backgroundColor: COLORS.accentLight,
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: RADIUS.sm,
   },
   badgeText: {
-    color: COLORS.primaryDark,
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
+    color: COLORS.accentDark,
   },
   chevron: {
-    marginLeft: 2,
+    marginLeft: 4,
   },
 });

@@ -26,7 +26,7 @@ export default function MainTabs() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: COLORS.accent,
-        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.65)',
+        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.70)',
         tabBarStyle: {
           backgroundColor: COLORS.primaryDark,
           borderTopWidth: 1,
@@ -89,7 +89,7 @@ export default function MainTabs() {
             <MaterialCommunityIcons
               name={focused ? 'radar' : 'radar'}
               size={24}
-              color={queueState.hasDelayAlert ? '#EF4444' : color}
+              color={queueState.hasDelayAlert ? COLORS.error : color}
             />
           ),
         }}

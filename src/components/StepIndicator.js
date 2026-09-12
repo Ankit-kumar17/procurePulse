@@ -6,14 +6,20 @@ import { COLORS, SPACING, RADIUS } from '../utils/theme';
 export default function StepIndicator({
   steps = [],
   currentStep = 1, // 1-indexed
+  totalSteps = 4,
   style,
 }) {
+  const defaultLabels = ['फसल', 'मंडी', 'तारीख', 'समय'];
+  const stepCount = steps.length > 0 ? steps.length : totalSteps;
+  const labels = steps.length > 0 ? steps : defaultLabels.slice(0, stepCount);
+
   return (
     <View style={[styles.container, style]}>
-      {steps.map((step, index) => {
+      {Array.from({ length: stepCount }).map((_, index) => {
         const stepNum = index + 1;
         const isCompleted = stepNum < currentStep;
         const isActive = stepNum === currentStep;
+        const label = labels[index];
 
         return (
           <React.Fragment key={index}>
@@ -38,7 +44,7 @@ export default function StepIndicator({
                   </Text>
                 )}
               </View>
-              {typeof step === 'string' && step.length > 0 && (
+              {label && (
                 <Text
                   style={[
                     styles.label,
@@ -47,12 +53,12 @@ export default function StepIndicator({
                   ]}
                   numberOfLines={1}
                 >
-                  {step}
+                  {label}
                 </Text>
               )}
             </View>
 
-            {index < steps.length - 1 && (
+            {index < stepCount - 1 && (
               <View
                 style={[
                   styles.connector,
@@ -74,21 +80,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   stepItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 44,
+    minWidth: 46,
   },
   circle: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#EAEFEA',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+    borderColor: '#DDE3DC',
   },
   circleCompleted: {
     backgroundColor: COLORS.success,
@@ -101,18 +110,17 @@ const styles = StyleSheet.create({
   },
   circleText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
+    fontWeight: '800',
+    color: COLORS.textMuted,
   },
   circleTextActive: {
     color: COLORS.white,
   },
   label: {
     fontSize: 11,
-    color: COLORS.textMuted,
     fontWeight: '600',
-    marginTop: 4,
-    textAlign: 'center',
+    color: COLORS.textMuted,
+    marginTop: 3,
   },
   labelActive: {
     color: COLORS.primary,
@@ -125,9 +133,9 @@ const styles = StyleSheet.create({
   connector: {
     flex: 1,
     height: 2,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#EAEFEA',
     marginHorizontal: 4,
-    marginBottom: 16, // align with circle centers
+    marginBottom: 16,
   },
   connectorCompleted: {
     backgroundColor: COLORS.success,

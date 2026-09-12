@@ -30,8 +30,8 @@ export default function TimeSlotScreen({ route, navigation }) {
       period: 'सुबह (Morning)',
       available: 5,
       congestion: 'मध्यम भीड़',
-      color: '#B45309',
-      bg: '#FEF3C7',
+      color: COLORS.warning,
+      bg: COLORS.warningLight,
       recommendedArrival: '09:35 AM - 09:50 AM',
       recommended: false,
     },
@@ -41,8 +41,8 @@ export default function TimeSlotScreen({ route, navigation }) {
       period: 'सुबह (Morning)',
       available: 3,
       congestion: 'भारी भीड़',
-      color: '#B91C1C',
-      bg: '#FEE2E2',
+      color: COLORS.error,
+      bg: COLORS.errorLight,
       recommendedArrival: '10:35 AM - 10:50 AM',
       recommended: false,
     },
@@ -52,8 +52,8 @@ export default function TimeSlotScreen({ route, navigation }) {
       period: 'सुबह (Optimal)',
       available: 8,
       congestion: 'कम भीड़ (फास्ट)',
-      color: '#15803D',
-      bg: '#DCFCE7',
+      color: COLORS.success,
+      bg: COLORS.successLight,
       recommendedArrival: '11:35 AM - 11:50 AM',
       recommended: true,
     },
@@ -63,8 +63,8 @@ export default function TimeSlotScreen({ route, navigation }) {
       period: 'दोपहर (Noon)',
       available: 2,
       congestion: 'भारी भीड़',
-      color: '#B91C1C',
-      bg: '#FEE2E2',
+      color: COLORS.error,
+      bg: COLORS.errorLight,
       recommendedArrival: '12:35 PM - 12:50 PM',
       recommended: false,
     },
@@ -74,8 +74,8 @@ export default function TimeSlotScreen({ route, navigation }) {
       period: 'दोपहर (Afternoon)',
       available: 12,
       congestion: 'कम भीड़ (फास्ट)',
-      color: '#15803D',
-      bg: '#DCFCE7',
+      color: COLORS.success,
+      bg: COLORS.successLight,
       recommendedArrival: '02:35 PM - 02:50 PM',
       recommended: false,
     },
@@ -85,8 +85,8 @@ export default function TimeSlotScreen({ route, navigation }) {
       period: 'शाम (Evening)',
       available: 6,
       congestion: 'मध्यम भीड़',
-      color: '#B45309',
-      bg: '#FEF3C7',
+      color: COLORS.warning,
+      bg: COLORS.warningLight,
       recommendedArrival: '03:35 PM - 03:50 PM',
       recommended: false,
     },
@@ -125,6 +125,8 @@ export default function TimeSlotScreen({ route, navigation }) {
     }
   };
 
+  const bookingSteps = ['फसल व खेत', 'मंडी चुनें', 'तारीख व समय', 'पुष्टि'];
+
   return (
     <View style={styles.container}>
       {/* ─── 1. HEADER ─── */}
@@ -136,7 +138,7 @@ export default function TimeSlotScreen({ route, navigation }) {
       />
 
       {/* ─── 2. PROGRESS STEPPER ─── */}
-      <StepIndicator currentStep={4} totalSteps={4} />
+      <StepIndicator steps={bookingSteps} currentStep={4} />
 
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]}
@@ -156,15 +158,15 @@ export default function TimeSlotScreen({ route, navigation }) {
         </View>
 
         {/* AI Recommendation Banner */}
-        <Card variant="success" style={styles.aiBanner}>
+        <View style={styles.aiBanner}>
           <View style={styles.aiBannerRow}>
-            <MaterialCommunityIcons name="lightning-bolt" size={24} color={COLORS.success} />
+            <MaterialCommunityIcons name="lightning-bolt" size={24} color={COLORS.accentDark} />
             <View style={{ flex: 1 }}>
               <Text style={styles.aiTitle}>AI सलाह: 11:00 AM – 12:00 PM सबसे उपयुक्त है</Text>
               <Text style={styles.aiDesc}>इस समय केंद्र पर तुलाई सबसे तेज होती है और औसत प्रतीक्षा समय सिर्फ 15 मिनट है।</Text>
             </View>
           </View>
-        </Card>
+        </View>
 
         {/* Slot Cards List */}
         <View style={styles.slotsList}>
@@ -186,7 +188,7 @@ export default function TimeSlotScreen({ route, navigation }) {
                       <MaterialCommunityIcons
                         name="clock-outline"
                         size={20}
-                        color={isSelected ? COLORS.primaryDark : COLORS.text}
+                        color={isSelected ? COLORS.primary : COLORS.text}
                       />
                       <Text style={[styles.slotTimeText, isSelected && styles.slotTimeTextSelected]}>
                         {slot.timeRange}
@@ -195,7 +197,7 @@ export default function TimeSlotScreen({ route, navigation }) {
 
                     <Badge
                       label={slot.congestion}
-                      variant={slot.color === '#15803D' ? 'success' : slot.color === '#B45309' ? 'warning' : 'error'}
+                      variant={slot.color === COLORS.success ? 'success' : slot.color === COLORS.warning ? 'warning' : 'error'}
                     />
                   </View>
 
@@ -216,7 +218,7 @@ export default function TimeSlotScreen({ route, navigation }) {
 
                   {slot.recommended && (
                     <View style={styles.optimalRibbon}>
-                      <MaterialCommunityIcons name="star" size={13} color="#854D0E" />
+                      <MaterialCommunityIcons name="star" size={13} color={COLORS.accentDark} />
                       <Text style={styles.optimalText}>सबसे तेज तुलाई (Fast Weighing)</Text>
                     </View>
                   )}
@@ -231,12 +233,12 @@ export default function TimeSlotScreen({ route, navigation }) {
       <View style={[styles.stickyBottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <View style={styles.selectedPillRow}>
           <Text style={styles.selectedPillText}>
-            चयनित समय: <Text style={{ fontWeight: '900', color: COLORS.primaryDark }}>{selectedSlot?.timeRange}</Text>
+            चयनित समय: <Text style={{ fontWeight: '900', color: COLORS.primary }}>{selectedSlot?.timeRange}</Text>
           </Text>
         </View>
 
         <Button
-          title="स्लॉट बुक करें व टोकन पाएं"
+          title="स्लॉट बुक करें व टोकन पाएं →"
           variant="primary"
           size="lg"
           icon="check-circle"
@@ -284,7 +286,11 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   aiBanner: {
+    backgroundColor: COLORS.accentLight,
     padding: SPACING.sm + 4,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: '#F8E4A0',
   },
   aiBannerRow: {
     flexDirection: 'row',
@@ -294,11 +300,11 @@ const styles = StyleSheet.create({
   aiTitle: {
     ...TYPOGRAPHY.label,
     fontSize: 13,
-    color: COLORS.success,
+    color: COLORS.accentDark,
   },
   aiDesc: {
     ...TYPOGRAPHY.bodySmall,
-    color: '#166534',
+    color: COLORS.textSecondary,
     marginTop: 2,
     lineHeight: 16,
   },
@@ -325,11 +331,11 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   slotTimeTextSelected: {
-    color: COLORS.primaryDark,
+    color: COLORS.primary,
   },
   slotDivider: {
     height: 1,
-    backgroundColor: COLORS.borderLight,
+    backgroundColor: COLORS.divider,
     marginVertical: SPACING.sm,
   },
   slotFooterRow: {
@@ -363,7 +369,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: COLORS.accentLight,
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: RADIUS.sm,
@@ -372,7 +378,7 @@ const styles = StyleSheet.create({
   optimalText: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#854D0E',
+    color: COLORS.accentDark,
   },
   stickyBottomBar: {
     position: 'absolute',

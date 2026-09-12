@@ -18,12 +18,12 @@ import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 
 const CATEGORIES = [
-  { id: 'Payment Delay', label: 'पैसा नहीं मिला / देरी', icon: 'cash-clock', color: '#B45309' },
-  { id: 'Weight / Tare Dispute', label: 'तौल / वजन में फर्क', icon: 'scale-balance', color: '#1E40AF' },
-  { id: 'Slot Booking / Reschedule Issue', label: 'स्लॉट / टोकन समस्या', icon: 'calendar-clock', color: '#15803D' },
-  { id: 'Quality & Moisture Dispute', label: 'नमी / गुणवत्ता विवाद', icon: 'water-percent', color: '#0369A1' },
-  { id: 'Infrastructure & Shed Facility', label: 'मंडी / केंद्र समस्या', icon: 'storefront-outline', color: '#7C3AED' },
-  { id: 'Other Issue', label: 'अन्य समस्या', icon: 'alert-circle-outline', color: '#475569' },
+  { id: 'Payment Delay', label: 'पैसा नहीं मिला / देरी', icon: 'cash-clock', color: COLORS.warning },
+  { id: 'Weight / Tare Dispute', label: 'तौल / वजन में फर्क', icon: 'scale-balance', color: COLORS.info },
+  { id: 'Slot Booking / Reschedule Issue', label: 'स्लॉट / टोकन समस्या', icon: 'calendar-clock', color: COLORS.primary },
+  { id: 'Quality & Moisture Dispute', label: 'नमी / गुणवत्ता विवाद', icon: 'water-percent', color: COLORS.info },
+  { id: 'Infrastructure & Shed Facility', label: 'मंडी / केंद्र समस्या', icon: 'storefront-outline', color: COLORS.primaryLight },
+  { id: 'Other Issue', label: 'अन्य समस्या', icon: 'alert-circle-outline', color: COLORS.textSecondary },
 ];
 
 const QUICK_TEMPLATES = [
@@ -169,7 +169,7 @@ export default function GrievanceFormScreen({ navigation, route }) {
               onPress={handleVoiceInput}
               activeOpacity={0.8}
             >
-              <MaterialCommunityIcons name="microphone" size={16} color={COLORS.primaryDark} />
+              <MaterialCommunityIcons name="microphone" size={16} color={COLORS.text} />
               <Text style={styles.voiceBtnText}>बोलकर लिखें</Text>
             </TouchableOpacity>
           </View>
@@ -219,7 +219,7 @@ export default function GrievanceFormScreen({ navigation, route }) {
 
         {/* ─── 6. SUBMIT BUTTON ─── */}
         <Button
-          title="शिकायत दर्ज करें"
+          title="शिकायत दर्ज करें →"
           variant="primary"
           size="lg"
           icon="send"
@@ -243,6 +243,7 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: SPACING.md,
+    backgroundColor: COLORS.white,
   },
   sectionHeading: {
     ...TYPOGRAPHY.label,
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: COLORS.surfaceHighlight,
+    backgroundColor: COLORS.background,
     borderWidth: 1.5,
     borderColor: COLORS.border,
     paddingVertical: 10,
@@ -287,9 +288,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   templateChip: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: COLORS.accentLight,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: '#F8E4A0',
     paddingVertical: 7,
     paddingHorizontal: 10,
     borderRadius: RADIUS.full,
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
   templateChipText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#92400E',
+    color: COLORS.accentDark,
   },
   descHeaderRow: {
     flexDirection: 'row',
@@ -317,10 +318,10 @@ const styles = StyleSheet.create({
   voiceBtnText: {
     fontSize: 11,
     fontWeight: '800',
-    color: COLORS.primaryDark,
+    color: COLORS.text,
   },
   textInput: {
-    backgroundColor: COLORS.surfaceHighlight,
+    backgroundColor: COLORS.background,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: RADIUS.md,
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: COLORS.surfaceHighlight,
+    backgroundColor: COLORS.background,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderColor: COLORS.border,
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
   },
   photoAttachBoxActive: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: COLORS.successLight,
     borderColor: COLORS.success,
     borderStyle: 'solid',
   },
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   photoAttachTextActive: {
-    color: COLORS.success,
+    color: COLORS.successDark,
   },
   guaranteeCard: {
     padding: SPACING.sm + 4,
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
   guaranteeTitle: {
     ...TYPOGRAPHY.label,
     fontSize: 12,
-    color: COLORS.success,
+    color: COLORS.successDark,
   },
   guaranteeSub: {
     ...TYPOGRAPHY.bodySmall,

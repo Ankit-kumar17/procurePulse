@@ -11,7 +11,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../../utils/theme';
-import { Header, Card, Badge, Button, InfoRow, MetricCard } from '../../components';
+import { Header, Card, Badge, Button, InfoRow } from '../../components';
 import Loader from '../../components/Loader';
 import { useFarmer } from '../../context/FarmerContext';
 import { useAuth } from '../../context/AuthContext';
@@ -75,12 +75,9 @@ export default function DashboardScreen({ navigation }) {
           <RefreshControl refreshing={isLoadingData} onRefresh={refreshData} colors={[COLORS.primary]} />
         }
       >
-        {/* ─── 2. ACTIVE BOOKING STATUS HERO CARD ─── */}
+        {/* ─── 2. ACTIVE BOOKING STATUS CARD (Crisp White Card with Forest Details) ─── */}
         {activeBooking ? (
-          <Card
-            variant="hero"
-            style={styles.heroCard}
-          >
+          <Card style={styles.heroCard}>
             <View style={styles.heroHeaderRow}>
               <Badge
                 label="बुकिंग पक्की है"
@@ -93,14 +90,16 @@ export default function DashboardScreen({ navigation }) {
                 title="गेट पास"
                 icon="qrcode-scan"
                 size="sm"
-                variant="gold"
+                variant="soft"
                 onPress={() => navigation.navigate('LiveQueue')}
               />
             </View>
 
-            {/* Token ID */}
-            <Text style={styles.tokenLabel}>टोकन नंबर (Token ID)</Text>
-            <Text style={styles.tokenValue}>{activeBooking.token}</Text>
+            {/* Token ID Box */}
+            <View style={styles.tokenBox}>
+              <Text style={styles.tokenLabel}>टोकन नंबर (Token ID)</Text>
+              <Text style={styles.tokenValue}>{activeBooking.token}</Text>
+            </View>
 
             {/* Booking Key-Value Details */}
             <View style={styles.bookingDetailsBox}>
@@ -129,14 +128,14 @@ export default function DashboardScreen({ navigation }) {
 
             {/* Departure Guidance Banner */}
             <View style={styles.departureBanner}>
-              <MaterialCommunityIcons name="clock-outline" size={18} color="#92400E" />
+              <MaterialCommunityIcons name="clock-outline" size={18} color={COLORS.accentDark} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.departureTitle}>पहुंचने का समय: 11:35 AM – 11:50 AM</Text>
                 <Text style={styles.departureSub}>घर से 11:15 AM पर निकलें ताकि सीधे तौल कांटे पर पहुंचे।</Text>
               </View>
             </View>
 
-            {/* Live Queue Action */}
+            {/* Live Queue Action - Mustard Gold CTA */}
             <Button
               title="लाइव कतार व अपनी बारी देखें →"
               icon="radar"
@@ -144,7 +143,6 @@ export default function DashboardScreen({ navigation }) {
               variant="primary"
               fullWidth
               onPress={() => navigation.navigate('LiveQueue')}
-              style={styles.heroActionBtn}
             />
           </Card>
         ) : (
@@ -153,7 +151,7 @@ export default function DashboardScreen({ navigation }) {
             <Text style={styles.noBookingTitle}>कोई स्लॉट बुक नहीं है</Text>
             <Text style={styles.noBookingSub}>मंडी में फसल बेचने के लिए तारीख व समय चुनें।</Text>
             <Button
-              title="➕ नया स्लॉट बुक करें"
+              title="नया स्लॉट बुक करें"
               size="lg"
               variant="primary"
               fullWidth
@@ -174,8 +172,8 @@ export default function DashboardScreen({ navigation }) {
             onPress={() => navigation.navigate('BookSlot')}
             activeOpacity={0.8}
           >
-            <View style={[styles.tileIconBox, { backgroundColor: '#E0F2FE' }]}>
-              <MaterialCommunityIcons name="calendar-check" size={24} color="#0284C7" />
+            <View style={[styles.tileIconBox, { backgroundColor: COLORS.primarySoft }]}>
+              <MaterialCommunityIcons name="calendar-check" size={24} color={COLORS.primary} />
             </View>
             <Text style={styles.tileTitle}>स्लॉट बुकिंग</Text>
             <Text style={styles.tileSub}>फसल बेचें</Text>
@@ -186,8 +184,8 @@ export default function DashboardScreen({ navigation }) {
             onPress={() => navigation.navigate('LiveQueue')}
             activeOpacity={0.8}
           >
-            <View style={[styles.tileIconBox, { backgroundColor: '#FEF3C7' }]}>
-              <MaterialCommunityIcons name="radar" size={24} color="#D97706" />
+            <View style={[styles.tileIconBox, { backgroundColor: COLORS.accentLight }]}>
+              <MaterialCommunityIcons name="radar" size={24} color={COLORS.accentDark} />
             </View>
             <Text style={styles.tileTitle}>लाइव कतार</Text>
             <Text style={styles.tileSub}>टोकन स्थिति</Text>
@@ -198,8 +196,8 @@ export default function DashboardScreen({ navigation }) {
             onPress={() => navigation.navigate('Payments')}
             activeOpacity={0.8}
           >
-            <View style={[styles.tileIconBox, { backgroundColor: '#DCFCE7' }]}>
-              <MaterialCommunityIcons name="cash-multiple" size={24} color="#16A34A" />
+            <View style={[styles.tileIconBox, { backgroundColor: COLORS.successLight }]}>
+              <MaterialCommunityIcons name="cash-multiple" size={24} color={COLORS.success} />
             </View>
             <Text style={styles.tileTitle}>भुगतान</Text>
             <Text style={styles.tileSub}>खाते का पैसा</Text>
@@ -210,8 +208,8 @@ export default function DashboardScreen({ navigation }) {
             onPress={() => navigation.navigate('Grievance')}
             activeOpacity={0.8}
           >
-            <View style={[styles.tileIconBox, { backgroundColor: '#FEE2E2' }]}>
-              <MaterialCommunityIcons name="bullhorn" size={24} color="#DC2626" />
+            <View style={[styles.tileIconBox, { backgroundColor: COLORS.errorLight }]}>
+              <MaterialCommunityIcons name="bullhorn" size={24} color={COLORS.error} />
             </View>
             <Text style={styles.tileTitle}>सहायता (181)</Text>
             <Text style={styles.tileSub}>शिकायत दर्ज करें</Text>
@@ -225,11 +223,13 @@ export default function DashboardScreen({ navigation }) {
           activeOpacity={0.85}
         >
           <View style={styles.passbookLeft}>
-            <MaterialCommunityIcons name="bank-check" size={24} color="#15803D" />
-            <View>
+            <View style={styles.passbookIconBox}>
+              <MaterialCommunityIcons name="bank-check" size={22} color={COLORS.success} />
+            </View>
+            <View style={{ flex: 1 }}>
               <Text style={styles.passbookTitle}>कुल मिला पैसा: ₹{totalReceived.toLocaleString('en-IN')}</Text>
               <Text style={styles.passbookSub}>
-                SBI ••••8392 में जमा • {totalPending > 0 ? `₹${totalPending.toLocaleString('en-IN')} आ रहा है` : 'सभी भुगतान पूर्ण'}
+                SBI ••••8392 में जमा • {totalPending > 0 ? `₹${totalPending.toLocaleString('en-IN')} प्रक्रिया में` : 'सभी भुगतान पूर्ण'}
               </Text>
             </View>
           </View>
@@ -301,6 +301,10 @@ const styles = StyleSheet.create({
   heroCard: {
     marginBottom: SPACING.lg,
     padding: SPACING.md + 2,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
   },
   heroHeaderRow: {
     flexDirection: 'row',
@@ -308,52 +312,57 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: SPACING.sm,
   },
-  tokenLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 2,
-  },
-  tokenValue: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: COLORS.white,
-    letterSpacing: 1,
+  tokenBox: {
+    backgroundColor: COLORS.primarySoft,
+    padding: SPACING.sm + 2,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
     marginBottom: SPACING.sm + 2,
   },
+  tokenLabel: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textSecondary,
+    fontWeight: '700',
+  },
+  tokenValue: {
+    ...TYPOGRAPHY.display,
+    fontSize: 24,
+    color: COLORS.primaryDark,
+    letterSpacing: 1,
+    marginTop: 2,
+  },
   bookingDetailsBox: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: RADIUS.md,
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
   },
   departureBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: COLORS.accentLight,
     padding: SPACING.sm + 2,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: '#F8E4A0',
     marginBottom: SPACING.md,
   },
   departureTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 13,
-    fontWeight: '800',
-    color: '#92400E',
+    color: COLORS.accentDark,
   },
   departureSub: {
+    ...TYPOGRAPHY.bodySmall,
     fontSize: 11,
-    fontWeight: '500',
-    color: '#B45309',
+    color: COLORS.textSecondary,
     marginTop: 1,
-  },
-  heroActionBtn: {
-    backgroundColor: COLORS.accent,
   },
   noBookingCard: {
     alignItems: 'center',
@@ -361,14 +370,13 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   noBookingTitle: {
+    ...TYPOGRAPHY.title,
     fontSize: 18,
-    fontWeight: '800',
     color: COLORS.text,
     marginTop: SPACING.sm,
   },
   noBookingSub: {
-    fontSize: 13,
-    fontWeight: '500',
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     marginTop: 4,
     textAlign: 'center',
@@ -377,8 +385,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   sectionHeading: {
+    ...TYPOGRAPHY.label,
     fontSize: 15,
-    fontWeight: '800',
     color: COLORS.text,
   },
   quickGrid: {
@@ -406,13 +414,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   tileTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 14,
-    fontWeight: '800',
     color: COLORS.text,
   },
   tileSub: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
     marginTop: 1,
   },
@@ -420,11 +427,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F0FDF4',
+    backgroundColor: COLORS.successLight,
     padding: SPACING.md,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: '#C0E2CD',
     marginBottom: SPACING.lg,
     ...SHADOWS.sm,
   },
@@ -434,15 +441,23 @@ const styles = StyleSheet.create({
     gap: 10,
     flex: 1,
   },
+  passbookIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   passbookTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 14,
-    fontWeight: '800',
-    color: '#15803D',
+    color: COLORS.successDark,
   },
   passbookSub: {
+    ...TYPOGRAPHY.bodySmall,
     fontSize: 11,
-    fontWeight: '500',
-    color: '#166534',
+    color: COLORS.textSecondary,
     marginTop: 1,
   },
 
@@ -450,9 +465,9 @@ const styles = StyleSheet.create({
   farmerCard: {
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.md,
-    padding: 12,
+    padding: SPACING.md,
     borderWidth: 1,
-    borderColor: '#DDE4EC',
+    borderColor: COLORS.border,
   },
   farmerHeader: {
     flexDirection: 'row',
@@ -463,17 +478,17 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
   farmerNameText: {
+    ...TYPOGRAPHY.label,
     fontSize: 14,
-    fontWeight: '800',
     color: COLORS.text,
   },
   farmerIdText: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
   },
   expandToggleBtn: {
@@ -488,24 +503,5 @@ const styles = StyleSheet.create({
   },
   expandedSection: {
     marginTop: 10,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-    marginBottom: 8,
-  },
-  infoLine: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 3,
-  },
-  infoLabel: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-  },
-  infoVal: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.text,
   },
 });

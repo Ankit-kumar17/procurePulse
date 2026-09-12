@@ -17,17 +17,17 @@ export default function MetricCard({
   const getStatusColors = () => {
     switch (status) {
       case 'success':
-        return { text: COLORS.success, bg: COLORS.successLight, border: '#BBF7D0' };
+        return { text: COLORS.success, bg: COLORS.successLight, border: '#C0E2CD' };
       case 'warning':
-        return { text: COLORS.warning, bg: COLORS.warningLight, border: '#FDE68A' };
+        return { text: COLORS.warning, bg: COLORS.warningLight, border: '#F8E4A0' };
       case 'error':
-        return { text: COLORS.error, bg: COLORS.errorLight, border: '#FECACA' };
+        return { text: COLORS.error, bg: COLORS.errorLight, border: '#F7C7C7' };
       case 'primary':
-        return { text: COLORS.primary, bg: COLORS.primarySoft, border: '#C2D6EC' };
+        return { text: COLORS.primary, bg: COLORS.primarySoft, border: COLORS.border };
       case 'gold':
-        return { text: COLORS.accentDark, bg: COLORS.accentLight, border: 'rgba(212,168,67,0.4)' };
+        return { text: COLORS.accentDark, bg: COLORS.accentLight, border: 'rgba(214,166,44,0.4)' };
       default:
-        return { text: COLORS.text, bg: '#F8FAFC', border: COLORS.border };
+        return { text: COLORS.text, bg: COLORS.surface, border: COLORS.border };
     }
   };
 
@@ -100,7 +100,7 @@ export default function MetricCard({
       <View style={styles.topRow}>
         <Text style={styles.cardLabel}>{label}</Text>
         {icon && (
-          <View style={[styles.cardIconBox, { backgroundColor: colors.bg }]}>
+          <View style={[styles.cardIconBox, { backgroundColor: (iconColor || colors.text) + '15' }]}>
             <MaterialCommunityIcons
               name={icon}
               size={18}
@@ -125,21 +125,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     borderTopWidth: 3,
-    ...SHADOWS.sm,
+    minWidth: 100,
     flex: 1,
-    minWidth: 130,
+    ...SHADOWS.sm,
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: SPACING.xs,
   },
   cardLabel: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
-    flex: 1,
+    fontWeight: '600',
   },
   cardIconBox: {
     width: 28,
@@ -154,16 +153,17 @@ const styles = StyleSheet.create({
   },
   cardValue: {
     ...TYPOGRAPHY.metricLarge,
+    fontSize: 22,
   },
   unitText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption,
     fontWeight: '600',
     color: COLORS.textSecondary,
   },
   compactContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm + 2,
     paddingVertical: SPACING.sm,
     borderRadius: RADIUS.md,
     borderWidth: 1,
@@ -174,8 +174,8 @@ const styles = StyleSheet.create({
   },
   compactLabel: {
     fontSize: 11,
-    fontWeight: '600',
     color: COLORS.textSecondary,
+    fontWeight: '500',
   },
   compactValue: {
     fontSize: 16,
@@ -186,36 +186,35 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: '#245285',
+    borderColor: COLORS.primary,
     ...SHADOWS.md,
   },
   heroHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 6,
+    marginBottom: SPACING.sm,
   },
   heroIconBox: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     borderRadius: RADIUS.sm,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroLabel: {
-    fontSize: 13,
+    ...TYPOGRAPHY.body,
+    color: 'rgba(255,255,255,0.85)',
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.8)',
   },
   heroValue: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: COLORS.white,
+    ...TYPOGRAPHY.metricHero,
+    fontSize: 32,
   },
   heroUnit: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
     color: COLORS.accentLight,
+    fontWeight: '600',
   },
 });

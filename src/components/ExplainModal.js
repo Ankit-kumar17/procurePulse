@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../utils/theme';
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../utils/theme';
 
 export default function ExplainModal({ visible, onClose, centre }) {
   if (!centre) return null;
@@ -14,7 +14,7 @@ export default function ExplainModal({ visible, onClose, centre }) {
           <View style={styles.modalHeader}>
             <View style={styles.headerTitleBox}>
               <View style={styles.aiBadge}>
-                <MaterialCommunityIcons name="star" size={20} color="#854D0E" />
+                <MaterialCommunityIcons name="star" size={20} color={COLORS.accentDark} />
               </View>
               <View>
                 <Text style={styles.headerTitle}>बैरसिया केंद्र ही क्यों चुनें?</Text>
@@ -46,9 +46,9 @@ export default function ExplainModal({ visible, onClose, centre }) {
             {/* Factor 1: Time saved */}
             <View style={styles.factorCard}>
               <View style={styles.factorRow}>
-                <MaterialCommunityIcons name="clock-fast" size={22} color="#15803D" />
+                <MaterialCommunityIcons name="clock-fast" size={22} color={COLORS.success} />
                 <Text style={styles.factorLabel}>तौल का समय</Text>
-                <Text style={[styles.factorVal, { color: '#15803D' }]}>1.5 घंटा बचेगा</Text>
+                <Text style={[styles.factorVal, { color: COLORS.success }]}>1.5 घंटा बचेगा</Text>
               </View>
               <Text style={styles.factorNote}>
                 कोलार मंडी में 2+ घंटे का जाम है, जबकि बैरसिया में केवल 41 मिनट में काम हो जाएगा।
@@ -58,9 +58,9 @@ export default function ExplainModal({ visible, onClose, centre }) {
             {/* Factor 2: Fuel saved */}
             <View style={styles.factorCard}>
               <View style={styles.factorRow}>
-                <MaterialCommunityIcons name="gas-station" size={22} color="#D97706" />
+                <MaterialCommunityIcons name="gas-station" size={22} color={COLORS.warning} />
                 <Text style={styles.factorLabel}>डीजल की बचत</Text>
-                <Text style={[styles.factorVal, { color: '#D97706' }]}>₹120 की बचत</Text>
+                <Text style={[styles.factorVal, { color: COLORS.warning }]}>₹120 की बचत</Text>
               </View>
               <Text style={styles.factorNote}>
                 कतार में ट्रैक्टर चालू नहीं रखना पड़ेगा, जिससे ईंधन की सीधी बचत होगी।
@@ -70,9 +70,9 @@ export default function ExplainModal({ visible, onClose, centre }) {
             {/* Factor 3: Dual Weighbridge */}
             <View style={styles.factorCard}>
               <View style={styles.factorRow}>
-                <MaterialCommunityIcons name="scale-balance" size={22} color="#2563EB" />
+                <MaterialCommunityIcons name="scale-balance" size={22} color={COLORS.info} />
                 <Text style={styles.factorLabel}>कांटा व्यवस्था</Text>
-                <Text style={[styles.factorVal, { color: '#2563EB' }]}>2 इलेक्ट्रॉनिक कांटे</Text>
+                <Text style={[styles.factorVal, { color: COLORS.info }]}>2 इलेक्ट्रॉनिक कांटे</Text>
               </View>
               <Text style={styles.factorNote}>
                 स्वचालित नमी जांच लैब और डिजिटल पर्ची तुरंत मिल जाती है।
@@ -81,7 +81,7 @@ export default function ExplainModal({ visible, onClose, centre }) {
 
             {/* Final Verdict */}
             <View style={styles.summaryCallout}>
-              <MaterialCommunityIcons name="check-decagram" size={24} color="#854D0E" />
+              <MaterialCommunityIcons name="check-decagram" size={24} color={COLORS.accentDark} />
               <Text style={styles.summaryText}>
                 <Text style={{ fontWeight: '900' }}>सलाह: </Text>
                 बैरसिया केंद्र जाने पर आप समय पर घर वापस लौट पाएंगे!
@@ -104,25 +104,23 @@ export default function ExplainModal({ visible, onClose, centre }) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    backgroundColor: COLORS.overlay,
     justifyContent: 'flex-end',
   },
   modalCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderTopLeftRadius: RADIUS.xl,
     borderTopRightRadius: RADIUS.xl,
     maxHeight: '85%',
-    paddingTop: SPACING.md,
-    ...SHADOWS.lg,
+    paddingBottom: SPACING.md,
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.sm,
+    padding: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: COLORS.border,
   },
   headerTitleBox: {
     flexDirection: 'row',
@@ -130,85 +128,88 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   aiBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FEF3C7',
+    width: 36,
+    height: 36,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 16,
-    fontWeight: '900',
     color: COLORS.text,
   },
   headerSubtitle: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
-    fontWeight: '600',
+    marginTop: 1,
   },
   closeBtn: {
     padding: 6,
+    borderRadius: RADIUS.sm,
+    backgroundColor: '#EAEFEA',
   },
   body: {
-    padding: SPACING.lg,
+    padding: SPACING.md,
   },
   scoreHero: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.accentLight,
     padding: SPACING.md,
     borderRadius: RADIUS.lg,
-    marginBottom: SPACING.md,
+    gap: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#F8E4A0',
+    marginBottom: SPACING.md,
   },
   scoreCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: COLORS.primary,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: COLORS.white,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.md,
+    borderWidth: 2,
+    borderColor: COLORS.accent,
   },
   scoreVal: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: COLORS.accent,
+    ...TYPOGRAPHY.label,
+    fontSize: 16,
+    color: COLORS.accentDark,
   },
   scoreLabel: {
-    fontSize: 10,
-    color: COLORS.white,
+    fontSize: 9,
     fontWeight: '700',
+    color: COLORS.textSecondary,
   },
   scoreTextCol: {
     flex: 1,
   },
   scoreTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 13,
-    fontWeight: '900',
-    color: COLORS.text,
+    color: COLORS.accentDark,
   },
   scoreDesc: {
-    fontSize: 11,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     marginTop: 2,
-    lineHeight: 16,
   },
   sectionHeading: {
+    ...TYPOGRAPHY.label,
     fontSize: 14,
-    fontWeight: '900',
     color: COLORS.text,
     marginBottom: SPACING.sm,
   },
   factorCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.md,
-    padding: 12,
-    marginBottom: 8,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.md,
+    padding: SPACING.sm + 2,
+    marginBottom: SPACING.sm,
   },
   factorRow: {
     flexDirection: 'row',
@@ -217,58 +218,55 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   factorLabel: {
+    ...TYPOGRAPHY.label,
     fontSize: 13,
-    fontWeight: '800',
     color: COLORS.text,
     flex: 1,
     marginLeft: 6,
   },
   factorVal: {
+    ...TYPOGRAPHY.label,
     fontSize: 13,
-    fontWeight: '900',
   },
   factorNote: {
-    fontSize: 11,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
-    lineHeight: 16,
-    marginLeft: 28,
+    fontSize: 12,
   },
   summaryCallout: {
     flexDirection: 'row',
-    backgroundColor: '#FEF3C7',
-    padding: SPACING.md,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
-    marginVertical: SPACING.sm,
-    gap: 10,
     alignItems: 'center',
+    backgroundColor: COLORS.accentLight,
+    padding: SPACING.sm + 2,
+    borderRadius: RADIUS.md,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#F8E4A0',
+    marginTop: SPACING.xs,
+    marginBottom: SPACING.md,
   },
   summaryText: {
-    fontSize: 12,
-    color: '#854D0E',
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.accentDark,
     flex: 1,
-    lineHeight: 17,
-    fontWeight: '600',
   },
   footer: {
-    padding: SPACING.md,
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.xs,
   },
   selectBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.success,
     paddingVertical: 14,
     borderRadius: RADIUS.md,
     gap: 8,
-    ...SHADOWS.md,
+    ...SHADOWS.sm,
   },
   selectBtnText: {
+    ...TYPOGRAPHY.label,
     fontSize: 15,
-    fontWeight: '900',
     color: COLORS.white,
   },
 });

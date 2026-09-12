@@ -10,7 +10,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../../utils/theme';
-import { Header, Card, Badge, Button, MetricCard, InfoRow } from '../../components';
+import { Header, Card, Badge, Button } from '../../components';
 import { useFarmer } from '../../context/FarmerContext';
 
 export default function LiveQueueScreen({ navigation }) {
@@ -102,7 +102,7 @@ export default function LiveQueueScreen({ navigation }) {
               <MaterialCommunityIcons name="alert-circle" size={20} color={COLORS.error} />
               <Text style={styles.delayTitle}>मंडी में {delayMinutes} मिनट की देरी है</Text>
               <TouchableOpacity onPress={() => triggerManualDelayAlert(false)}>
-                <MaterialCommunityIcons name="close" size={18} color="#991B1B" />
+                <MaterialCommunityIcons name="close" size={18} color={COLORS.errorDark} />
               </TouchableOpacity>
             </View>
             <Text style={styles.delayDesc}>
@@ -188,7 +188,7 @@ export default function LiveQueueScreen({ navigation }) {
           title="टोकन आगे बढ़ाएं (Demo Test)"
           icon="fast-forward"
           size="md"
-          variant="outline"
+          variant="secondary"
           onPress={advanceQueueToken}
           style={{ marginTop: SPACING.sm }}
         />
@@ -217,22 +217,21 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   mandiNameText: {
+    ...TYPOGRAPHY.label,
     fontSize: 15,
-    fontWeight: '800',
     color: COLORS.text,
   },
   mandiSubText: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
     marginTop: 2,
   },
   delayBanner: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: COLORS.errorLight,
     padding: SPACING.md,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: '#FECACA',
+    borderColor: '#F7C7C7',
     marginBottom: SPACING.md,
   },
   delayTop: {
@@ -242,21 +241,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   delayTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 14,
-    fontWeight: '800',
-    color: '#991B1B',
+    color: COLORS.errorDark,
     flex: 1,
     marginLeft: 6,
   },
   delayDesc: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#7F1D1D',
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.errorDark,
     lineHeight: 16,
   },
   queueHeroCard: {
     padding: SPACING.md + 2,
     marginBottom: SPACING.md,
+    backgroundColor: COLORS.primaryDark,
   },
   queueTokensRow: {
     flexDirection: 'row',
@@ -269,14 +268,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tokenServingNum: {
+    ...TYPOGRAPHY.metricHero,
     fontSize: 32,
-    fontWeight: '900',
     color: COLORS.white,
     marginVertical: 4,
   },
   tokenServingSub: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...TYPOGRAPHY.caption,
     color: 'rgba(255,255,255,0.75)',
   },
   tokenDivider: {
@@ -290,14 +288,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tokenYourNum: {
+    ...TYPOGRAPHY.metricHero,
     fontSize: 32,
-    fontWeight: '900',
     color: COLORS.accent,
     marginVertical: 4,
   },
   tokenYourSub: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...TYPOGRAPHY.caption,
     color: 'rgba(255,255,255,0.75)',
   },
   turnStatusStrip: {
@@ -311,14 +308,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#DCFCE7',
+    backgroundColor: COLORS.successLight,
     padding: SPACING.sm + 2,
     borderRadius: RADIUS.md,
   },
   myTurnText: {
+    ...TYPOGRAPHY.label,
     fontSize: 14,
-    fontWeight: '800',
-    color: '#15803D',
+    color: COLORS.successDark,
   },
   waitingStatusBox: {
     flexDirection: 'row',
@@ -329,13 +326,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statMetricNum: {
+    ...TYPOGRAPHY.metricLarge,
     fontSize: 22,
-    fontWeight: '900',
     color: COLORS.white,
   },
   statMetricLabel: {
-    fontSize: 11,
-    fontWeight: '500',
+    ...TYPOGRAPHY.caption,
     color: 'rgba(255,255,255,0.8)',
     marginTop: 2,
   },
@@ -355,33 +351,27 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   departureTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 13,
-    fontWeight: '900',
-    color: '#15803D',
+    color: COLORS.successDark,
   },
   departureTimeBig: {
+    ...TYPOGRAPHY.title,
     fontSize: 18,
-    fontWeight: '900',
-    color: '#166534',
+    color: COLORS.successDark,
     marginVertical: 2,
   },
   departureSub: {
-    fontSize: 11,
+    ...TYPOGRAPHY.bodySmall,
     color: '#166534',
     lineHeight: 16,
   },
-
-  /* Facility Card */
   facilityCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.md,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#DDE4EC',
+    padding: SPACING.md,
   },
   facilityCardTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 13,
-    fontWeight: '800',
     color: COLORS.text,
     marginBottom: 8,
   },
@@ -391,32 +381,15 @@ const styles = StyleSheet.create({
   },
   facilityItem: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.sm,
-    padding: 8,
+    padding: SPACING.sm,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  facilityVal: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.text,
+    borderColor: COLORS.border,
   },
   facilityLabel: {
-    fontSize: 10,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  demoAdvanceBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 8,
-  },
-  demoAdvanceText: {
-    fontSize: 11,
-    color: COLORS.primary,
-    fontWeight: '700',
+    marginTop: 4,
   },
 });

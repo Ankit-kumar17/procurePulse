@@ -23,18 +23,18 @@ export default function CalendarScreen({ route, navigation }) {
   const [selectedDate, setSelectedDate] = useState('2026-04-18');
 
   const daysInMonth = [
-    { day: 14, dateStr: '2026-04-14', weekday: 'मंगल', status: 'full', color: '#B91C1C', bg: '#FEE2E2', slots: 0 },
-    { day: 15, dateStr: '2026-04-15', weekday: 'बुध', status: 'full', color: '#B91C1C', bg: '#FEE2E2', slots: 0 },
-    { day: 16, dateStr: '2026-04-16', weekday: 'गुरु', status: 'filling', color: '#B45309', bg: '#FEF3C7', slots: 4 },
-    { day: 17, dateStr: '2026-04-17', weekday: 'शुक्र', status: 'filling', color: '#B45309', bg: '#FEF3C7', slots: 6 },
-    { day: 18, dateStr: '2026-04-18', weekday: 'शनि', status: 'available', color: '#15803D', bg: '#DCFCE7', slots: 48, optimal: true },
-    { day: 19, dateStr: '2026-04-19', weekday: 'रवि', status: 'filling', color: '#B45309', bg: '#FEF3C7', slots: 12 },
-    { day: 20, dateStr: '2026-04-20', weekday: 'सोम', status: 'full', color: '#B91C1C', bg: '#FEE2E2', slots: 0 },
-    { day: 21, dateStr: '2026-04-21', weekday: 'मंगल', status: 'available', color: '#15803D', bg: '#DCFCE7', slots: 35 },
-    { day: 22, dateStr: '2026-04-22', weekday: 'बुध', status: 'available', color: '#15803D', bg: '#DCFCE7', slots: 40 },
-    { day: 23, dateStr: '2026-04-23', weekday: 'गुरु', status: 'filling', color: '#B45309', bg: '#FEF3C7', slots: 15 },
-    { day: 24, dateStr: '2026-04-24', weekday: 'शुक्र', status: 'available', color: '#15803D', bg: '#DCFCE7', slots: 50 },
-    { day: 25, dateStr: '2026-04-25', weekday: 'शनि', status: 'available', color: '#15803D', bg: '#DCFCE7', slots: 32 },
+    { day: 14, dateStr: '2026-04-14', weekday: 'मंगल', status: 'full', color: COLORS.error, bg: COLORS.errorLight, slots: 0 },
+    { day: 15, dateStr: '2026-04-15', weekday: 'बुध', status: 'full', color: COLORS.error, bg: COLORS.errorLight, slots: 0 },
+    { day: 16, dateStr: '2026-04-16', weekday: 'गुरु', status: 'filling', color: COLORS.warning, bg: COLORS.warningLight, slots: 4 },
+    { day: 17, dateStr: '2026-04-17', weekday: 'शुक्र', status: 'filling', color: COLORS.warning, bg: COLORS.warningLight, slots: 6 },
+    { day: 18, dateStr: '2026-04-18', weekday: 'शनि', status: 'available', color: COLORS.success, bg: COLORS.successLight, slots: 48, optimal: true },
+    { day: 19, dateStr: '2026-04-19', weekday: 'रवि', status: 'filling', color: COLORS.warning, bg: COLORS.warningLight, slots: 12 },
+    { day: 20, dateStr: '2026-04-20', weekday: 'सोम', status: 'full', color: COLORS.error, bg: COLORS.errorLight, slots: 0 },
+    { day: 21, dateStr: '2026-04-21', weekday: 'मंगल', status: 'available', color: COLORS.success, bg: COLORS.successLight, slots: 35 },
+    { day: 22, dateStr: '2026-04-22', weekday: 'बुध', status: 'available', color: COLORS.success, bg: COLORS.successLight, slots: 40 },
+    { day: 23, dateStr: '2026-04-23', weekday: 'गुरु', status: 'filling', color: COLORS.warning, bg: COLORS.warningLight, slots: 15 },
+    { day: 24, dateStr: '2026-04-24', weekday: 'शुक्र', status: 'available', color: COLORS.success, bg: COLORS.successLight, slots: 50 },
+    { day: 25, dateStr: '2026-04-25', weekday: 'शनि', status: 'available', color: COLORS.success, bg: COLORS.successLight, slots: 32 },
   ];
 
   const selectedDayObj = daysInMonth.find((d) => d.dateStr === selectedDate) || daysInMonth[4];
@@ -57,6 +57,8 @@ export default function CalendarScreen({ route, navigation }) {
     });
   };
 
+  const bookingSteps = ['फसल व खेत', 'मंडी चुनें', 'तारीख व समय', 'पुष्टि'];
+
   return (
     <View style={styles.container}>
       {/* ─── 1. HEADER ─── */}
@@ -68,7 +70,7 @@ export default function CalendarScreen({ route, navigation }) {
       />
 
       {/* ─── 2. PROGRESS STEPPER ─── */}
-      <StepIndicator currentStep={3} totalSteps={4} />
+      <StepIndicator steps={bookingSteps} currentStep={3} />
 
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 110 }]}
@@ -147,10 +149,9 @@ export default function CalendarScreen({ route, navigation }) {
         </Text>
 
         <Button
-          title="आगे: समय स्लॉट चुनें"
+          title="आगे: समय स्लॉट चुनें →"
           variant="primary"
           size="lg"
-          icon="arrow-right"
           fullWidth
           onPress={handleNext}
         />
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   },
   dayCardFull: {
     opacity: 0.45,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#EAEFEA',
   },
   weekdayText: {
     ...TYPOGRAPHY.caption,
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
   confirmationText: {
     ...TYPOGRAPHY.label,
     fontSize: 13,
-    color: COLORS.primaryDark,
+    color: COLORS.primary,
     textAlign: 'center',
     marginBottom: SPACING.xs,
   },
