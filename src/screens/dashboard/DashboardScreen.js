@@ -8,276 +8,300 @@ import {
   RefreshControl,
   Alert,
   Platform,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
-import Button from '../../components/Button';
 import Loader from '../../components/Loader';
 import { useFarmer } from '../../context/FarmerContext';
 import { useAuth } from '../../context/AuthContext';
 
 export default function DashboardScreen({ navigation }) {
-  const { farmer, bookings, isLoadingData, refreshData } = useFarmer();
+  const { farmer, bookings, payments, isLoadingData, refreshData } = useFarmer();
   const { logout } = useAuth();
   const insets = useSafeAreaInsets();
-  
-  const [isFarmerDetailsExpanded, setIsFarmerDetailsExpanded] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
 
-  const activeBooking = bookings.find((b) => b.status === 'BOOKED');
+  const activeBooking = bookings.find((b) => b.status === 'BOOKED') || bookings[0];
+
+  const totalReceived = payments
+    .filter((p) => p.status === 'SUCCESS')
+    .reduce((acc, p) => acc + p.netAmount, 0);
+
+  const totalPending = payments
+    .filter((p) => p.status === 'INITIATED')
+    .reduce((acc, p) => acc + p.netAmount, 0);
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to log out of ProcurePulse?',
+      'लॉगआउट',
+      'क्या आप ProcurePulse से लॉगआउट करना चाहते हैं?',
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: logout }
+        { text: 'रद्द करें', style: 'cancel' },
+        { text: 'लॉगआउट', style: 'destructive', onPress: logout }
       ]
     );
   };
 
+  const handlePlayVoiceGuide = () => {
+    Alert.alert(
+      '🔊 होम सहायक (Voice Guide)',
+      `नमस्ते ${farmer?.name?.split(' ')[0] || 'किसान'} भाई!\n\n• आपका स्लॉट 18 अप्रैल को बैरसिया उपार्जन केंद्र पर बुक है।\n• टोकन नंबर: ${activeBooking?.token || 'MP-WHT-2026-1049'}\n• कुल ₹${totalReceived.toLocaleString('en-IN')} का भुगतान खाते में आ चुका है।`,
+      [{ text: 'समझ गया (OK)' }]
+    );
+  };
+
   if (isLoadingData && !farmer) {
-    return <Loader message="Loading Farmer Profile..." />;
+    return <Loader message="किसान प्रोफाइल लोड हो रही है..." />;
   }
 
-  const topPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20) + 10;
+  const topPadding = Math.max(
+    insets.top,
+    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
+  ) + 8;
 
   return (
     <View style={styles.container}>
-      {/* Compact Custom Header */}
-      <View style={[styles.headerContainer, { paddingTop: topPadding }]}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
-        
-        <View style={styles.headerRow}>
-          <View style={styles.headerLeft}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
+
+      {/* ─── 1. TOP HEADER ─── */}
+      <View style={[styles.header, { paddingTop: topPadding }]}>
+        <View style={styles.headerTopRow}>
+          <View style={styles.farmerProfileBox}>
             <View style={styles.logoCircle}>
               <MaterialCommunityIcons name="grain" size={20} color={COLORS.accent} />
             </View>
             <View>
-              <Text style={styles.headerGreeting}>Namaste, {farmer?.name?.split(' ')[0] || 'Ramesh'} 🙏</Text>
-              <Text style={styles.headerSubtitle}>ProcurePulse • Rabi Season 26-27</Text>
+              <Text style={styles.greetingText}>
+                नमस्ते, {farmer?.name?.split(' ')[0] || 'रमेश'} जी 🙏
+              </Text>
+              <Text style={styles.subGreetingText}>
+                ई-उपार्जन 2.0 • रबी 2026-27
+              </Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <MaterialCommunityIcons name="logout" size={22} color={COLORS.white} />
-          </TouchableOpacity>
+
+          <View style={styles.headerRightActions}>
+            <TouchableOpacity
+              style={styles.voiceBtn}
+              onPress={handlePlayVoiceGuide}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons name="volume-high" size={17} color={COLORS.primaryDark} />
+              <Text style={styles.voiceBtnText}>सुनें</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
+              <MaterialCommunityIcons name="logout" size={18} color={COLORS.white} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 90 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={isLoadingData} onRefresh={refreshData} colors={[COLORS.primary]} />
         }
       >
-        
-        {/* Primary Booking Area */}
+        {/* ─── 2. ACTIVE BOOKING STATUS HERO CARD ─── */}
         {activeBooking ? (
-          <View style={styles.bookingContainer}>
-            {/* 1. Main Booking Card */}
-            <View style={styles.bookingCard}>
-              <View style={styles.bookingHeader}>
-                <View style={styles.statusBadge}>
-                  <View style={styles.statusDot} />
-                  <Text style={styles.statusText}>BOOKING CONFIRMED</Text>
-                </View>
-                <TouchableOpacity 
-                  style={styles.gatePassMiniBtn}
-                  onPress={() => navigation.navigate('LiveQueue')}
-                >
-                  <MaterialCommunityIcons name="qrcode-scan" size={14} color={COLORS.primary} />
-                  <Text style={styles.gatePassMiniText}>Gate Pass</Text>
-                </TouchableOpacity>
+          <View style={styles.heroCard}>
+            <View style={styles.heroHeaderRow}>
+              <View style={styles.confirmedBadge}>
+                <MaterialCommunityIcons name="check-circle" size={14} color="#15803D" />
+                <Text style={styles.confirmedBadgeText}>बुकिंग पक्की है</Text>
               </View>
 
-              <Text style={styles.tokenNumber}>{activeBooking.token}</Text>
-              
-              <View style={styles.bookingDetailsList}>
-                <View style={styles.detailItem}>
-                  <MaterialCommunityIcons name="storefront-outline" size={16} color={COLORS.textSecondary} />
-                  <Text style={styles.detailItemText} numberOfLines={1}>{activeBooking.centre}</Text>
-                </View>
-                <View style={styles.detailItem}>
-                  <MaterialCommunityIcons name="calendar-month-outline" size={16} color={COLORS.textSecondary} />
-                  <Text style={styles.detailItemText}>{activeBooking.date} • {activeBooking.timeSlot}</Text>
-                </View>
-                <View style={styles.detailItem}>
-                  <MaterialCommunityIcons name="scale" size={16} color={COLORS.textSecondary} />
-                  <Text style={styles.detailItemText}>{activeBooking.quantity} ({activeBooking.crop})</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* 2. Arrival Window Section */}
-            <View style={styles.arrivalSection}>
-              <View style={styles.arrivalTopRow}>
-                <View style={styles.arrivalTitleBox}>
-                  <MaterialCommunityIcons name="clock-alert-outline" size={18} color="#92400E" />
-                  <Text style={styles.arrivalTitle}>Your Arrival Window</Text>
-                </View>
-              </View>
-              <Text style={styles.arrivalTime}>{activeBooking.recommendedArrival || '11:35 AM – 11:50 AM'}</Text>
-              <Text style={styles.arrivalDesc}>Please arrive during this 15-minute window.</Text>
-              
-              <TouchableOpacity 
-                style={styles.primaryCta}
+              <TouchableOpacity
+                style={styles.gatePassBtn}
                 onPress={() => navigation.navigate('LiveQueue')}
+                activeOpacity={0.75}
               >
-                <MaterialCommunityIcons name="tractor" size={20} color={COLORS.white} />
-                <Text style={styles.primaryCtaText}>I'm On My Way</Text>
+                <MaterialCommunityIcons name="qrcode-scan" size={14} color={COLORS.primary} />
+                <Text style={styles.gatePassBtnText}>गेट पास</Text>
               </TouchableOpacity>
             </View>
+
+            {/* Token ID */}
+            <Text style={styles.tokenLabel}>टोकन नंबर (Token ID)</Text>
+            <Text style={styles.tokenValue}>{activeBooking.token}</Text>
+
+            {/* Details List */}
+            <View style={styles.bookingDetailsBox}>
+              <View style={styles.detailRow}>
+                <MaterialCommunityIcons name="storefront" size={16} color={COLORS.primary} />
+                <Text style={styles.detailText} numberOfLines={1}>
+                  {activeBooking.centre?.split('(')[0] || 'बैरसिया उपार्जन केंद्र'}
+                </Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <MaterialCommunityIcons name="calendar-clock" size={16} color={COLORS.primary} />
+                <Text style={styles.detailText}>
+                  {activeBooking.date || '18 अप्रैल 2026'} • {activeBooking.timeSlot || '11:00 AM - 12:00 PM'}
+                </Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <MaterialCommunityIcons name="scale-balance" size={16} color={COLORS.primary} />
+                <Text style={styles.detailText}>
+                  {activeBooking.quantity || '2,000 kg (20 क्विंटल)'} • {activeBooking.crop || 'गेहूं'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Departure Guidance Banner */}
+            <View style={styles.departureBanner}>
+              <MaterialCommunityIcons name="clock-outline" size={18} color="#92400E" />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.departureTitle}>पहुंचने का समय: 11:35 AM – 11:50 AM</Text>
+                <Text style={styles.departureSub}>घर से 11:15 AM पर निकलें ताकि सीधे तौल कांटे पर पहुंचे।</Text>
+              </View>
+            </View>
+
+            {/* Live Queue Action */}
+            <TouchableOpacity
+              style={styles.heroActionBtn}
+              onPress={() => navigation.navigate('LiveQueue')}
+              activeOpacity={0.88}
+            >
+              <MaterialCommunityIcons name="radar" size={18} color={COLORS.white} />
+              <Text style={styles.heroActionBtnText}>लाइव कतार व अपनी बारी देखें →</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.noBookingCard}>
-            <MaterialCommunityIcons name="calendar-blank-outline" size={40} color={COLORS.textMuted} />
-            <Text style={styles.noBookingTitle}>No Active Booking</Text>
-            <Text style={styles.noBookingDesc}>Book a slot to sell your crop at the mandi.</Text>
-            <Button
-              title="Book Procurement Slot"
-              variant="primary"
-              size="md"
+            <MaterialCommunityIcons name="calendar-plus" size={36} color={COLORS.primary} />
+            <Text style={styles.noBookingTitle}>कोई स्लॉट बुक नहीं है</Text>
+            <Text style={styles.noBookingSub}>मंडी में फसल बेचने के लिए तारीख व समय चुनें।</Text>
+            <TouchableOpacity
+              style={styles.bookSlotBtn}
               onPress={() => navigation.navigate('BookSlot')}
-              style={{ marginTop: 12 }}
-            />
+              activeOpacity={0.88}
+            >
+              <Text style={styles.bookSlotBtnText}>➕ नया स्लॉट बुक करें</Text>
+            </TouchableOpacity>
           </View>
         )}
 
-        {/* 3. Live Queue Preview */}
-        {activeBooking && (
-          <View style={styles.queuePreviewCard}>
-            <View style={styles.queuePreviewHeader}>
-              <View style={styles.queueTitleRow}>
-                <View style={styles.redDot} />
-                <Text style={styles.queuePreviewTitle}>Live Queue</Text>
-              </View>
-              <TouchableOpacity onPress={() => navigation.navigate('LiveQueue')}>
-                <Text style={styles.viewQueueLink}>View Live Queue →</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.queueStatsRow}>
-              <Text style={styles.queueStatText}>4 farmers ahead</Text>
-              <Text style={styles.queueStatDivider}>•</Text>
-              <Text style={styles.queueStatText}>Estimated wait: ~18 min</Text>
-            </View>
-          </View>
-        )}
-
-        {/* 4. Quick Actions */}
-        <View style={styles.sectionWrapper}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickGrid}>
-            <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('BookSlot')}>
-              <View style={[styles.quickIconBox, { backgroundColor: '#E0F2FE' }]}>
-                <MaterialCommunityIcons name="map-marker-path" size={22} color="#0284C7" />
-              </View>
-              <Text style={styles.quickBtnText}>Directions</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('LiveQueue')}>
-              <View style={[styles.quickIconBox, { backgroundColor: '#FEF3C7' }]}>
-                <MaterialCommunityIcons name="qrcode-scan" size={22} color="#D97706" />
-              </View>
-              <Text style={styles.quickBtnText}>Gate Pass</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('Payments')}>
-              <View style={[styles.quickIconBox, { backgroundColor: '#DCFCE7' }]}>
-                <MaterialCommunityIcons name="cash-multiple" size={22} color="#16A34A" />
-              </View>
-              <Text style={styles.quickBtnText}>Payments</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('Grievance')}>
-              <View style={[styles.quickIconBox, { backgroundColor: '#FEE2E2' }]}>
-                <MaterialCommunityIcons name="bullhorn" size={22} color="#DC2626" />
-              </View>
-              <Text style={styles.quickBtnText}>Grievance</Text>
-            </TouchableOpacity>
-          </View>
+        {/* ─── 3. QUICK ACTION TILES ─── */}
+        <View style={styles.sectionTitleRow}>
+          <Text style={styles.sectionHeading}>त्वरित सेवाएं (Quick Services)</Text>
         </View>
 
-        {/* 5. Collapsible Farmer Details */}
-        <View style={styles.sectionWrapper}>
-          <View style={styles.farmerDetailsCard}>
-            <View style={styles.farmerCompactRow}>
-              <View style={styles.farmerAvatar}>
-                <MaterialCommunityIcons name="account" size={24} color={COLORS.primary} />
-              </View>
-              <View style={styles.farmerCompactInfo}>
-                <View style={styles.farmerNameRow}>
-                  <Text style={styles.farmerName}>{farmer?.name || 'Ramesh Kumar'}</Text>
-                  <MaterialCommunityIcons name="check-decagram" size={16} color={COLORS.success} />
-                </View>
-                <Text style={styles.farmerId}>Farmer ID: {farmer?.farmerId || 'MP-FR-2026-0001'}</Text>
-              </View>
+        <View style={styles.quickGrid}>
+          <TouchableOpacity
+            style={styles.quickTile}
+            onPress={() => navigation.navigate('BookSlot')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.tileIconBox, { backgroundColor: '#E0F2FE' }]}>
+              <MaterialCommunityIcons name="calendar-check" size={24} color="#0284C7" />
             </View>
-            
-            <TouchableOpacity 
-              style={styles.expandDetailsBtn}
-              onPress={() => setIsFarmerDetailsExpanded(!isFarmerDetailsExpanded)}
+            <Text style={styles.tileTitle}>स्लॉट बुकिंग</Text>
+            <Text style={styles.tileSub}>फसल बेचें</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickTile}
+            onPress={() => navigation.navigate('LiveQueue')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.tileIconBox, { backgroundColor: '#FEF3C7' }]}>
+              <MaterialCommunityIcons name="radar" size={24} color="#D97706" />
+            </View>
+            <Text style={styles.tileTitle}>लाइव कतार</Text>
+            <Text style={styles.tileSub}>टोकन स्थिति</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickTile}
+            onPress={() => navigation.navigate('Payments')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.tileIconBox, { backgroundColor: '#DCFCE7' }]}>
+              <MaterialCommunityIcons name="cash-multiple" size={24} color="#16A34A" />
+            </View>
+            <Text style={styles.tileTitle}>भुगतान</Text>
+            <Text style={styles.tileSub}>खाते का पैसा</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.quickTile}
+            onPress={() => navigation.navigate('Grievance')}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.tileIconBox, { backgroundColor: '#FEE2E2' }]}>
+              <MaterialCommunityIcons name="bullhorn" size={24} color="#DC2626" />
+            </View>
+            <Text style={styles.tileTitle}>सहायता (181)</Text>
+            <Text style={styles.tileSub}>शिकायत दर्ज करें</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ─── 4. PASSBOOK SUMMARY BANNER ─── */}
+        <TouchableOpacity
+          style={styles.passbookStrip}
+          onPress={() => navigation.navigate('Payments')}
+          activeOpacity={0.85}
+        >
+          <View style={styles.passbookLeft}>
+            <MaterialCommunityIcons name="bank-check" size={24} color="#15803D" />
+            <View>
+              <Text style={styles.passbookTitle}>कुल मिला पैसा: ₹{totalReceived.toLocaleString('en-IN')}</Text>
+              <Text style={styles.passbookSub}>SBI ••••8392 में जमा • {totalPending > 0 ? `₹${totalPending.toLocaleString('en-IN')} आ रहा है` : 'सभी भुगतान पूर्ण'}</Text>
+            </View>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={20} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+
+        {/* ─── 5. COLLAPSIBLE FARMER PROFILE CARD ─── */}
+        <View style={styles.farmerCard}>
+          <View style={styles.farmerHeader}>
+            <View style={styles.farmerAvatar}>
+              <MaterialCommunityIcons name="account-check" size={22} color={COLORS.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.farmerNameText}>{farmer?.name || 'रमेश कुमार'}</Text>
+              <Text style={styles.farmerIdText}>किसान क्र.: {farmer?.farmerId || 'MP-FR-2026-0001'}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.expandToggleBtn}
+              onPress={() => setDetailsExpanded(!detailsExpanded)}
+              activeOpacity={0.7}
             >
-              <Text style={styles.expandDetailsText}>
-                {isFarmerDetailsExpanded ? 'Hide Details' : 'View Farmer Details'}
+              <Text style={styles.expandToggleText}>
+                {detailsExpanded ? 'कम देखें' : 'और जानकारी'}
               </Text>
-              <MaterialCommunityIcons 
-                name={isFarmerDetailsExpanded ? "chevron-up" : "chevron-down"} 
-                size={18} 
-                color={COLORS.primary} 
+              <MaterialCommunityIcons
+                name={detailsExpanded ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={COLORS.primary}
               />
             </TouchableOpacity>
-
-            {isFarmerDetailsExpanded && (
-              <View style={styles.expandedDetailsContainer}>
-                <View style={styles.divider} />
-                
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Address</Text>
-                  <Text style={styles.infoValue}>{farmer?.address || 'Pipariya, Berasia, Bhopal'}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Crop</Text>
-                  <Text style={styles.infoValue}>{farmer?.crop || 'Wheat'}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>Entitlement</Text>
-                  <Text style={styles.infoValue}>{farmer?.entitlement || '2000 kg'}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                  <Text style={styles.infoLabel}>MSP Rate</Text>
-                  <Text style={[styles.infoValue, { color: COLORS.success, fontWeight: '700' }]}>₹2,275/Qtl</Text>
-                </View>
-
-                {/* Land Holdings Summary */}
-                <Text style={styles.subSectionTitle}>Land Holdings (RCMS Linked)</Text>
-                {(farmer?.landHoldings || []).map((land, idx) => (
-                  <View key={land.id || idx} style={styles.landRow}>
-                    <Text style={styles.landText}>
-                      Khasra #{land.khasra} • {land.area} Hectares
-                    </Text>
-                    <Text style={styles.landSubtext}>
-                      {land.village}, {land.tehsil}
-                    </Text>
-                  </View>
-                ))}
-
-                {/* Bank / DBT Summary */}
-                <Text style={styles.subSectionTitle}>Bank & DBT (Aadhaar Linked)</Text>
-                <View style={styles.bankRow}>
-                  <View>
-                    <Text style={styles.bankText}>{farmer?.bankAccount?.bank || 'State Bank of India'}</Text>
-                    <Text style={styles.bankSubtext}>A/C: {farmer?.bankAccount?.account || '30489218392'} • IFSC: {farmer?.bankAccount?.ifsc || 'SBIN0001234'}</Text>
-                  </View>
-                  <MaterialCommunityIcons name="shield-check" size={20} color={COLORS.success} />
-                </View>
-              </View>
-            )}
           </View>
-        </View>
 
+          {detailsExpanded && (
+            <View style={styles.expandedSection}>
+              <View style={styles.divider} />
+              <View style={styles.infoLine}>
+                <Text style={styles.infoLabel}>गांव व तहसील</Text>
+                <Text style={styles.infoVal}>{farmer?.address || 'पिपलिया, बैरसिया, भोपाल'}</Text>
+              </View>
+              <View style={styles.infoLine}>
+                <Text style={styles.infoLabel}>खसरा व जमीन</Text>
+                <Text style={styles.infoVal}>खसरा #123/1 (2.5 हेक्टेयर)</Text>
+              </View>
+              <View style={styles.infoLine}>
+                <Text style={styles.infoLabel}>समग्र आईडी</Text>
+                <Text style={styles.infoVal}>198472910 ✓ सत्यापित</Text>
+              </View>
+            </View>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -286,429 +310,364 @@ export default function DashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F1F5F9', // Very light neutral background
+    backgroundColor: '#F7F9FC',
   },
-  scrollContent: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.xxl,
-  },
-  headerContainer: {
+
+  /* ─── 1. HEADER ─── */
+  header: {
     backgroundColor: COLORS.primary,
-    paddingBottom: SPACING.md,
+    paddingBottom: SPACING.sm + 4,
     paddingHorizontal: SPACING.md,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    ...SHADOWS.sm,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    ...SHADOWS.md,
   },
-  headerRow: {
+  headerTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  headerLeft: {
+  farmerProfileBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+    flex: 1,
   },
   logoCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(212,168,67,0.5)',
+    borderColor: 'rgba(212,168,67,0.4)',
   },
-  headerGreeting: {
+  greetingText: {
+    fontSize: 17,
+    fontWeight: '900',
     color: COLORS.white,
-    fontSize: 18,
-    fontWeight: '700',
   },
-  headerSubtitle: {
-    color: COLORS.accentLight,
+  subGreetingText: {
     fontSize: 12,
-    fontWeight: '500',
-    marginTop: 2,
+    color: COLORS.accentLight,
+    fontWeight: '600',
+    marginTop: 1,
   },
-  logoutButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  voiceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: RADIUS.sm,
+  },
+  voiceBtnText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
+  },
+  logoutBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  
-  // Booking Area
-  bookingContainer: {
-    marginBottom: SPACING.md,
+
+  /* ─── SCROLL CONTENT ─── */
+  scrollContent: {
+    padding: SPACING.md,
+    gap: 14,
   },
-  bookingCard: {
+
+  /* ─── 2. HERO BOOKING CARD ─── */
+  heroCard: {
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    ...SHADOWS.sm,
+    padding: 16,
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    borderBottomWidth: 0,
+    borderColor: '#DDE4EC',
+    ...SHADOWS.sm,
   },
-  bookingHeader: {
+  heroHeaderRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 8,
   },
-  statusBadge: {
+  confirmedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
     backgroundColor: '#DCFCE7',
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#16A34A',
+  confirmedBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#15803D',
   },
-  statusText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#16A34A',
-  },
-  gatePassMiniBtn: {
+  gatePassBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 8,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 6,
   },
-  gatePassMiniText: {
+  gatePassBtnText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '800',
     color: COLORS.primary,
   },
-  tokenNumber: {
-    fontSize: 26,
-    fontWeight: '800',
+  tokenLabel: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  tokenValue: {
+    fontSize: 22,
+    fontWeight: '900',
     color: COLORS.text,
-    marginBottom: 12,
     letterSpacing: 0.5,
+    marginVertical: 2,
   },
-  bookingDetailsList: {
+  bookingDetailsBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: RADIUS.md,
+    padding: 10,
+    marginVertical: 10,
     gap: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  detailItem: {
+  detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  detailItemText: {
+  detailText: {
     fontSize: 13,
-    color: COLORS.textSecondary,
+    color: COLORS.text,
+    fontWeight: '600',
     flex: 1,
   },
-  
-  // Arrival Section
-  arrivalSection: {
-    backgroundColor: '#FFFBEB',
-    padding: SPACING.md,
-    borderBottomLeftRadius: RADIUS.lg,
-    borderBottomRightRadius: RADIUS.lg,
+  departureBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FEF3C7',
+    padding: 10,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     borderColor: '#FDE68A',
-  },
-  arrivalTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  arrivalTitleBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  arrivalTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#92400E',
-  },
-  arrivalTime: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#B45309',
-    marginTop: 4,
-  },
-  arrivalDesc: {
-    fontSize: 12,
-    color: '#78350F',
-    marginTop: 4,
     marginBottom: 12,
   },
-  primaryCta: {
-    backgroundColor: COLORS.primary,
+  departureTitle: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#92400E',
+  },
+  departureSub: {
+    fontSize: 11,
+    color: '#78350F',
+    marginTop: 1,
+  },
+  heroActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.primary,
     paddingVertical: 12,
     borderRadius: RADIUS.md,
-    gap: 8,
-    ...SHADOWS.sm,
+    gap: 6,
+    ...SHADOWS.md,
   },
-  primaryCtaText: {
+  heroActionBtnText: {
+    fontSize: 14,
+    fontWeight: '900',
     color: COLORS.white,
-    fontSize: 15,
-    fontWeight: '700',
   },
-  
-  // No Booking
+
+  /* No Booking Card */
   noBookingCard: {
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
-    padding: SPACING.xl,
+    padding: 20,
     alignItems: 'center',
-    marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
+    borderColor: '#DDE4EC',
     ...SHADOWS.sm,
   },
   noBookingTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '900',
     color: COLORS.text,
     marginTop: 8,
   },
-  noBookingDesc: {
-    fontSize: 13,
+  noBookingSub: {
+    fontSize: 12,
     color: COLORS.textSecondary,
     textAlign: 'center',
+    marginTop: 2,
+    marginBottom: 12,
+  },
+  bookSlotBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 11,
+    borderRadius: RADIUS.md,
+  },
+  bookSlotBtnText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: COLORS.white,
+  },
+
+  /* ─── 3. SECTION & GRID ─── */
+  sectionTitleRow: {
     marginTop: 4,
   },
-  
-  // Queue Preview
-  queuePreviewCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    ...SHADOWS.sm,
-  },
-  queuePreviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  queueTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  redDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#DC2626',
-  },
-  queuePreviewTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  viewQueueLink: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  queueStatsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  queueStatText: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-  },
-  queueStatDivider: {
-    fontSize: 13,
-    color: COLORS.border,
-  },
-  
-  // Sections
-  sectionWrapper: {
-    marginBottom: SPACING.md,
-  },
-  sectionTitle: {
+  sectionHeading: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '900',
     color: COLORS.text,
-    marginBottom: 10,
   },
-  
-  // Quick Actions Grid
   quickGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: 10,
   },
-  quickBtn: {
-    width: '23%',
-    alignItems: 'center',
+  quickTile: {
+    width: '48.2%',
     backgroundColor: COLORS.white,
-    paddingVertical: 12,
     borderRadius: RADIUS.md,
+    padding: 12,
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
+    borderColor: '#DDE4EC',
+    alignItems: 'flex-start',
     ...SHADOWS.sm,
   },
-  quickIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  tileIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  quickBtnText: {
-    fontSize: 11,
-    fontWeight: '600',
+  tileTitle: {
+    fontSize: 13,
+    fontWeight: '900',
     color: COLORS.text,
   },
-  
-  // Farmer Details Collapsible
-  farmerDetailsCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    ...SHADOWS.sm,
+  tileSub: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+    marginTop: 1,
   },
-  farmerCompactRow: {
+
+  /* ─── 4. PASSBOOK STRIP ─── */
+  passbookStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
+    backgroundColor: '#DCFCE7',
+    borderRadius: RADIUS.md,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
   },
-  farmerAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.accentLight,
+  passbookLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: COLORS.accent,
-  },
-  farmerCompactInfo: {
+    gap: 10,
     flex: 1,
   },
-  farmerNameRow: {
+  passbookTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#15803D',
+  },
+  passbookSub: {
+    fontSize: 11,
+    color: '#166534',
+    marginTop: 1,
+  },
+
+  /* ─── 5. FARMER CARD ─── */
+  farmerCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.md,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#DDE4EC',
+  },
+  farmerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 10,
   },
-  farmerName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  farmerId: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  expandDetailsBtn: {
-    flexDirection: 'row',
+  farmerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F8FAFC',
-    paddingVertical: 8,
-    borderRadius: RADIUS.sm,
-    marginTop: 12,
-    gap: 6,
-    borderWidth: 1,
-    borderColor: COLORS.border,
   },
-  expandDetailsText: {
-    fontSize: 12,
-    fontWeight: '600',
+  farmerNameText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  farmerIdText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+  },
+  expandToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  expandToggleText: {
+    fontSize: 11,
+    fontWeight: '700',
     color: COLORS.primary,
   },
-  expandedDetailsContainer: {
-    marginTop: 12,
+  expandedSection: {
+    marginTop: 10,
   },
   divider: {
     height: 1,
-    backgroundColor: COLORS.borderLight,
-    marginBottom: 12,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: '#F1F5F9',
     marginBottom: 8,
   },
-  infoLabel: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-  },
-  infoValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.text,
-    textAlign: 'right',
-    flex: 1,
-    marginLeft: 16,
-  },
-  subSectionTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginTop: 12,
-    marginBottom: 6,
-  },
-  landRow: {
-    backgroundColor: '#F8FAFC',
-    padding: 8,
-    borderRadius: RADIUS.sm,
-    marginBottom: 6,
-  },
-  landText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  landSubtext: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  bankRow: {
+  infoLine: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    padding: 8,
-    borderRadius: RADIUS.sm,
+    paddingVertical: 3,
   },
-  bankText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  bankSubtext: {
+  infoLabel: {
     fontSize: 11,
     color: COLORS.textSecondary,
-    marginTop: 2,
+  },
+  infoVal: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.text,
   },
 });

@@ -5,157 +5,132 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Share,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
-import Header from '../../components/Header';
-import Card from '../../components/Card';
-import Button from '../../components/Button';
-import Badge from '../../components/Badge';
 
 export default function BookingConfirmationScreen({ route, navigation }) {
   const { booking } = route.params || {};
+  const insets = useSafeAreaInsets();
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `ProcurePulse Gate Pass Token: ${booking?.token}\nCentre: ${booking?.centre}\nDate: ${booking?.date}\nArrival Window: ${booking?.recommendedArrival}\nQuantity: ${booking?.quantity}`,
+        message: `म.प्र. ई-उपार्जन डिजिटल गेट पास\nटोकन क्र.: ${booking?.token || 'MP-WHT-2026-0001'}\nमंडी: ${booking?.centre}\nदिनांक: ${booking?.date}\nसमय: ${booking?.timeSlot}\nमात्रा: ${booking?.quantity}`,
       });
     } catch (error) {
       console.warn(error);
     }
   };
 
-  const handleReschedule = () => {
-    Alert.alert(
-      'Reschedule Slot',
-      'Would you like to modify your procurement date or arrival window?',
-      [
-        { text: 'Keep Current', style: 'cancel' },
-        {
-          text: 'Choose New Date',
-          onPress: () => navigation.navigate('Calendar', { ...booking })
-        }
-      ]
-    );
-  };
+  const topPadding = Math.max(
+    insets.top,
+    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
+  ) + 8;
 
   return (
     <View style={styles.container}>
-      <Header
-        title="Gate Pass & Token Confirmed"
-        subtitle="e-Uparjan Digital Gate Slip"
-        rightIcon="share-variant"
-        onRightPress={handleShare}
-      />
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Success Hero Card */}
-        <View style={styles.heroCard}>
-          <View style={styles.successIconCircle}>
-            <MaterialCommunityIcons name="check-bold" size={32} color={COLORS.primaryDark} />
+      {/* ─── 1. HEADER ─── */}
+      <View style={[styles.header, { paddingTop: topPadding }]}>
+        <View style={styles.headerTopRow}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.navigate('Dashboard')}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons name="close" size={22} color={COLORS.white} />
+          </TouchableOpacity>
+
+          <View style={styles.headerTitleBox}>
+            <Text style={styles.headerTitleText}>गेट पास व पर्ची</Text>
+            <Text style={styles.headerSubText}>ई-उपार्जन 2.0 डिजिटल टोकन</Text>
           </View>
-          <Text style={styles.successTitle}>Slot Confirmed & Gate Pass Ready!</Text>
-          <Text style={styles.successSubtitle}>
-            Present this QR code at Mandi Gate No. 2 for instant weighbridge priority.
-          </Text>
+
+          <TouchableOpacity style={styles.shareIconBtn} onPress={handleShare} activeOpacity={0.75}>
+            <MaterialCommunityIcons name="share-variant" size={20} color={COLORS.white} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 90 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ─── SUCCESS HERO CARD ─── */}
+        <View style={styles.passCard}>
+          <View style={styles.confirmedBanner}>
+            <MaterialCommunityIcons name="check-circle" size={22} color="#15803D" />
+            <Text style={styles.confirmedBannerText}>स्लॉट सफलतापूर्वक बुक हो गया!</Text>
+          </View>
 
           {/* Token Box */}
           <View style={styles.tokenBox}>
-            <Text style={styles.tokenLabel}>PROCUREMENT TOKEN ID</Text>
-            <Text style={styles.tokenValue}>{booking?.token || 'MP-WHT-2026-0001'}</Text>
+            <Text style={styles.tokenLabel}>आपका टोकन नंबर (Token ID)</Text>
+            <Text style={styles.tokenValue}>{booking?.token || 'MP-WHT-2026-1049'}</Text>
           </View>
 
           {/* QR Code Container */}
-          <View style={styles.qrContainer}>
+          <View style={styles.qrBox}>
             <QRCode
-              value={booking?.qrData || `PROCUREPULSE:TOKEN=${booking?.token || 'MP-WHT-2026-0001'}`}
-              size={170}
+              value={booking?.qrData || `PROCUREPULSE:TOKEN=${booking?.token || 'MP-WHT-2026-1049'}`}
+              size={150}
               color={COLORS.primaryDark}
               backgroundColor="white"
             />
-            <Text style={styles.qrHelper}>Scan at Mandi Entry Gate Scanner</Text>
+            <Text style={styles.qrSub}>मंडी गेट स्कैनर पर यह कोड दिखाएं</Text>
+          </View>
+
+          {/* Booking Info Grid */}
+          <View style={styles.infoTable}>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>उपार्जन केंद्र</Text>
+              <Text style={styles.infoVal}>{booking?.centre?.split('(')[0] || 'बैरसिया उपार्जन केंद्र'}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>तौल दिनांक व समय</Text>
+              <Text style={styles.infoVal}>{booking?.date || '18 अप्रैल 2026'} ({booking?.timeSlot || '11:00 AM - 12:00 PM'})</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>फसल व मात्रा</Text>
+              <Text style={styles.infoVal}>{booking?.crop || 'गेहूं'} • {booking?.quantity || '2,000 kg'}</Text>
+            </View>
+          </View>
+
+          {/* Recommended Arrival Window */}
+          <View style={styles.arrivalCallout}>
+            <MaterialCommunityIcons name="clock-fast" size={22} color="#854D0E" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.arrivalTitle}>मंडी पहुंचने का सही समय:</Text>
+              <Text style={styles.arrivalTime}>{booking?.recommendedArrival || '11:35 AM – 11:50 AM'}</Text>
+              <Text style={styles.arrivalNote}>इस समय पहुंचने पर आपको कतार में खड़ा नहीं रहना पड़ेगा।</Text>
+            </View>
           </View>
         </View>
 
-        {/* Dynamic Arrival Window Highlight */}
-        <View style={styles.dynamicArrivalCard}>
-          <View style={styles.dynamicArrivalHeader}>
-            <MaterialCommunityIcons name="clock-alert-outline" size={24} color={COLORS.accentDark} />
-            <Text style={styles.dynamicArrivalHeading}>Dynamic Arrival Window</Text>
-          </View>
+        {/* Action Buttons */}
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.shareBtn} onPress={handleShare} activeOpacity={0.85}>
+            <MaterialCommunityIcons name="whatsapp" size={20} color="#15803D" />
+            <Text style={styles.shareBtnText}>पर्ची शेयर करें</Text>
+          </TouchableOpacity>
 
-          <View style={styles.arrivalWindowBadge}>
-            <Text style={styles.arrivalWindowText}>
-              {booking?.recommendedArrival || '11:35 AM – 11:50 AM'}
-            </Text>
-          </View>
-
-          <Text style={styles.arrivalExplanation}>
-            Why this window? Our live queue model predicts the previous batch will clear by 11:35 AM.
-            Arriving during this 15-minute slot ensures you roll straight to the scale without tractor idling.
-          </Text>
-        </View>
-
-        {/* Booking Details Card */}
-        <Card title="Appointment Specifications" icon="file-document-outline" iconColor={COLORS.primary}>
-          <View style={styles.specRow}>
-            <Text style={styles.specLabel}>Centre</Text>
-            <Text style={styles.specVal}>{booking?.centre || 'Centre B'}</Text>
-          </View>
-          <View style={styles.specRow}>
-            <Text style={styles.specLabel}>Address</Text>
-            <Text style={styles.specVal}>{booking?.centreAddress || 'Near NH-46 Junction, Berasia Hub'}</Text>
-          </View>
-          <View style={styles.specRow}>
-            <Text style={styles.specLabel}>Date & Slot</Text>
-            <Text style={styles.specVal}>{booking?.date} ({booking?.timeSlot})</Text>
-          </View>
-          <View style={styles.specRow}>
-            <Text style={styles.specLabel}>Allocated Land</Text>
-            <Text style={styles.specVal}>{booking?.landKhasra || 'Khasra 123/1'}</Text>
-          </View>
-          <View style={styles.specRow}>
-            <Text style={styles.specLabel}>Commodity & Quantity</Text>
-            <Text style={styles.specVal}>{booking?.quantity || '2000 kg'} ({booking?.crop || 'Wheat'})</Text>
-          </View>
-          <View style={styles.specRow}>
-            <Text style={styles.specLabel}>Gate Entry Status</Text>
-            <Badge label="Gate Pass Active" variant="success" size="sm" icon="check" />
-          </View>
-        </Card>
-
-        {/* Actions */}
-        <Button
-          title="Track Live Queue & Delay Alerts"
-          variant="gold"
-          size="lg"
-          icon="radar"
-          onPress={() => navigation.navigate('LiveQueue')}
-          style={{ marginTop: SPACING.sm }}
-        />
-
-        <View style={styles.secondaryBtnRow}>
-          <Button
-            title="Can't Make It? Reschedule"
-            variant="outline"
-            size="md"
-            icon="calendar-sync"
-            onPress={handleReschedule}
-            style={{ flex: 1 }}
-          />
-
-          <Button
-            title="Dashboard"
-            variant="ghost"
-            size="md"
-            icon="home"
-            onPress={() => navigation.navigate('MainTabs', { screen: 'Dashboard' })}
-            style={{ flex: 1 }}
-          />
+          <TouchableOpacity
+            style={styles.homeBtn}
+            onPress={() => navigation.navigate('LiveQueue')}
+            activeOpacity={0.88}
+          >
+            <MaterialCommunityIcons name="radar" size={20} color={COLORS.white} />
+            <Text style={styles.homeBtnText}>लाइव कतार देखें</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -165,148 +140,201 @@ export default function BookingConfirmationScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F7F9FC',
   },
-  scrollContent: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.xxl,
-  },
-  heroCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.xl,
-    padding: SPACING.lg,
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
+
+  /* ─── 1. HEADER ─── */
+  header: {
+    backgroundColor: COLORS.primary,
+    paddingBottom: SPACING.sm + 4,
+    paddingHorizontal: SPACING.md,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
     ...SHADOWS.md,
   },
-  successIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: COLORS.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.sm,
-    ...SHADOWS.gold,
-  },
-  successTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.primary,
-    textAlign: 'center',
-  },
-  successSubtitle: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
-    lineHeight: 16,
-    maxWidth: '90%',
-  },
-  tokenBox: {
-    backgroundColor: COLORS.primaryDark,
-    borderRadius: RADIUS.md,
-    paddingVertical: SPACING.sm + 4,
-    paddingHorizontal: SPACING.lg,
-    alignItems: 'center',
-    width: '100%',
-    marginVertical: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.accent,
-  },
-  tokenLabel: {
-    color: COLORS.accentLight,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  tokenValue: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    marginTop: 2,
-  },
-  qrContainer: {
-    padding: SPACING.md,
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOWS.sm,
-  },
-  qrHelper: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 8,
-    fontWeight: '500',
-  },
-  dynamicArrivalCard: {
-    backgroundColor: '#FFFBEB',
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1.5,
-    borderColor: '#FDE68A',
-  },
-  dynamicArrivalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: SPACING.xs,
-  },
-  dynamicArrivalHeading: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#92400E',
-  },
-  arrivalWindowBadge: {
-    backgroundColor: '#FEF3C7',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: RADIUS.md,
-    alignItems: 'center',
-    marginVertical: 6,
-    borderWidth: 1,
-    borderColor: '#F59E0B',
-  },
-  arrivalWindowText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#B45309',
-    letterSpacing: 0.5,
-  },
-  arrivalExplanation: {
-    fontSize: 11,
-    color: '#78350F',
-    lineHeight: 16,
-    marginTop: 2,
-  },
-  specRow: {
+  headerTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
   },
-  specLabel: {
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitleBox: {
+    flex: 1,
+    marginHorizontal: SPACING.sm,
+  },
+  headerTitleText: {
+    fontSize: 19,
+    fontWeight: '900',
+    color: COLORS.white,
+  },
+  headerSubText: {
+    fontSize: 11,
+    color: COLORS.accentLight,
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  shareIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  /* ─── SCROLL CONTENT ─── */
+  scrollContent: {
+    padding: SPACING.md,
+    gap: 14,
+  },
+
+  passCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#DDE4EC',
+    ...SHADOWS.sm,
+  },
+  confirmedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#DCFCE7',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: RADIUS.md,
+    marginBottom: 14,
+  },
+  confirmedBannerText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#15803D',
+  },
+  tokenBox: {
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  tokenLabel: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '700',
+  },
+  tokenValue: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  qrBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: RADIUS.md,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 14,
+  },
+  qrSub: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+    marginTop: 8,
+  },
+  infoTable: {
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: 8,
+    marginBottom: 12,
+    gap: 8,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  infoLabel: {
     fontSize: 12,
     color: COLORS.textSecondary,
   },
-  specVal: {
+  infoVal: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  arrivalCallout: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: '#FEF3C7',
+    padding: 12,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  arrivalTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.text,
-    textAlign: 'right',
-    maxWidth: '65%',
+    color: '#92400E',
   },
-  secondaryBtnRow: {
+  arrivalTime: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#78350F',
+    marginVertical: 1,
+  },
+  arrivalNote: {
+    fontSize: 11,
+    color: '#92400E',
+    lineHeight: 15,
+  },
+
+  /* Actions */
+  actionsRow: {
     flexDirection: 'row',
     gap: 10,
-    marginTop: SPACING.sm,
+  },
+  shareBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#DCFCE7',
+    paddingVertical: 13,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  shareBtnText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#15803D',
+  },
+  homeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 13,
+    borderRadius: RADIUS.md,
+    ...SHADOWS.md,
+  },
+  homeBtnText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: COLORS.white,
   },
 });
