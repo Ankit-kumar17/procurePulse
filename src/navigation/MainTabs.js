@@ -18,7 +18,7 @@ export default function MainTabs() {
   const insets = useSafeAreaInsets();
 
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 20 : 8);
-  const tabHeight = 56 + bottomInset;
+  const tabHeight = 58 + bottomInset;
 
   return (
     <Tab.Navigator
@@ -30,7 +30,7 @@ export default function MainTabs() {
         tabBarStyle: {
           backgroundColor: COLORS.primaryDark,
           borderTopWidth: 1,
-          borderTopColor: 'rgba(255, 255, 255, 0.1)',
+          borderTopColor: 'rgba(255, 255, 255, 0.12)',
           height: tabHeight,
           paddingBottom: bottomInset,
           paddingTop: 8,
@@ -47,7 +47,7 @@ export default function MainTabs() {
         name="Dashboard"
         component={DashboardScreen}
         options={{
-          tabBarLabel: 'Home',
+          tabBarLabel: 'होम',
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? 'home' : 'home-outline'}
@@ -62,7 +62,7 @@ export default function MainTabs() {
         name="BookSlot"
         component={BookingStack}
         options={{
-          tabBarLabel: 'Book Slot',
+          tabBarLabel: 'स्लॉट बुक',
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? 'calendar-check' : 'calendar-check-outline'}
@@ -77,7 +77,7 @@ export default function MainTabs() {
         name="LiveQueue"
         component={LiveQueueScreen}
         options={{
-          tabBarLabel: 'Live Queue',
+          tabBarLabel: 'लाइव कतार',
           tabBarBadge: queueState.hasDelayAlert ? '!' : undefined,
           tabBarBadgeStyle: {
             backgroundColor: COLORS.error,
@@ -99,7 +99,7 @@ export default function MainTabs() {
         name="Payments"
         component={PaymentStatusScreen}
         options={{
-          tabBarLabel: 'Payments',
+          tabBarLabel: 'भुगतान',
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? 'cash-check' : 'cash'}
@@ -114,7 +114,7 @@ export default function MainTabs() {
         name="Grievance"
         component={GrievanceStack}
         options={{
-          tabBarLabel: 'Grievance',
+          tabBarLabel: 'शिकायत',
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? 'bullhorn' : 'bullhorn-outline'}

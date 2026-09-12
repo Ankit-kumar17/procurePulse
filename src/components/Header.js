@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, SHADOWS } from '../utils/theme';
+import { COLORS, SPACING, RADIUS, SHADOWS } from '../utils/theme';
 
 export default function Header({
   title,
@@ -12,14 +12,19 @@ export default function Header({
   rightIcon,
   onRightPress,
   rightBadgeCount = 0,
+  rightComponent,
+  voiceGuideTitle,
+  onVoiceGuidePress,
+  bottomComponent,
   farmerName,
-  farmerId
+  farmerId,
+  style,
 }) {
   const insets = useSafeAreaInsets();
   const topPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20) + 6;
 
   return (
-    <View style={[styles.headerContainer, { paddingTop: topPadding }]}>
+    <View style={[styles.headerContainer, { paddingTop: topPadding }, style]}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
       <View style={styles.topRow}>
         {showBack ? (
@@ -44,6 +49,17 @@ export default function Header({
         )}
 
         <View style={styles.rightActions}>
+          {onVoiceGuidePress && (
+            <TouchableOpacity
+              style={styles.voiceButton}
+              onPress={onVoiceGuidePress}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons name="volume-high" size={16} color={COLORS.primaryDark} />
+              <Text style={styles.voiceButtonText}>{voiceGuideTitle || 'सुनें'}</Text>
+            </TouchableOpacity>
+          )}
+
           {farmerName && (
             <View style={styles.farmerPill}>
               <MaterialCommunityIcons name="account-check" size={16} color={COLORS.accent} />
@@ -52,6 +68,8 @@ export default function Header({
               </Text>
             </View>
           )}
+
+          {rightComponent}
 
           {rightIcon && (
             <TouchableOpacity
@@ -76,6 +94,12 @@ export default function Header({
           {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
         </View>
       )}
+
+      {bottomComponent && (
+        <View style={styles.bottomSection}>
+          {bottomComponent}
+        </View>
+      )}
     </View>
   );
 }
@@ -85,8 +109,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.md,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
+    borderBottomLeftRadius: RADIUS.xl,
+    borderBottomRightRadius: RADIUS.xl,
     ...SHADOWS.md,
   },
   topRow: {
@@ -113,18 +137,32 @@ const styles = StyleSheet.create({
   appTitle: {
     color: COLORS.white,
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: 0.5,
   },
   appState: {
     color: COLORS.accentLight,
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   rightActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
+  },
+  voiceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: RADIUS.full,
+  },
+  voiceButtonText: {
+    color: COLORS.primaryDark,
+    fontSize: 12,
+    fontWeight: '800',
   },
   farmerPill: {
     flexDirection: 'row',
@@ -132,20 +170,20 @@ const styles = StyleSheet.create({
     gap: 5,
     backgroundColor: 'rgba(255,255,255,0.15)',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingVertical: 5,
+    borderRadius: RADIUS.full,
     borderWidth: 1,
     borderColor: 'rgba(212,168,67,0.3)',
   },
   farmerPillText: {
     color: COLORS.white,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -173,11 +211,15 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: COLORS.white,
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   headerSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(255,255,255,0.85)',
     fontSize: 13,
+    fontWeight: '500',
     marginTop: 2,
+  },
+  bottomSection: {
+    marginTop: SPACING.md,
   },
 });

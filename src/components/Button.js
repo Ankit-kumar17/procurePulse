@@ -6,24 +6,26 @@ import { COLORS, SPACING, RADIUS, SHADOWS } from '../utils/theme';
 export default function Button({
   title,
   onPress,
-  variant = 'primary', // 'primary' | 'secondary' | 'outline' | 'gold' | 'danger' | 'ghost'
+  variant = 'primary', // 'primary' | 'secondary' | 'outline' | 'gold' | 'success' | 'danger' | 'ghost' | 'soft'
   size = 'md',        // 'sm' | 'md' | 'lg'
   icon,
   iconRight,
   loading = false,
   disabled = false,
+  fullWidth = false,
   style,
   textStyle,
 }) {
   const getContainerStyle = () => {
     const base = [styles.button, styles[`size_${size}`]];
+    if (fullWidth) base.push(styles.fullWidth);
     if (disabled) {
       base.push(styles.disabled);
       return base;
     }
     base.push(styles[`variant_${variant}`]);
     if (variant === 'gold') base.push(SHADOWS.gold);
-    else if (variant === 'primary') base.push(SHADOWS.sm);
+    else if (variant === 'primary' || variant === 'success') base.push(SHADOWS.sm);
     return base;
   };
 
@@ -42,6 +44,7 @@ export default function Button({
     if (variant === 'outline' || variant === 'ghost') return COLORS.primary;
     if (variant === 'gold') return COLORS.primaryDark;
     if (variant === 'secondary') return COLORS.primary;
+    if (variant === 'soft') return COLORS.primary;
     return COLORS.white;
   };
 
@@ -86,31 +89,34 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
   },
+  fullWidth: {
+    width: '100%',
+  },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconLeft: {
-    marginRight: 6,
+    marginRight: 8,
   },
   iconRight: {
-    marginLeft: 6,
+    marginLeft: 8,
   },
   size_sm: {
     paddingVertical: 8,
     paddingHorizontal: 14,
-    minHeight: 36,
+    minHeight: 38,
   },
   size_md: {
     paddingVertical: 12,
-    paddingHorizontal: 18,
+    paddingHorizontal: 20,
     minHeight: 48,
   },
   size_lg: {
     paddingVertical: 16,
     paddingHorizontal: 24,
-    minHeight: 56,
+    minHeight: 54,
   },
   variant_primary: {
     backgroundColor: COLORS.primary,
@@ -120,6 +126,14 @@ const styles = StyleSheet.create({
   },
   variant_gold: {
     backgroundColor: COLORS.accent,
+  },
+  variant_success: {
+    backgroundColor: COLORS.success,
+  },
+  variant_soft: {
+    backgroundColor: COLORS.primarySoft,
+    borderWidth: 1,
+    borderColor: '#C2D6EC',
   },
   variant_outline: {
     backgroundColor: 'transparent',
@@ -157,6 +171,12 @@ const styles = StyleSheet.create({
   },
   text_gold: {
     color: COLORS.primaryDark,
+  },
+  text_success: {
+    color: COLORS.white,
+  },
+  text_soft: {
+    color: COLORS.primary,
   },
   text_outline: {
     color: COLORS.primary,
