@@ -57,29 +57,46 @@ export default function CentreRecommendationScreen({ route, navigation }) {
     Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
   ) + 8;
 
-  // Helper for human explanation
-  const getSimpleReason = (centre) => {
+  // Helper for clean Hindi Mandi name
+  const getHindiMandiName = (centre) => {
+    if (centre.name.includes('Kolar')) {
+      return { hindi: 'कोलार कृषि उपज मंडी', location: 'भोपाल • 5.2 km' };
+    }
+    if (centre.name.includes('Berasia')) {
+      return { hindi: 'बैरसिया उपार्जन केंद्र', location: 'NH-46 जंक्शन • 8.4 km' };
+    }
+    if (centre.name.includes('Sukhi')) {
+      return { hindi: 'सूखी सेवनिया उपार्जन केंद्र', location: 'वेयरहाउस रोड • 11.8 km' };
+    }
+    return { hindi: centre.name.split('(')[0].trim(), location: centre.address };
+  };
+
+  // Helper for wait time & crowd status
+  const getCrowdStatus = (centre) => {
     if (centre.recommended) {
       return {
-        text: 'थोड़ा दूर है, लेकिन यहां इंतजार बहुत कम है।',
-        pill1: '🚜 +3.2 km',
-        pill2: '⏰ 97 मिनट कम इंतजार',
-        isPositive: true,
+        badge: '🟢 कम भीड़ (तौल ~41 मिनट में)',
+        subtext: 'ट्रैक्टर कतार छोटी है, तौल तुरंत होगी',
+        bg: '#DCFCE7',
+        text: '#15803D',
+        isFast: true,
       };
     }
     if (centre.wait > 100) {
       return {
-        text: '⚠️ पास है, लेकिन बहुत भारी भीड़ व लंबा इंतजार है।',
-        pill1: '📍 5.2 km पास',
-        pill2: '⏳ ~2.3 घंटे इंतजार',
-        isPositive: false,
+        badge: '🔴 बहुत भारी भीड़ (~2.3 घंटे इंतजार)',
+        subtext: 'लंबी कतार है, समय ज्यादा लगेगा',
+        bg: '#FEE2E2',
+        text: '#B91C1C',
+        isFast: false,
       };
     }
     return {
-      text: '🟡 इंतजार कम है, लेकिन मंडी काफी दूर है।',
-      pill1: '📍 11.8 km दूर',
-      pill2: '⚡ 27 मिनट इंतजार',
-      isPositive: null,
+      badge: '🟡 कम भीड़ (~27 मिनट इंतजार)',
+      subtext: 'भीड़ नहीं है लेकिन दूरी 11.8 km है',
+      bg: '#FEF3C7',
+      text: '#92400E',
+      isFast: true,
     };
   };
 
@@ -87,7 +104,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
 
-      {/* ─── 1. COMPACT MOBILE HEADER ─── */}
+      {/* ─── 1. TOP HEADER ─── */}
       <View style={[styles.header, { paddingTop: topPadding }]}>
         <View style={styles.headerTopRow}>
           <TouchableOpacity
@@ -105,13 +122,13 @@ export default function CentreRecommendationScreen({ route, navigation }) {
           </View>
 
           <View style={styles.brandBadge}>
-            <MaterialCommunityIcons name="grain" size={16} color={COLORS.accent} />
+            <MaterialCommunityIcons name="grain" size={15} color={COLORS.accent} />
             <Text style={styles.brandBadgeText}>e-Uparjan</Text>
           </View>
         </View>
       </View>
 
-      {/* ─── 2. STEPPER TRACKER ─── */}
+      {/* ─── 2. STEPPER PROGRESS ─── */}
       <View style={styles.stepperBar}>
         <View style={styles.stepperRow}>
           <View style={styles.stepItem}>
@@ -121,7 +138,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
             <Text style={styles.stepLabelDone}>फसल</Text>
           </View>
 
-          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.primaryLight} />
+          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.primary} />
 
           <View style={styles.stepItem}>
             <View style={[styles.stepDot, styles.stepDotActive]}>
@@ -130,7 +147,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
             <Text style={styles.stepLabelActive}>मंडी</Text>
           </View>
 
-          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.divider} />
+          <MaterialCommunityIcons name="chevron-right" size={18} color="#CBD5E1" />
 
           <View style={styles.stepItem}>
             <View style={styles.stepDot}>
@@ -139,7 +156,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
             <Text style={styles.stepLabel}>समय</Text>
           </View>
 
-          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.divider} />
+          <MaterialCommunityIcons name="chevron-right" size={18} color="#CBD5E1" />
 
           <View style={styles.stepItem}>
             <View style={styles.stepDot}>
@@ -151,157 +168,110 @@ export default function CentreRecommendationScreen({ route, navigation }) {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 115 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 110 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ─── 3. SIMPLE HUMAN ADVICE BANNER ─── */}
+        {/* ─── 3. SIMPLE ADVICE BANNER ─── */}
         <View style={styles.adviceBanner}>
           <View style={styles.adviceIconCircle}>
-            <MaterialCommunityIcons name="star-face" size={22} color={COLORS.primaryDark} />
+            <MaterialCommunityIcons name="star" size={20} color="#854D0E" />
           </View>
           <View style={styles.adviceContent}>
-            <View style={styles.adviceTagRow}>
-              <Text style={styles.adviceTagText}>⭐ हमारी सलाह</Text>
-            </View>
+            <Text style={styles.adviceTag}>⭐ हमारी सलाह</Text>
             <Text style={styles.adviceTitle}>
-              बेरसिया केंद्र (Berasia Hub) में भीड़ कम है और आपकी तौल जल्दी होगी।
+              बैरसिया केंद्र चुनें — यहां भीड़ कम है और आपकी तौल जल्दी होगी!
             </Text>
           </View>
         </View>
 
         <Text style={styles.sectionHeading}>उपलब्ध उपार्जन केंद्र (Mandis)</Text>
 
-        {/* ─── 4. MANDI CARDS ─── */}
+        {/* ─── 4. ULTRA-CLEAN MANDI CARDS ─── */}
         <View style={styles.cardsList}>
           {centres.map((centre) => {
             const isSelected = selectedCentre?.id === centre.id;
-            const simpleReason = getSimpleReason(centre);
-
-            // Wait time color indicator
-            const isHighWait = centre.wait > 100;
-            const waitColor = isHighWait ? COLORS.error : COLORS.success;
-            const waitBg = isHighWait ? '#FEE2E2' : '#DCFCE7';
+            const mandiInfo = getHindiMandiName(centre);
+            const crowd = getCrowdStatus(centre);
 
             return (
               <TouchableOpacity
                 key={centre.id}
                 style={[
-                  styles.centreCard,
-                  isSelected && styles.centreCardSelected,
-                  centre.recommended && !isSelected && styles.centreCardRecommended,
+                  styles.mandiCard,
+                  isSelected ? styles.mandiCardSelected : styles.mandiCardUnselected,
+                  centre.recommended && !isSelected && styles.mandiCardRecommendedBorder,
                 ]}
                 onPress={() => handleSelectCentre(centre)}
                 activeOpacity={0.88}
               >
-                {/* Top Row: Name + Badges */}
-                <View style={styles.cardHeaderRow}>
-                  <View style={styles.cardTitleBox}>
-                    <Text style={[styles.mandiName, isSelected && styles.mandiNameSelected]}>
-                      🏪 {centre.name.split('(')[0].trim()}
+                {/* Header Row: Mandi Name & Recommended Tag */}
+                <View style={styles.cardTopRow}>
+                  <View style={styles.mandiTitleContainer}>
+                    <Text style={[styles.mandiHindiName, isSelected && styles.mandiHindiNameSelected]}>
+                      🏪 {mandiInfo.hindi}
                     </Text>
-                    <Text style={styles.mandiAddress} numberOfLines={1}>
-                      📍 {centre.address}
+                    <Text style={styles.mandiSubLocation}>
+                      📍 {mandiInfo.location}
                     </Text>
                   </View>
 
                   {centre.recommended && (
-                    <View style={styles.recommendedBadge}>
-                      <MaterialCommunityIcons name="star" size={13} color={COLORS.primaryDark} />
-                      <Text style={styles.recommendedBadgeText}>हमारी सलाह</Text>
+                    <View style={styles.recommendPill}>
+                      <MaterialCommunityIcons name="star" size={13} color="#854D0E" />
+                      <Text style={styles.recommendPillText}>सर्वोत्तम केंद्र</Text>
                     </View>
                   )}
                 </View>
 
-                {/* 3 Metrics: Distance | Wait | Slots */}
-                <View style={styles.metricsRow}>
-                  <View style={styles.metricBox}>
-                    <View style={styles.metricTop}>
-                      <MaterialCommunityIcons name="map-marker-distance" size={16} color={COLORS.primary} />
-                      <Text style={styles.metricValue}>{centre.distance} km</Text>
-                    </View>
-                    <Text style={styles.metricSub}>दूरी</Text>
+                {/* Crowd & Wait Status Banner */}
+                <View style={[styles.crowdStatusBanner, { backgroundColor: crowd.bg }]}>
+                  <Text style={[styles.crowdStatusText, { color: crowd.text }]}>
+                    {crowd.badge}
+                  </Text>
+                </View>
+
+                {/* Key Metrics Row: Distance & Available Slots */}
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <MaterialCommunityIcons name="map-marker-distance" size={15} color={COLORS.textSecondary} />
+                    <Text style={styles.statLabel}>दूरी:</Text>
+                    <Text style={styles.statValue}>{centre.distance} km</Text>
                   </View>
 
-                  <View style={styles.metricDivider} />
+                  <View style={styles.statDot} />
 
-                  <View style={[styles.metricBox, { backgroundColor: waitBg, borderRadius: 8 }]}>
-                    <View style={styles.metricTop}>
-                      <MaterialCommunityIcons name="clock-outline" size={16} color={waitColor} />
-                      <Text style={[styles.metricValue, { color: waitColor }]}>
-                        {centre.wait} min
-                      </Text>
-                    </View>
-                    <Text style={[styles.metricSub, { color: waitColor, fontWeight: '700' }]}>
-                      इंतजार
+                  <View style={styles.statItem}>
+                    <MaterialCommunityIcons name="calendar-check" size={15} color={COLORS.primary} />
+                    <Text style={styles.statLabel}>स्लॉट:</Text>
+                    <Text style={[styles.statValue, { color: COLORS.primary }]}>
+                      {centre.availableSlots} उपलब्ध
                     </Text>
                   </View>
-
-                  <View style={styles.metricDivider} />
-
-                  <View style={styles.metricBox}>
-                    <View style={styles.metricTop}>
-                      <MaterialCommunityIcons name="calendar-check" size={16} color={COLORS.info} />
-                      <Text style={styles.metricValue}>{centre.availableSlots}</Text>
-                    </View>
-                    <Text style={styles.metricSub}>आज के स्लॉट</Text>
-                  </View>
                 </View>
 
-                {/* Simple Human Reason Strip */}
-                <View style={[
-                  styles.reasonStrip,
-                  centre.recommended && styles.reasonStripRecommended,
-                  isHighWait && styles.reasonStripWarning,
-                ]}>
-                  <Text style={[
-                    styles.reasonMainText,
-                    centre.recommended && styles.reasonMainTextRecommended,
-                    isHighWait && styles.reasonMainTextWarning,
-                  ]}>
-                    {simpleReason.text}
-                  </Text>
-
-                  {simpleReason.pill1 && (
-                    <View style={styles.pillsRow}>
-                      <View style={styles.reasonPill}>
-                        <Text style={styles.reasonPillText}>{simpleReason.pill1}</Text>
-                      </View>
-                      <View style={styles.reasonPill}>
-                        <Text style={styles.reasonPillText}>{simpleReason.pill2}</Text>
-                      </View>
-                    </View>
-                  )}
-                </View>
-
-                {/* Bottom Action / Why Button Row */}
-                <View style={styles.cardFooter}>
+                {/* Card Bottom: Selection Pill & Why Explanation */}
+                <View style={styles.cardBottomBar}>
                   {centre.recommended ? (
                     <TouchableOpacity
-                      style={styles.whyButton}
+                      style={styles.whyLink}
                       onPress={() => handleOpenExplain(centre)}
                       activeOpacity={0.7}
                     >
-                      <MaterialCommunityIcons name="information-outline" size={15} color={COLORS.primary} />
-                      <Text style={styles.whyButtonText}>ⓘ यह क्यों सुझाई?</Text>
+                      <MaterialCommunityIcons name="information-outline" size={14} color={COLORS.primary} />
+                      <Text style={styles.whyLinkText}>ⓘ यह क्यों सुझाई?</Text>
                     </TouchableOpacity>
                   ) : (
                     <View style={{ flex: 1 }} />
                   )}
 
-                  <View style={[
-                    styles.selectPill,
-                    isSelected ? styles.selectPillActive : styles.selectPillInactive
-                  ]}>
+                  <View style={[styles.selectBadge, isSelected ? styles.selectBadgeActive : styles.selectBadgeInactive]}>
                     <MaterialCommunityIcons
-                      name={isSelected ? "check-circle" : "radiobox-blank"}
-                      size={15}
-                      color={isSelected ? COLORS.white : COLORS.textSecondary}
+                      name={isSelected ? 'check-circle' : 'radiobox-blank'}
+                      size={16}
+                      color={isSelected ? COLORS.white : COLORS.textMuted}
                     />
-                    <Text style={[
-                      styles.selectPillText,
-                      isSelected && styles.selectPillTextActive
-                    ]}>
-                      {isSelected ? 'यही मंडी चुनी गई' : 'यह मंडी चुनें'}
+                    <Text style={[styles.selectBadgeText, isSelected && styles.selectBadgeTextActive]}>
+                      {isSelected ? '✓ यह मंडी चुनी गई' : 'चुनने के लिए दबाएं'}
                     </Text>
                   </View>
                 </View>
@@ -315,10 +285,10 @@ export default function CentreRecommendationScreen({ route, navigation }) {
       <View style={[styles.stickyBottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         {selectedCentre && (
           <View style={styles.selectedMandiStrip}>
-            <MaterialCommunityIcons name="check-circle" size={16} color={COLORS.success} />
+            <MaterialCommunityIcons name="check-circle" size={16} color="#15803D" />
             <Text style={styles.selectedMandiStripText} numberOfLines={1}>
-              <Text style={{ fontWeight: '800', color: COLORS.primaryDark }}>
-                {selectedCentre.name.split('(')[0].trim()}
+              <Text style={{ fontWeight: '900', color: COLORS.primaryDark }}>
+                {getHindiMandiName(selectedCentre).hindi}
               </Text>
               {' '}चुनी गई
             </Text>
@@ -368,7 +338,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -377,7 +347,7 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.sm,
   },
   headerTitleText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '900',
     color: COLORS.white,
     letterSpacing: 0.3,
@@ -392,12 +362,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 8,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(212,168,67,0.3)',
   },
   brandBadgeText: {
     fontSize: 11,
@@ -411,7 +379,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: '#E2E8F0',
     ...SHADOWS.sm,
   },
   stepperRow: {
@@ -433,7 +401,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepDotDone: {
-    backgroundColor: COLORS.success,
+    backgroundColor: '#15803D',
   },
   stepDotActive: {
     backgroundColor: COLORS.primary,
@@ -456,7 +424,7 @@ const styles = StyleSheet.create({
   stepLabelDone: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.success,
+    color: '#15803D',
   },
   stepLabelActive: {
     fontSize: 13,
@@ -472,13 +440,13 @@ const styles = StyleSheet.create({
   /* ─── 3. ADVICE BANNER ─── */
   adviceBanner: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     backgroundColor: '#FEF9C3',
     borderRadius: RADIUS.lg,
     padding: 12,
     borderWidth: 1.5,
     borderColor: '#FDE047',
-    marginBottom: SPACING.md,
+    marginBottom: 14,
     gap: 10,
     ...SHADOWS.sm,
   },
@@ -486,239 +454,193 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.accent,
+    backgroundColor: '#FDE047',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 2,
   },
   adviceContent: {
     flex: 1,
   },
-  adviceTagRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  adviceTagText: {
+  adviceTag: {
     fontSize: 12,
     fontWeight: '900',
     color: '#854D0E',
+    marginBottom: 1,
   },
   adviceTitle: {
     fontSize: 13,
-    color: COLORS.text,
     fontWeight: '700',
+    color: '#713F12',
     lineHeight: 18,
   },
-
-  /* ─── SECTION HEADING ─── */
   sectionHeading: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
     color: COLORS.text,
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
-  /* ─── 4. CARDS LIST ─── */
+  /* ─── 4. MANDI CARDS ─── */
   cardsList: {
     gap: 12,
   },
-  centreCard: {
+  mandiCard: {
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    borderWidth: 2,
-    borderColor: COLORS.border,
+    padding: 14,
+    borderWidth: 1.5,
     ...SHADOWS.sm,
   },
-  centreCardRecommended: {
-    borderColor: '#FDE047',
+  mandiCardUnselected: {
+    borderColor: '#E2E8F0',
   },
-  centreCardSelected: {
-    borderColor: COLORS.accentDark,
-    backgroundColor: '#FFFDF5',
+  mandiCardSelected: {
+    borderColor: '#15803D',
+    borderWidth: 2,
+    backgroundColor: '#FFFFFF',
     ...SHADOWS.md,
   },
-  cardHeaderRow: {
+  mandiCardRecommendedBorder: {
+    borderColor: '#FDE047',
+  },
+  cardTopRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    gap: 8,
+    marginBottom: 8,
   },
-  cardTitleBox: {
+  mandiTitleContainer: {
     flex: 1,
+    paddingRight: 6,
   },
-  mandiName: {
+  mandiHindiName: {
     fontSize: 16,
     fontWeight: '900',
     color: COLORS.text,
-    lineHeight: 22,
   },
-  mandiNameSelected: {
-    color: COLORS.primaryDark,
+  mandiHindiNameSelected: {
+    color: '#15803D',
   },
-  mandiAddress: {
+  mandiSubLocation: {
     fontSize: 12,
     color: COLORS.textSecondary,
+    fontWeight: '600',
     marginTop: 2,
   },
-  recommendedBadge: {
+  recommendPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: COLORS.accent,
+    gap: 3,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 6,
   },
-  recommendedBadgeText: {
+  recommendPillText: {
     fontSize: 11,
     fontWeight: '900',
-    color: COLORS.primaryDark,
-  },
-
-  /* ─── METRICS ─── */
-  metricsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.md,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    marginVertical: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  metricBox: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  metricTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  metricValue: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: COLORS.text,
-  },
-  metricSub: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-    fontWeight: '600',
-  },
-  metricDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: '#E2E8F0',
-  },
-
-  /* ─── REASON STRIP ─── */
-  reasonStrip: {
-    backgroundColor: '#F1F5F9',
-    borderRadius: RADIUS.sm,
-    padding: 8,
-    marginBottom: 10,
-  },
-  reasonStripRecommended: {
-    backgroundColor: '#FEF9C3',
-  },
-  reasonStripWarning: {
-    backgroundColor: '#FEE2E2',
-  },
-  reasonMainText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  reasonMainTextRecommended: {
     color: '#854D0E',
   },
-  reasonMainTextWarning: {
-    color: COLORS.error,
-  },
-  pillsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 6,
-  },
-  reasonPill: {
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-  },
-  reasonPillText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
 
-  /* ─── FOOTER ─── */
-  cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
+  /* Crowd Status */
+  crowdStatusBanner: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    marginBottom: 8,
   },
-  whyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-  },
-  whyButtonText: {
+  crowdStatusText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
-  },
-  selectPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: RADIUS.full,
-    borderWidth: 1,
-  },
-  selectPillActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primaryDark,
-    ...SHADOWS.sm,
-  },
-  selectPillInactive: {
-    backgroundColor: '#F8FAFC',
-    borderColor: COLORS.border,
-  },
-  selectPillText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  selectPillTextActive: {
-    color: COLORS.white,
     fontWeight: '800',
   },
 
-  /* ─── 5. STICKY BOTTOM ACTION BAR ─── */
+  /* Stats Row */
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 4,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+  },
+  statValue: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  statDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#CBD5E1',
+  },
+
+  /* Card Bottom Bar */
+  cardBottomBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  whyLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingVertical: 4,
+  },
+  whyLinkText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  selectBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+  },
+  selectBadgeActive: {
+    backgroundColor: '#15803D',
+  },
+  selectBadgeInactive: {
+    backgroundColor: '#F1F5F9',
+  },
+  selectBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.textSecondary,
+  },
+  selectBadgeTextActive: {
+    color: COLORS.white,
+    fontWeight: '900',
+  },
+
+  /* ─── 5. STICKY BOTTOM BAR ─── */
   stickyBottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: COLORS.white,
-    paddingTop: 8,
     paddingHorizontal: SPACING.md,
+    paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: '#E2E8F0',
     ...SHADOWS.lg,
   },
   selectedMandiStrip: {
@@ -726,25 +648,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   selectedMandiStripText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+    fontSize: 13,
+    color: COLORS.text,
     fontWeight: '600',
   },
   ctaButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    borderRadius: RADIUS.md,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.lg,
-    paddingVertical: 14,
     ...SHADOWS.md,
   },
   ctaButtonText: {
     fontSize: 16,
     fontWeight: '900',
     color: COLORS.white,
-    letterSpacing: 0.3,
   },
 });
