@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Platform,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -52,51 +53,54 @@ export default function CentreRecommendationScreen({ route, navigation }) {
     setExplainModalVisible(true);
   };
 
+  const handlePlayVoiceGuide = () => {
+    Alert.alert(
+      '🔊 मंडी सहायक (Voice Guide)',
+      'नमस्ते किसान भाई!\n\n• बैरसिया उपार्जन केंद्र आपके लिए सबसे अच्छा है क्योंकि वहां केवल 41 मिनट में तौल हो जाएगी।\n• कोलार मंडी पास है लेकिन वहां 2 घंटे से ज्यादा का लंबा जाम है।\n• बैरसिया जाने से आपका लगभग 1.5 घंटा और डीजल बचेगा!',
+      [{ text: 'समझ गया (OK)' }]
+    );
+  };
+
   const topPadding = Math.max(
     insets.top,
     Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
   ) + 8;
 
-  // Helper for clean Hindi Mandi name
-  const getHindiMandiName = (centre) => {
-    if (centre.name.includes('Kolar')) {
-      return { hindi: 'कोलार कृषि उपज मंडी', location: 'भोपाल • 5.2 km' };
-    }
-    if (centre.name.includes('Berasia')) {
-      return { hindi: 'बैरसिया उपार्जन केंद्र', location: 'NH-46 जंक्शन • 8.4 km' };
-    }
-    if (centre.name.includes('Sukhi')) {
-      return { hindi: 'सूखी सेवनिया उपार्जन केंद्र', location: 'वेयरहाउस रोड • 11.8 km' };
-    }
-    return { hindi: centre.name.split('(')[0].trim(), location: centre.address };
-  };
-
-  // Helper for wait time & crowd status
-  const getCrowdStatus = (centre) => {
-    if (centre.recommended) {
+  // Helper for rich Hindi Mandi info
+  const getHindiMandiDetails = (centre) => {
+    if (centre.name.includes('Berasia') || centre.recommended) {
       return {
-        badge: '🟢 कम भीड़ (तौल ~41 मिनट में)',
-        subtext: 'ट्रैक्टर कतार छोटी है, तौल तुरंत होगी',
-        bg: '#DCFCE7',
-        text: '#15803D',
-        isFast: true,
+        rank: '🏆 नंबर 1 पसंद',
+        hindiName: 'बैरसिया उपार्जन केंद्र',
+        location: 'NH-46 जंक्शन • 8.4 km',
+        speedTag: '⚡ 1.5 घंटे बचेंगे (सुपरफास्ट तौल)',
+        crowdBadge: '🟢 बहुत कम भीड़ (तौल ~41 मिनट में)',
+        crowdBg: '#DCFCE7',
+        crowdColor: '#15803D',
+        isBest: true,
       };
     }
-    if (centre.wait > 100) {
+    if (centre.name.includes('Kolar') || centre.wait > 100) {
       return {
-        badge: '🔴 बहुत भारी भीड़ (~2.3 घंटे इंतजार)',
-        subtext: 'लंबी कतार है, समय ज्यादा लगेगा',
-        bg: '#FEE2E2',
-        text: '#B91C1C',
-        isFast: false,
+        rank: '📍 सबसे पास',
+        hindiName: 'कोलार कृषि उपज मंडी',
+        location: 'भोपाल • 5.2 km',
+        speedTag: '⚠️ पास है लेकिन 2+ घंटे का जाम है',
+        crowdBadge: '🔴 भारी भीड़ (~2.3 घंटे लंबा इंतजार)',
+        crowdBg: '#FEE2E2',
+        crowdColor: '#B91C1C',
+        isBest: false,
       };
     }
     return {
-      badge: '🟡 कम भीड़ (~27 मिनट इंतजार)',
-      subtext: 'भीड़ नहीं है लेकिन दूरी 11.8 km है',
-      bg: '#FEF3C7',
-      text: '#92400E',
-      isFast: true,
+      rank: '🛣️ वैकल्पिक केंद्र',
+      hindiName: 'सूखी सेवनिया उपार्जन केंद्र',
+      location: 'वेयरहाउस रोड • 11.8 km',
+      speedTag: '🛣️ दूरी अधिक है लेकिन कांटा खाली है',
+      crowdBadge: '🟡 कम भीड़ (~27 मिनट इंतजार)',
+      crowdBg: '#FEF3C7',
+      crowdColor: '#92400E',
+      isBest: false,
     };
   };
 
@@ -104,7 +108,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
 
-      {/* ─── 1. TOP HEADER ─── */}
+      {/* ─── 1. TOP HEADER WITH VOICE BUTTON ─── */}
       <View style={[styles.header, { paddingTop: topPadding }]}>
         <View style={styles.headerTopRow}>
           <TouchableOpacity
@@ -121,10 +125,16 @@ export default function CentreRecommendationScreen({ route, navigation }) {
             <Text style={styles.headerSubText}>चरण 2 / 4 • सबसे अच्छी मंडी</Text>
           </View>
 
-          <View style={styles.brandBadge}>
-            <MaterialCommunityIcons name="grain" size={15} color={COLORS.accent} />
-            <Text style={styles.brandBadgeText}>e-Uparjan</Text>
-          </View>
+          {/* Voice Assistant Button */}
+          <TouchableOpacity
+            style={styles.voiceButton}
+            onPress={handlePlayVoiceGuide}
+            activeOpacity={0.8}
+            accessibilityLabel="आवाज से समझें"
+          >
+            <MaterialCommunityIcons name="volume-high" size={17} color={COLORS.primaryDark} />
+            <Text style={styles.voiceButtonText}>सुनें</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -168,30 +178,34 @@ export default function CentreRecommendationScreen({ route, navigation }) {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 110 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 115 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ─── 3. SIMPLE ADVICE BANNER ─── */}
+        {/* ─── 3. INTERACTIVE AI ADVICE CARD ─── */}
         <View style={styles.adviceBanner}>
           <View style={styles.adviceIconCircle}>
-            <MaterialCommunityIcons name="star" size={20} color="#854D0E" />
+            <MaterialCommunityIcons name="lightning-bolt" size={22} color="#854D0E" />
           </View>
           <View style={styles.adviceContent}>
-            <Text style={styles.adviceTag}>⭐ हमारी सलाह</Text>
+            <View style={styles.adviceTagRow}>
+              <Text style={styles.adviceTag}>💡 स्मार्ट सलाह (AI Recommendation)</Text>
+            </View>
             <Text style={styles.adviceTitle}>
-              बैरसिया केंद्र चुनें — यहां भीड़ कम है और आपकी तौल जल्दी होगी!
+              बैरसिया केंद्र चुनें — 1.5 घंटा बचेगा और तौल तुरंत होगी!
             </Text>
           </View>
         </View>
 
-        <Text style={styles.sectionHeading}>उपलब्ध उपार्जन केंद्र (Mandis)</Text>
+        {/* ─── 4. LIST OF MANDIS ─── */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionHeading}>उपलब्ध उपार्जन केंद्र ({centres.length})</Text>
+          <Text style={styles.sectionTipText}>👆 पसंद की मंडी पर टैप करें</Text>
+        </View>
 
-        {/* ─── 4. ULTRA-CLEAN MANDI CARDS ─── */}
         <View style={styles.cardsList}>
           {centres.map((centre) => {
             const isSelected = selectedCentre?.id === centre.id;
-            const mandiInfo = getHindiMandiName(centre);
-            const crowd = getCrowdStatus(centre);
+            const details = getHindiMandiDetails(centre);
 
             return (
               <TouchableOpacity
@@ -199,38 +213,63 @@ export default function CentreRecommendationScreen({ route, navigation }) {
                 style={[
                   styles.mandiCard,
                   isSelected ? styles.mandiCardSelected : styles.mandiCardUnselected,
-                  centre.recommended && !isSelected && styles.mandiCardRecommendedBorder,
+                  details.isBest && !isSelected && styles.mandiCardBestBorder,
                 ]}
                 onPress={() => handleSelectCentre(centre)}
                 activeOpacity={0.88}
               >
-                {/* Header Row: Mandi Name & Recommended Tag */}
+                {/* Header Row: Rank Badge & Name */}
                 <View style={styles.cardTopRow}>
                   <View style={styles.mandiTitleContainer}>
-                    <Text style={[styles.mandiHindiName, isSelected && styles.mandiHindiNameSelected]}>
-                      🏪 {mandiInfo.hindi}
-                    </Text>
+                    <View style={styles.nameWithRankRow}>
+                      <Text style={[styles.mandiHindiName, isSelected && styles.mandiHindiNameSelected]}>
+                        🏪 {details.hindiName}
+                      </Text>
+                    </View>
                     <Text style={styles.mandiSubLocation}>
-                      📍 {mandiInfo.location}
+                      📍 {details.location}
                     </Text>
                   </View>
 
-                  {centre.recommended && (
-                    <View style={styles.recommendPill}>
-                      <MaterialCommunityIcons name="star" size={13} color="#854D0E" />
-                      <Text style={styles.recommendPillText}>सर्वोत्तम केंद्र</Text>
-                    </View>
-                  )}
+                  <View
+                    style={[
+                      styles.rankBadge,
+                      details.isBest ? styles.rankBadgeBest : styles.rankBadgeNormal,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.rankBadgeText,
+                        details.isBest ? styles.rankBadgeTextBest : styles.rankBadgeTextNormal,
+                      ]}
+                    >
+                      {details.rank}
+                    </Text>
+                  </View>
                 </View>
 
-                {/* Crowd & Wait Status Banner */}
-                <View style={[styles.crowdStatusBanner, { backgroundColor: crowd.bg }]}>
-                  <Text style={[styles.crowdStatusText, { color: crowd.text }]}>
-                    {crowd.badge}
+                {/* Speed / Saving Highlight Tag */}
+                <View style={[styles.speedTagBox, { backgroundColor: details.crowdBg }]}>
+                  <Text style={[styles.speedTagText, { color: details.crowdColor }]}>
+                    {details.speedTag}
                   </Text>
                 </View>
 
-                {/* Key Metrics Row: Distance & Available Slots */}
+                {/* Live Crowd & Wait Time Meter */}
+                <View style={styles.meterContainer}>
+                  <View style={styles.meterRow}>
+                    <MaterialCommunityIcons
+                      name={details.isBest ? 'clock-check-outline' : 'clock-alert-outline'}
+                      size={16}
+                      color={details.crowdColor}
+                    />
+                    <Text style={[styles.meterLabel, { color: details.crowdColor }]}>
+                      {details.crowdBadge}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Distance & Slots Quick Row */}
                 <View style={styles.statsRow}>
                   <View style={styles.statItem}>
                     <MaterialCommunityIcons name="map-marker-distance" size={15} color={COLORS.textSecondary} />
@@ -242,23 +281,23 @@ export default function CentreRecommendationScreen({ route, navigation }) {
 
                   <View style={styles.statItem}>
                     <MaterialCommunityIcons name="calendar-check" size={15} color={COLORS.primary} />
-                    <Text style={styles.statLabel}>स्लॉट:</Text>
+                    <Text style={styles.statLabel}>खाली स्लॉट:</Text>
                     <Text style={[styles.statValue, { color: COLORS.primary }]}>
-                      {centre.availableSlots} उपलब्ध
+                      {centre.availableSlots} टोकन
                     </Text>
                   </View>
                 </View>
 
                 {/* Card Bottom: Selection Pill & Why Explanation */}
                 <View style={styles.cardBottomBar}>
-                  {centre.recommended ? (
+                  {details.isBest ? (
                     <TouchableOpacity
                       style={styles.whyLink}
                       onPress={() => handleOpenExplain(centre)}
                       activeOpacity={0.7}
                     >
-                      <MaterialCommunityIcons name="information-outline" size={14} color={COLORS.primary} />
-                      <Text style={styles.whyLinkText}>ⓘ यह क्यों सुझाई?</Text>
+                      <MaterialCommunityIcons name="information" size={15} color={COLORS.primary} />
+                      <Text style={styles.whyLinkText}>यह क्यों सुझाई?</Text>
                     </TouchableOpacity>
                   ) : (
                     <View style={{ flex: 1 }} />
@@ -266,12 +305,12 @@ export default function CentreRecommendationScreen({ route, navigation }) {
 
                   <View style={[styles.selectBadge, isSelected ? styles.selectBadgeActive : styles.selectBadgeInactive]}>
                     <MaterialCommunityIcons
-                      name={isSelected ? 'check-circle' : 'radiobox-blank'}
+                      name={isSelected ? 'check-circle' : 'circle-outline'}
                       size={16}
-                      color={isSelected ? COLORS.white : COLORS.textMuted}
+                      color={isSelected ? COLORS.white : COLORS.textSecondary}
                     />
                     <Text style={[styles.selectBadgeText, isSelected && styles.selectBadgeTextActive]}>
-                      {isSelected ? '✓ यह मंडी चुनी गई' : 'चुनने के लिए दबाएं'}
+                      {isSelected ? 'यह मंडी चुनी गई' : 'चुनने के लिए दबाएं'}
                     </Text>
                   </View>
                 </View>
@@ -288,7 +327,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
             <MaterialCommunityIcons name="check-circle" size={16} color="#15803D" />
             <Text style={styles.selectedMandiStripText} numberOfLines={1}>
               <Text style={{ fontWeight: '900', color: COLORS.primaryDark }}>
-                {getHindiMandiName(selectedCentre).hindi}
+                {getHindiMandiDetails(selectedCentre).hindiName}
               </Text>
               {' '}चुनी गई
             </Text>
@@ -300,7 +339,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
           onPress={handleProceed}
           activeOpacity={0.88}
         >
-          <Text style={styles.ctaButtonText}>आगे: तारीख चुनें →</Text>
+          <Text style={styles.ctaButtonText}>आगे: तारीख व समय चुनें →</Text>
         </TouchableOpacity>
       </View>
 
@@ -358,19 +397,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 1,
   },
-  brandBadge: {
+  voiceButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 6,
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: RADIUS.md,
+    ...SHADOWS.sm,
   },
-  brandBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.accentLight,
+  voiceButtonText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
   },
 
   /* ─── 2. STEPPER ─── */
@@ -451,9 +491,9 @@ const styles = StyleSheet.create({
     ...SHADOWS.sm,
   },
   adviceIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: '#FDE047',
     alignItems: 'center',
     justifyContent: 'center',
@@ -461,23 +501,37 @@ const styles = StyleSheet.create({
   adviceContent: {
     flex: 1,
   },
+  adviceTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
   adviceTag: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
     color: '#854D0E',
-    marginBottom: 1,
   },
   adviceTitle: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#713F12',
     lineHeight: 18,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
   sectionHeading: {
     fontSize: 15,
     fontWeight: '900',
     color: COLORS.text,
-    marginBottom: 12,
+  },
+  sectionTipText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
   },
 
   /* ─── 4. MANDI CARDS ─── */
@@ -500,7 +554,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     ...SHADOWS.md,
   },
-  mandiCardRecommendedBorder: {
+  mandiCardBestBorder: {
     borderColor: '#FDE047',
   },
   cardTopRow: {
@@ -512,6 +566,10 @@ const styles = StyleSheet.create({
   mandiTitleContainer: {
     flex: 1,
     paddingRight: 6,
+  },
+  nameWithRankRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   mandiHindiName: {
     fontSize: 16,
@@ -527,31 +585,52 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 2,
   },
-  recommendPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: '#FEF3C7',
-    borderWidth: 1,
-    borderColor: '#FDE68A',
+  rankBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
   },
-  recommendPillText: {
+  rankBadgeBest: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  rankBadgeNormal: {
+    backgroundColor: '#F1F5F9',
+  },
+  rankBadgeText: {
     fontSize: 11,
     fontWeight: '900',
+  },
+  rankBadgeTextBest: {
     color: '#854D0E',
   },
+  rankBadgeTextNormal: {
+    color: COLORS.textSecondary,
+  },
 
-  /* Crowd Status */
-  crowdStatusBanner: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+  /* Speed Tag */
+  speedTagBox: {
+    paddingVertical: 5,
+    paddingHorizontal: 9,
     borderRadius: 6,
     marginBottom: 8,
   },
-  crowdStatusText: {
+  speedTagText: {
+    fontSize: 12,
+    fontWeight: '800',
+  },
+
+  /* Meter Row */
+  meterContainer: {
+    marginBottom: 6,
+  },
+  meterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  meterLabel: {
     fontSize: 12,
     fontWeight: '800',
   },
@@ -598,11 +677,11 @@ const styles = StyleSheet.create({
   whyLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
     paddingVertical: 4,
   },
   whyLinkText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.primary,
   },
