@@ -16,7 +16,6 @@ export default function Card({
   style,
   headerStyle,
   highlight = false,
-  goldBorder = false,
 }) {
   const Container = onPress ? TouchableOpacity : View;
 
@@ -25,7 +24,6 @@ export default function Card({
       style={[
         styles.card,
         highlight && styles.highlightCard,
-        goldBorder && styles.goldBorderCard,
         style,
       ]}
       onPress={onPress}
@@ -35,7 +33,7 @@ export default function Card({
         <View style={[styles.headerRow, headerStyle]}>
           <View style={styles.headerLeft}>
             {icon && (
-              <View style={[styles.iconContainer, { backgroundColor: iconColor + '18' }]}>
+              <View style={[styles.iconContainer, { backgroundColor: iconColor + '15' }]}>
                 <MaterialCommunityIcons name={icon} size={20} color={iconColor} />
               </View>
             )}
@@ -67,20 +65,15 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
-    padding: SPACING.md,
+    padding: SPACING.md + 2,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    ...SHADOWS.md,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
   },
   highlightCard: {
-    borderColor: COLORS.accent,
+    borderColor: COLORS.success,
     borderWidth: 1.5,
-  },
-  goldBorderCard: {
-    borderColor: 'rgba(212,168,67,0.5)',
-    borderLeftWidth: 4,
-    borderLeftColor: COLORS.accent,
   },
   headerRow: {
     flexDirection: 'row',
@@ -92,12 +85,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 10,
+    gap: 8,
   },
   iconContainer: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -105,13 +98,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
-    color: COLORS.text,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
+    color: COLORS.text,
   },
   cardSubtitle: {
-    color: COLORS.textSecondary,
     fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
     marginTop: 1,
   },
   headerRight: {
@@ -122,11 +116,11 @@ const styles = StyleSheet.create({
   badgePill: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: RADIUS.sm,
   },
   badgeText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   contentContainer: {
     marginTop: 2,

@@ -25,61 +25,66 @@ export default function TimeSlotScreen({ route, navigation }) {
     {
       id: 's1',
       timeRange: '09:00 AM - 10:00 AM',
-      period: 'सुबह (Morning Band)',
+      period: 'सुबह (Morning)',
       available: 5,
-      total: 20,
-      congestion: 'मध्यम भीड़ (Moderate)',
+      congestion: 'मध्यम भीड़',
+      color: '#B45309',
+      bg: '#FEF3C7',
       recommendedArrival: '09:35 AM - 09:50 AM',
       recommended: false,
     },
     {
       id: 's2',
       timeRange: '10:00 AM - 11:00 AM',
-      period: 'सुबह (Morning Band)',
+      period: 'सुबह (Morning)',
       available: 3,
-      total: 20,
-      congestion: 'भारी भीड़ (Heavy)',
+      congestion: 'भारी भीड़',
+      color: '#B91C1C',
+      bg: '#FEE2E2',
       recommendedArrival: '10:35 AM - 10:50 AM',
       recommended: false,
     },
     {
       id: 's3',
       timeRange: '11:00 AM - 12:00 PM',
-      period: '⭐ सबसे तेज समय (Optimal Morning)',
+      period: 'सुबह (Optimal)',
       available: 8,
-      total: 20,
-      congestion: 'कम भीड़ (Optimal Flow)',
+      congestion: 'कम भीड़ (फास्ट)',
+      color: '#15803D',
+      bg: '#DCFCE7',
       recommendedArrival: '11:35 AM - 11:50 AM',
       recommended: true,
-      reason: 'तेज नमी परीक्षण व बिना रुकावट सीधी तौल',
     },
     {
       id: 's4',
       timeRange: '12:00 PM - 01:00 PM',
-      period: 'दोपहर (Noon Band)',
+      period: 'दोपहर (Noon)',
       available: 2,
-      total: 20,
-      congestion: 'भारी भीड़ (Heavy)',
+      congestion: 'भारी भीड़',
+      color: '#B91C1C',
+      bg: '#FEE2E2',
       recommendedArrival: '12:35 PM - 12:50 PM',
       recommended: false,
     },
     {
       id: 's5',
       timeRange: '02:00 PM - 03:00 PM',
-      period: 'दोपहर (Afternoon Band)',
+      period: 'दोपहर (Afternoon)',
       available: 12,
-      total: 20,
-      congestion: 'कम भीड़ (Optimal Flow)',
+      congestion: 'कम भीड़ (फास्ट)',
+      color: '#15803D',
+      bg: '#DCFCE7',
       recommendedArrival: '02:35 PM - 02:50 PM',
       recommended: false,
     },
     {
       id: 's6',
       timeRange: '03:00 PM - 04:00 PM',
-      period: 'शाम (Evening Band)',
+      period: 'शाम (Evening)',
       available: 6,
-      total: 20,
-      congestion: 'मध्यम भीड़ (Moderate)',
+      congestion: 'मध्यम भीड़',
+      color: '#B45309',
+      bg: '#FEF3C7',
       recommendedArrival: '03:35 PM - 03:50 PM',
       recommended: false,
     },
@@ -96,43 +101,38 @@ export default function TimeSlotScreen({ route, navigation }) {
     setLoading(true);
     const bookingPayload = {
       centreId: centre?.id || 2,
-      centreName: centre?.name || 'Berasia Cooperative Procurement Hub (Centre B)',
+      centreName: centre?.name || 'Berasia Cooperative Procurement Hub',
       centreAddress: centre?.address || 'Near NH-46 Junction, Berasia Hub',
       date: date || '2026-04-18',
       timeSlot: selectedSlot.timeRange,
-      crop: `${crop || 'Wheat (गेहूं)'} - ${variety || 'Sharbati A-Grade'}`,
-      landKhasra: `${land?.khasra || '123/1'} (${land?.village || 'Pipariya'})`,
-      quantity: quantity || '2000 kg (20.0 Qtl)',
+      crop: crop || 'Wheat (Sharbati)',
+      landKhasra: land?.khasra || '123/1',
+      quantity: quantity || '2000 kg',
       recommendedArrival: selectedSlot.recommendedArrival,
     };
 
-    try {
-      const res = await bookSlot(bookingPayload);
-      setLoading(false);
+    const result = await bookSlot(bookingPayload);
+    setLoading(false);
 
-      if (res.success) {
-        navigation.navigate('BookingConfirmation', {
-          booking: res.booking,
-        });
-      } else {
-        Alert.alert('त्रुटि', res.error || 'बुकिंग पूरी नहीं हो सकी। पुनः प्रयास करें।');
-      }
-    } catch (e) {
-      setLoading(false);
-      Alert.alert('त्रुटि', 'सर्वर से संपर्क नहीं हो सका।');
+    if (result.success) {
+      navigation.navigate('BookingConfirmation', {
+        booking: result.booking,
+      });
+    } else {
+      Alert.alert('त्रुटि', 'स्लॉट बुक नहीं हो सका। कृपया पुनः प्रयास करें।');
     }
   };
 
   const topPadding = Math.max(
     insets.top,
     Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
-  ) + 8;
+  ) + 6;
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
 
-      {/* ─── 1. COMPACT HEADER ─── */}
+      {/* ─── 1. HEADER ─── */}
       <View style={[styles.header, { paddingTop: topPadding }]}>
         <View style={styles.headerTopRow}>
           <TouchableOpacity
@@ -141,147 +141,102 @@ export default function TimeSlotScreen({ route, navigation }) {
             activeOpacity={0.7}
             accessibilityLabel="पीछे जाएं"
           >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={COLORS.white} />
+            <MaterialCommunityIcons name="arrow-left" size={22} color={COLORS.white} />
           </TouchableOpacity>
 
           <View style={styles.headerTitleBox}>
             <Text style={styles.headerTitleText}>समय स्लॉट चुनें</Text>
-            <Text style={styles.headerSubText}>चरण 3 / 4 • मंडी पहुँचने का समय</Text>
+            <Text style={styles.headerSubText}>चरण 4 / 4 • तौल का समय</Text>
           </View>
 
           <View style={styles.brandBadge}>
-            <MaterialCommunityIcons name="grain" size={16} color={COLORS.accent} />
             <Text style={styles.brandBadgeText}>e-Uparjan</Text>
           </View>
         </View>
       </View>
 
-      {/* ─── 2. STEPPER ─── */}
+      {/* ─── 2. PROGRESS STEPPER ─── */}
       <View style={styles.stepperBar}>
         <View style={styles.stepperRow}>
-          <View style={styles.stepItem}>
-            <View style={[styles.stepDot, styles.stepDotDone]}>
-              <MaterialCommunityIcons name="check" size={12} color={COLORS.white} />
-            </View>
-            <Text style={styles.stepLabelDone}>फसल</Text>
-          </View>
-
-          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.primaryLight} />
-
-          <View style={styles.stepItem}>
-            <View style={[styles.stepDot, styles.stepDotDone]}>
-              <MaterialCommunityIcons name="check" size={12} color={COLORS.white} />
-            </View>
-            <Text style={styles.stepLabelDone}>मंडी</Text>
-          </View>
-
-          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.primaryLight} />
-
-          <View style={styles.stepItem}>
-            <View style={[styles.stepDot, styles.stepDotActive]}>
-              <Text style={styles.stepDotTextActive}>3</Text>
-            </View>
-            <Text style={styles.stepLabelActive}>समय</Text>
-          </View>
-
-          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.divider} />
-
-          <View style={styles.stepItem}>
-            <View style={styles.stepDot}>
-              <Text style={styles.stepDotText}>4</Text>
-            </View>
-            <Text style={styles.stepLabel}>पक्का</Text>
-          </View>
+          <Text style={styles.stepDone}>✓ फसल</Text>
+          <Text style={styles.stepArrow}>→</Text>
+          <Text style={styles.stepDone}>✓ मंडी</Text>
+          <Text style={styles.stepArrow}>→</Text>
+          <Text style={styles.stepDone}>✓ तारीख</Text>
+          <Text style={styles.stepArrow}>→</Text>
+          <Text style={styles.stepActive}>● समय</Text>
         </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 105 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 110 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ─── 3. DATE & MANDI SUMMARY STRIP ─── */}
-        <View style={styles.summaryBar}>
-          <View style={styles.summaryCol}>
-            <Text style={styles.summaryLabel}>तारीख</Text>
-            <Text style={styles.summaryVal}>📅 {dateFormatted || '18 अप्रैल 2026 (शनिवार)'}</Text>
-          </View>
-          <View style={styles.summaryDivider} />
-          <View style={styles.summaryCol}>
-            <Text style={styles.summaryLabel}>उपार्जन केंद्र</Text>
-            <Text style={styles.summaryVal} numberOfLines={1}>
-              🏪 {centre?.name?.split('(')[0]?.trim() || 'Berasia Hub'}
-            </Text>
+        {/* Date Reminder Card */}
+        <View style={styles.reminderCard}>
+          <MaterialCommunityIcons name="calendar-check" size={20} color="#15803D" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.reminderDate}>{dateFormatted || '18 अप्रैल 2026 (शनिवार)'}</Text>
+            <Text style={styles.reminderMandi}>{centre?.name?.split('(')[0] || 'बैरसिया उपार्जन केंद्र'}</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionHeading}>उपलब्ध समय स्लॉट (Time Slots)</Text>
+        <Text style={styles.sectionHeading}>उपलब्ध समय स्लॉट (Time Slots):</Text>
 
-        {/* ─── 4. TIME SLOT CARDS ─── */}
-        <View style={styles.slotsList}>
+        {/* Slot Grid */}
+        <View style={styles.slotsGrid}>
           {slots.map((slot) => {
             const isSelected = selectedSlot?.id === slot.id;
+
             return (
               <TouchableOpacity
                 key={slot.id}
                 style={[
                   styles.slotCard,
-                  isSelected && styles.slotCardSelected,
-                  slot.recommended && !isSelected && styles.slotCardRecommended,
+                  isSelected ? styles.slotCardSelected : styles.slotCardNormal,
                 ]}
                 onPress={() => setSelectedSlot(slot)}
-                activeOpacity={0.88}
+                activeOpacity={0.85}
               >
-                <View style={styles.slotCardHeader}>
-                  <View style={styles.slotTimeBox}>
-                    <MaterialCommunityIcons
-                      name="clock-time-four-outline"
-                      size={20}
-                      color={isSelected ? COLORS.primary : COLORS.text}
-                    />
-                    <Text style={[styles.slotTimeText, isSelected && styles.slotTimeTextSelected]}>
-                      {slot.timeRange}
-                    </Text>
-                  </View>
-
-                  {slot.recommended ? (
-                    <View style={styles.recommendedBadge}>
-                      <MaterialCommunityIcons name="star" size={12} color={COLORS.primaryDark} />
-                      <Text style={styles.recommendedBadgeText}>हमारी सलाह</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.availableBadge}>
-                      <Text style={styles.availableBadgeText}>{slot.available} स्लॉट खाली</Text>
+                <View style={styles.slotHeaderRow}>
+                  <Text style={[styles.timeText, isSelected && styles.timeTextSelected]}>
+                    ⏰ {slot.timeRange}
+                  </Text>
+                  {slot.recommended && (
+                    <View style={styles.recBadge}>
+                      <Text style={styles.recBadgeText}>⭐ तेज तौल</Text>
                     </View>
                   )}
                 </View>
 
-                {/* Arrival Window Strip */}
-                <View style={[styles.arrivalStrip, isSelected && styles.arrivalStripSelected]}>
-                  <MaterialCommunityIcons
-                    name="truck-fast"
-                    size={16}
-                    color={isSelected ? COLORS.primaryDark : COLORS.textSecondary}
-                  />
-                  <Text style={[styles.arrivalText, isSelected && styles.arrivalTextSelected]}>
+                <View style={styles.slotMetaRow}>
+                  <View style={[styles.congestionPill, { backgroundColor: slot.bg }]}>
+                    <Text style={[styles.congestionText, { color: slot.color }]}>
+                      {slot.congestion}
+                    </Text>
+                  </View>
+                  <Text style={styles.availableText}>{slot.available} स्लॉट बाकी</Text>
+                </View>
+
+                <View style={styles.arrivalBox}>
+                  <Text style={styles.arrivalText}>
                     पहुंचने का समय: <Text style={{ fontWeight: '800' }}>{slot.recommendedArrival}</Text>
                   </Text>
                 </View>
-
-                {slot.reason && (
-                  <Text style={styles.slotReasonText}>
-                    💡 {slot.reason}
-                  </Text>
-                )}
               </TouchableOpacity>
             );
           })}
         </View>
       </ScrollView>
 
-      {/* ─── 5. STICKY BOTTOM ACTION CTA ─── */}
-      <View style={[styles.bottomStickyBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      {/* ─── STICKY BOTTOM BAR ─── */}
+      <View style={[styles.stickyBottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+        <Text style={styles.confirmationText}>
+          ✓ {selectedSlot.timeRange} चुना गया
+        </Text>
+
         <TouchableOpacity
-          style={[styles.ctaButton, loading && styles.ctaButtonLoading]}
+          style={styles.ctaButton}
           onPress={handleConfirmBooking}
           disabled={loading}
           activeOpacity={0.88}
@@ -289,7 +244,7 @@ export default function TimeSlotScreen({ route, navigation }) {
           {loading ? (
             <ActivityIndicator color={COLORS.white} size="small" />
           ) : (
-            <Text style={styles.ctaButtonText}>स्लॉट पक्का करें और टोकन लें →</Text>
+            <Text style={styles.ctaButtonText}>स्लॉट पक्का करें (Confirm) →</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -300,16 +255,16 @@ export default function TimeSlotScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F7F9FC',
   },
 
   /* ─── 1. HEADER ─── */
   header: {
     backgroundColor: COLORS.primary,
-    paddingBottom: SPACING.sm + 4,
+    paddingBottom: SPACING.sm + 2,
     paddingHorizontal: SPACING.md,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
     ...SHADOWS.md,
   },
   headerTopRow: {
@@ -318,10 +273,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   backButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -330,27 +285,22 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.sm,
   },
   headerTitleText: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: '900',
     color: COLORS.white,
     letterSpacing: 0.3,
   },
   headerSubText: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.accentLight,
     fontWeight: '600',
     marginTop: 1,
   },
   brandBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(212,168,67,0.3)',
   },
   brandBadgeText: {
     fontSize: 11,
@@ -358,230 +308,173 @@ const styles = StyleSheet.create({
     color: COLORS.accentLight,
   },
 
-  /* ─── 2. STEPPER ─── */
+  /* ─── 2. PROGRESS STEPPER ─── */
   stepperBar: {
     backgroundColor: COLORS.white,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    ...SHADOWS.sm,
+    borderBottomColor: '#E2E8F0',
   },
   stepperRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  stepItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  stepDot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#E2E8F0',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepDotDone: {
-    backgroundColor: COLORS.success,
-  },
-  stepDotActive: {
-    backgroundColor: COLORS.primary,
-  },
-  stepDotText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  stepDotTextActive: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: COLORS.white,
-  },
-  stepLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  stepLabelDone: {
+  stepDone: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.success,
+    color: '#15803D',
   },
-  stepLabelActive: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.primary,
+  stepActive: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
+  },
+  stepArrow: {
+    fontSize: 12,
+    color: '#CBD5E1',
   },
 
   /* ─── SCROLL CONTENT ─── */
   scrollContent: {
     padding: SPACING.md,
+    gap: 12,
   },
 
-  /* ─── 3. SUMMARY BAR ─── */
-  summaryBar: {
+  reminderCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.white,
+    gap: 10,
+    backgroundColor: '#DCFCE7',
+    borderRadius: RADIUS.md,
     padding: 12,
-    borderRadius: RADIUS.lg,
-    marginBottom: SPACING.md,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    ...SHADOWS.sm,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
   },
-  summaryCol: {
-    flex: 1,
+  reminderDate: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#15803D',
   },
-  summaryLabel: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
-  },
-  summaryVal: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginTop: 2,
-  },
-  summaryDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: COLORS.border,
-    marginHorizontal: 10,
+  reminderMandi: {
+    fontSize: 12,
+    color: '#166534',
+    marginTop: 1,
   },
 
-  /* ─── SECTION HEADING ─── */
   sectionHeading: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
     color: COLORS.text,
-    marginBottom: 10,
   },
 
-  /* ─── 4. SLOTS LIST ─── */
-  slotsList: {
+  slotsGrid: {
     gap: 10,
   },
   slotCard: {
     backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    borderWidth: 2,
-    borderColor: COLORS.border,
-    ...SHADOWS.sm,
+    borderRadius: RADIUS.md,
+    padding: 12,
+    borderWidth: 1.5,
   },
-  slotCardRecommended: {
-    borderColor: '#FDE047',
+  slotCardNormal: {
+    borderColor: '#E2E8F0',
   },
   slotCardSelected: {
-    borderColor: COLORS.accentDark,
-    backgroundColor: '#FFFDF5',
-    ...SHADOWS.md,
+    borderColor: '#15803D',
+    borderWidth: 2,
+    backgroundColor: '#FFFFFF',
+    ...SHADOWS.sm,
   },
-  slotCardHeader: {
+  slotHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 6,
   },
-  slotTimeBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  slotTimeText: {
-    fontSize: 16,
+  timeText: {
+    fontSize: 15,
     fontWeight: '900',
     color: COLORS.text,
   },
-  slotTimeTextSelected: {
-    color: COLORS.primaryDark,
+  timeTextSelected: {
+    color: '#15803D',
   },
-  recommendedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+  recBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
-  recommendedBadgeText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: COLORS.primaryDark,
-  },
-  availableBadge: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  availableBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  arrivalStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: RADIUS.sm,
-    marginTop: 8,
-  },
-  arrivalStripSelected: {
-    backgroundColor: '#FEF9C3',
-  },
-  arrivalText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  arrivalTextSelected: {
+  recBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
     color: '#854D0E',
   },
-  slotReasonText: {
+  slotMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  congestionPill: {
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  congestionText: {
     fontSize: 11,
-    color: COLORS.success,
-    fontWeight: '700',
-    marginTop: 6,
+    fontWeight: '800',
+  },
+  availableText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+  },
+  arrivalBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 4,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  arrivalText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
   },
 
-  /* ─── 5. STICKY CTA ─── */
-  bottomStickyBar: {
+  /* ─── STICKY BOTTOM BAR ─── */
+  stickyBottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: COLORS.white,
-    paddingTop: 10,
     paddingHorizontal: SPACING.md,
+    paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: '#E2E8F0',
     ...SHADOWS.lg,
   },
+  confirmationText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#15803D',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
   ctaButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 13,
+    borderRadius: RADIUS.md,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.lg,
-    paddingVertical: 14,
     ...SHADOWS.md,
   },
-  ctaButtonLoading: {
-    opacity: 0.8,
-  },
   ctaButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
     color: COLORS.white,
-    letterSpacing: 0.3,
   },
 });
