@@ -1,0 +1,48 @@
+{
+  "farmerId": "MP-FR-2026-0001",
+  "name": "Ramesh Kumar",
+  "fatherName": "Shivcharan Kumar",
+  "dob": "1982-05-14",
+  "mobile": "9876543210",
+  "aadhaarNumber": "XXXX-XXXX-9012",
+  "aadhaarVerified": true,
+  "address": "Village Pipariya, Tehsil Berasia, Dist. Bhopal, MP - 462038",
+  "landHoldings": [
+    {
+      "id": "L01",
+      "khasra": "123/1",
+      "area": 2.5,
+      "village": "Pipariya",
+      "tehsil": "Berasia",
+      "district": "Bhopal",
+      "soilType": "Black Cotton",
+      "crop": "Wheat (Sharbati)",
+      "status": "Verified"
+    },
+    {
+      "id": "L02",
+      "khasra": "145/4",
+      "area": 1.2,
+      "village": "Pipariya",
+      "tehsil": "Berasia",
+      "district": "Bhopal",
+      "soilType": "Loamy",
+      "crop": "Wheat (Lokwan)",
+      "status": "Verified"
+    }
+  ],
+  "bankAccount": {
+    "bank": "State Bank of India",
+    "account": "30489218392",
+    "ifsc": "SBIN0001234",
+    "branch": "Berasia Main Branch",
+    "verified": true
+  },
+  "crop": "Wheat",
+  "variety": "Sharbati A-Grade",
+  "season": "Rabi 2026-27",
+  "eligibility": "ELIGIBLE",
+  "entitlement": "2000 kg",
+  "mspRate": "₹2,275 / Quintal",
+  "estimatedPayout": "₹45,500"
+}

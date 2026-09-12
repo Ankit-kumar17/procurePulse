@@ -1,0 +1,24 @@
+[
+  {
+    "id": "GRV-2026-0041",
+    "category": "Payment Delay",
+    "subject": "DBT credit delayed for procurement slip WS-BPL-1004",
+    "description": "Wheat sold on 5th April at Berasia Hub. Payment is showing initiated but not credited to SBI account yet.",
+    "status": "In Progress",
+    "date": "2026-04-10",
+    "priority": "High",
+    "response": "Under verification with PFMS Nodal Officer. Expected credit clearance within 24 hours.",
+    "photoAttached": true
+  },
+  {
+    "id": "GRV-2026-0019",
+    "category": "Weight Dispute",
+    "subject": "Tare weight discrepancy of 40kg",
+    "description": "Tare weight of trolley registered 40kg higher than previous weighment.",
+    "status": "Resolved",
+    "date": "2026-03-30",
+    "priority": "Medium",
+    "response": "Weighbridge recalibrated on 30th March. Differential amount adjusted in final payment receipt.",
+    "photoAttached": false
+  }
+]

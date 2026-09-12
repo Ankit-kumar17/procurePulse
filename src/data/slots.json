@@ -1,0 +1,45 @@
+{
+  "centreId": 2,
+  "defaultDate": "2026-04-18",
+  "dates": {
+    "2026-04-18": {
+      "status": "available",
+      "color": "#2E8B57",
+      "slots": [
+        { "id": "s1", "timeRange": "09:00 AM - 10:00 AM", "period": "Morning", "available": 5, "total": 20, "congestion": "Low" },
+        { "id": "s2", "timeRange": "10:00 AM - 11:00 AM", "period": "Morning", "available": 3, "total": 20, "congestion": "Medium" },
+        { "id": "s3", "timeRange": "11:00 AM - 12:00 PM", "period": "Morning", "available": 8, "total": 20, "congestion": "Optimal (Fast)" },
+        { "id": "s4", "timeRange": "12:00 PM - 01:00 PM", "period": "Afternoon", "available": 2, "total": 20, "congestion": "High" },
+        { "id": "s5", "timeRange": "02:00 PM - 03:00 PM", "period": "Afternoon", "available": 12, "total": 20, "congestion": "Optimal (Fast)" },
+        { "id": "s6", "timeRange": "03:00 PM - 04:00 PM", "period": "Afternoon", "available": 6, "total": 20, "congestion": "Medium" }
+      ]
+    },
+    "2026-04-19": {
+      "status": "filling",
+      "color": "#F59E0B",
+      "slots": [
+        { "id": "s7", "timeRange": "09:00 AM - 10:00 AM", "period": "Morning", "available": 2, "total": 20, "congestion": "High" },
+        { "id": "s8", "timeRange": "10:00 AM - 11:00 AM", "period": "Morning", "available": 1, "total": 20, "congestion": "High" },
+        { "id": "s9", "timeRange": "11:00 AM - 12:00 PM", "period": "Morning", "available": 4, "total": 20, "congestion": "Medium" },
+        { "id": "s10", "timeRange": "02:00 PM - 03:00 PM", "period": "Afternoon", "available": 5, "total": 20, "congestion": "Medium" }
+      ]
+    },
+    "2026-04-20": {
+      "status": "full",
+      "color": "#DC2626",
+      "slots": [
+        { "id": "s11", "timeRange": "09:00 AM - 10:00 AM", "period": "Morning", "available": 0, "total": 20, "congestion": "Full" },
+        { "id": "s12", "timeRange": "11:00 AM - 12:00 PM", "period": "Morning", "available": 0, "total": 20, "congestion": "Full" }
+      ]
+    },
+    "2026-04-21": {
+      "status": "available",
+      "color": "#2E8B57",
+      "slots": [
+        { "id": "s13", "timeRange": "09:00 AM - 10:00 AM", "period": "Morning", "available": 10, "total": 20, "congestion": "Low" },
+        { "id": "s14", "timeRange": "11:00 AM - 12:00 PM", "period": "Morning", "available": 14, "total": 20, "congestion": "Optimal (Fast)" },
+        { "id": "s15", "timeRange": "02:00 PM - 03:00 PM", "period": "Afternoon", "available": 9, "total": 20, "congestion": "Low" }
+      ]
+    }
+  }
+}

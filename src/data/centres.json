@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "Kolar Krishi Upaj Mandi (Centre A)",
+    "code": "BPL-MND-01",
+    "distance": 5.2,
+    "wait": 138,
+    "capacity": 100,
+    "availableSlots": 12,
+    "recommended": false,
+    "score": 62,
+    "address": "Berasia Road, Mandi Complex, Bhopal",
+    "contact": "+91 755 2748190",
+    "status": "Congested",
+    "facilities": ["Digital Weighbridge", "Moisture Testing Lab", "Covered Shed", "Farmer Rest Area"],
+    "reasoning": "Closer distance (5.2 km) but severe unloading queue bottleneck (~138 mins wait time)."
+  },
+  {
+    "id": 2,
+    "name": "Berasia Cooperative Procurement Hub (Centre B)",
+    "code": "BPL-MND-02",
+    "distance": 8.4,
+    "wait": 41,
+    "capacity": 150,
+    "availableSlots": 48,
+    "recommended": true,
+    "score": 94,
+    "address": "Near NH-46 Junction, Berasia Hub",
+    "contact": "+91 755 2891043",
+    "status": "Optimal Flow",
+    "facilities": ["Dual Electronic Scales", "Automated Moisture Analyzer", "Fast Weighbridge", "Direct DB Payout Counter"],
+    "reasoning": "Optimal AI balance: Only 3.2 km further with a 97-minute shorter queue, saving ~1.5 hours total turnaround."
+  },
+  {
+    "id": 3,
+    "name": "Sukhi Sevania Storage & Procurement (Centre C)",
+    "code": "BPL-MND-03",
+    "distance": 11.8,
+    "wait": 27,
+    "capacity": 80,
+    "availableSlots": 60,
+    "recommended": false,
+    "score": 81,
+    "address": "Warehouse Corridor, Sukhi Sevania",
+    "contact": "+91 755 2910384",
+    "status": "Fast Moving",
+    "facilities": ["Weighbridge", "Moisture Test Station", "Silo Unloader"],
+    "reasoning": "Lowest queue wait time (27 mins), but higher transit distance (11.8 km) and limited daily intake."
+  }
+]
