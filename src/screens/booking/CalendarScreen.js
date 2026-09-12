@@ -6,40 +6,40 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
-import Header from '../../components/Header';
-import Card from '../../components/Card';
-import Button from '../../components/Button';
-import Badge from '../../components/Badge';
 
 export default function CalendarScreen({ route, navigation }) {
   const { crop, variety, season, land, quantity, centre } = route.params || {};
+  const insets = useSafeAreaInsets();
 
-  // Mock April 2026 Calendar Grid with availability color-coding
+  // April 2026 Calendar Grid with availability color-coding
   const [selectedDate, setSelectedDate] = useState('2026-04-18');
 
   const daysInMonth = [
-    { day: 14, dateStr: '2026-04-14', weekday: 'Tue', status: 'full', color: COLORS.error, slots: 0 },
-    { day: 15, dateStr: '2026-04-15', weekday: 'Wed', status: 'full', color: COLORS.error, slots: 0 },
-    { day: 16, dateStr: '2026-04-16', weekday: 'Thu', status: 'filling', color: COLORS.warning, slots: 4 },
-    { day: 17, dateStr: '2026-04-17', weekday: 'Fri', status: 'filling', color: COLORS.warning, slots: 6 },
-    { day: 18, dateStr: '2026-04-18', weekday: 'Sat', status: 'available', color: COLORS.success, slots: 48, optimal: true },
-    { day: 19, dateStr: '2026-04-19', weekday: 'Sun', status: 'filling', color: COLORS.warning, slots: 12 },
-    { day: 20, dateStr: '2026-04-20', weekday: 'Mon', status: 'full', color: COLORS.error, slots: 0 },
-    { day: 21, dateStr: '2026-04-21', weekday: 'Tue', status: 'available', color: COLORS.success, slots: 35 },
-    { day: 22, dateStr: '2026-04-22', weekday: 'Wed', status: 'available', color: COLORS.success, slots: 40 },
-    { day: 23, dateStr: '2026-04-23', weekday: 'Thu', status: 'filling', color: COLORS.warning, slots: 15 },
-    { day: 24, dateStr: '2026-04-24', weekday: 'Fri', status: 'available', color: COLORS.success, slots: 50 },
-    { day: 25, dateStr: '2026-04-25', weekday: 'Sat', status: 'available', color: COLORS.success, slots: 32 },
+    { day: 14, dateStr: '2026-04-14', weekday: 'मंगल', weekdayEng: 'Tue', status: 'full', color: COLORS.error, slots: 0 },
+    { day: 15, dateStr: '2026-04-15', weekday: 'बुध', weekdayEng: 'Wed', status: 'full', color: COLORS.error, slots: 0 },
+    { day: 16, dateStr: '2026-04-16', weekday: 'गुरु', weekdayEng: 'Thu', status: 'filling', color: COLORS.warning, slots: 4 },
+    { day: 17, dateStr: '2026-04-17', weekday: 'शुक्र', weekdayEng: 'Fri', status: 'filling', color: COLORS.warning, slots: 6 },
+    { day: 18, dateStr: '2026-04-18', weekday: 'शनि', weekdayEng: 'Sat', status: 'available', color: COLORS.success, slots: 48, optimal: true },
+    { day: 19, dateStr: '2026-04-19', weekday: 'रवि', weekdayEng: 'Sun', status: 'filling', color: COLORS.warning, slots: 12 },
+    { day: 20, dateStr: '2026-04-20', weekday: 'सोम', weekdayEng: 'Mon', status: 'full', color: COLORS.error, slots: 0 },
+    { day: 21, dateStr: '2026-04-21', weekday: 'मंगल', weekdayEng: 'Tue', status: 'available', color: COLORS.success, slots: 35 },
+    { day: 22, dateStr: '2026-04-22', weekday: 'बुध', weekdayEng: 'Wed', status: 'available', color: COLORS.success, slots: 40 },
+    { day: 23, dateStr: '2026-04-23', weekday: 'गुरु', weekdayEng: 'Thu', status: 'filling', color: COLORS.warning, slots: 15 },
+    { day: 24, dateStr: '2026-04-24', weekday: 'शुक्र', weekdayEng: 'Fri', status: 'available', color: COLORS.success, slots: 50 },
+    { day: 25, dateStr: '2026-04-25', weekday: 'शनि', weekdayEng: 'Sat', status: 'available', color: COLORS.success, slots: 32 },
   ];
 
   const selectedDayObj = daysInMonth.find((d) => d.dateStr === selectedDate) || daysInMonth[4];
 
   const handleNext = () => {
     if (selectedDayObj.status === 'full') {
-      Alert.alert('Date Fully Booked', 'Please choose a date with available slots (Green or Amber).');
+      Alert.alert('तारीख भर चुकी है', 'कृपया खाली स्लॉट वाली तारीख (हरा या पीला रंग) चुनें।');
       return;
     }
 
@@ -51,68 +51,123 @@ export default function CalendarScreen({ route, navigation }) {
       quantity,
       centre,
       date: selectedDate,
-      dateFormatted: `Saturday, 18 April 2026`,
+      dateFormatted: `${selectedDayObj.day} अप्रैल 2026 (${selectedDayObj.weekday})`,
     });
   };
 
+  const topPadding = Math.max(
+    insets.top,
+    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
+  ) + 8;
+
   return (
     <View style={styles.container}>
-      <Header
-        title="Select Date"
-        subtitle="Step 3 of 4: Month Availability View"
-        showBack
-        onBack={() => navigation.goBack()}
-      />
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
 
-      {/* Wizard Step Indicator */}
-      <View style={styles.wizardBar}>
-        <View style={styles.wizardStep}>
-          <Text style={styles.wizardStepNum}>✓</Text>
-          <Text style={styles.wizardStepText}>Land</Text>
-        </View>
-        <View style={styles.wizardLine} />
-        <View style={styles.wizardStep}>
-          <Text style={styles.wizardStepNum}>✓</Text>
-          <Text style={styles.wizardStepText}>Centre</Text>
-        </View>
-        <View style={styles.wizardLine} />
-        <View style={[styles.wizardStep, styles.wizardStepActive]}>
-          <Text style={styles.wizardStepNumActive}>3</Text>
-          <Text style={styles.wizardStepTextActive}>Date & Slot</Text>
+      {/* ─── 1. COMPACT HEADER ─── */}
+      <View style={[styles.header, { paddingTop: topPadding }]}>
+        <View style={styles.headerTopRow}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+            accessibilityLabel="पीछे जाएं"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color={COLORS.white} />
+          </TouchableOpacity>
+
+          <View style={styles.headerTitleBox}>
+            <Text style={styles.headerTitleText}>तारीख चुनें</Text>
+            <Text style={styles.headerSubText}>चरण 3 / 4 • मंडी आने की तारीख</Text>
+          </View>
+
+          <View style={styles.brandBadge}>
+            <MaterialCommunityIcons name="grain" size={16} color={COLORS.accent} />
+            <Text style={styles.brandBadgeText}>e-Uparjan</Text>
+          </View>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Selected Centre Summary Pill */}
-        <View style={styles.centrePill}>
-          <MaterialCommunityIcons name="storefront" size={20} color={COLORS.primary} />
+      {/* ─── 2. STEPPER TRACKER ─── */}
+      <View style={styles.stepperBar}>
+        <View style={styles.stepperRow}>
+          <View style={styles.stepItem}>
+            <View style={[styles.stepDot, styles.stepDotDone]}>
+              <MaterialCommunityIcons name="check" size={12} color={COLORS.white} />
+            </View>
+            <Text style={styles.stepLabelDone}>फसल</Text>
+          </View>
+
+          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.primaryLight} />
+
+          <View style={styles.stepItem}>
+            <View style={[styles.stepDot, styles.stepDotDone]}>
+              <MaterialCommunityIcons name="check" size={12} color={COLORS.white} />
+            </View>
+            <Text style={styles.stepLabelDone}>मंडी</Text>
+          </View>
+
+          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.primaryLight} />
+
+          <View style={styles.stepItem}>
+            <View style={[styles.stepDot, styles.stepDotActive]}>
+              <Text style={styles.stepDotTextActive}>3</Text>
+            </View>
+            <Text style={styles.stepLabelActive}>समय</Text>
+          </View>
+
+          <MaterialCommunityIcons name="chevron-right" size={18} color={COLORS.divider} />
+
+          <View style={styles.stepItem}>
+            <View style={styles.stepDot}>
+              <Text style={styles.stepDotText}>4</Text>
+            </View>
+            <Text style={styles.stepLabel}>पक्का</Text>
+          </View>
+        </View>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 105 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ─── 3. SELECTED MANDI SUMMARY PILL ─── */}
+        <View style={styles.mandiSummaryPill}>
+          <View style={styles.mandiIconBox}>
+            <MaterialCommunityIcons name="storefront" size={20} color={COLORS.primary} />
+          </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.pillTitle} numberOfLines={1}>{centre?.name || 'Berasia Procurement Hub'}</Text>
-            <Text style={styles.pillSub}>{centre?.distance || 8.4} km away • {centre?.wait || 41}m wait</Text>
+            <Text style={styles.mandiPillTitle} numberOfLines={1}>
+              🏪 {centre?.name?.split('(')[0]?.trim() || 'Berasia Cooperative Procurement Hub'}
+            </Text>
+            <Text style={styles.mandiPillSub}>
+              📍 {centre?.distance || 8.4} km दूरी • ⏰ {centre?.wait || 41} मिनट इंतजार
+            </Text>
           </View>
         </View>
 
-        {/* Legend */}
-        <View style={styles.legendContainer}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: COLORS.success }]} />
-            <Text style={styles.legendLabel}>Available (&gt;20 slots)</Text>
+        {/* ─── 4. CALENDAR MONTH CARD ─── */}
+        <View style={styles.calendarCard}>
+          <View style={styles.monthHeader}>
+            <View style={styles.monthTitleRow}>
+              <MaterialCommunityIcons name="calendar-month" size={22} color={COLORS.primary} />
+              <Text style={styles.monthTitle}>अप्रैल 2026 (April 2026)</Text>
+            </View>
+            <View style={styles.legendRow}>
+              <View style={styles.legendDotBox}>
+                <View style={[styles.legendDot, { backgroundColor: COLORS.success }]} />
+                <Text style={styles.legendText}>खाली</Text>
+              </View>
+              <View style={styles.legendDotBox}>
+                <View style={[styles.legendDot, { backgroundColor: COLORS.warning }]} />
+                <Text style={styles.legendText}>कम</Text>
+              </View>
+              <View style={styles.legendDotBox}>
+                <View style={[styles.legendDot, { backgroundColor: COLORS.error }]} />
+                <Text style={styles.legendText}>भरा</Text>
+              </View>
+            </View>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: COLORS.warning }]} />
-            <Text style={styles.legendLabel}>Filling Fast (&lt;15 slots)</Text>
-          </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: COLORS.error }]} />
-            <Text style={styles.legendLabel}>Full / Holiday</Text>
-          </View>
-        </View>
-
-        {/* Month Calendar Card */}
-        <Card title="April 2026 / अप्रैल 2026" icon="calendar-month" iconColor={COLORS.primary}>
-          <Text style={styles.instructionText}>
-            Select an optimal date. Green dates offer fastest intake & minimal truck queue.
-          </Text>
 
           {/* Days Grid */}
           <View style={styles.daysGrid}>
@@ -124,76 +179,86 @@ export default function CalendarScreen({ route, navigation }) {
                 <TouchableOpacity
                   key={item.dateStr}
                   style={[
-                    styles.dayBox,
-                    isSelected && styles.dayBoxSelected,
-                    isFull && styles.dayBoxFull,
+                    styles.dayTile,
+                    isSelected && styles.dayTileSelected,
+                    isFull && styles.dayTileFull,
                   ]}
-                  onPress={() => setSelectedDate(item.dateStr)}
-                  activeOpacity={0.8}
+                  onPress={() => {
+                    if (isFull) {
+                      Alert.alert('तारीख भर चुकी है', 'इस दिन सभी स्लॉट बुक हैं। कृपया हरी या पीली तारीख चुनें।');
+                    } else {
+                      setSelectedDate(item.dateStr);
+                    }
+                  }}
+                  activeOpacity={isFull ? 1 : 0.8}
                 >
-                  <Text style={[styles.weekdayText, isSelected && styles.textSelected]}>
+                  <Text style={[styles.weekdayLabel, isSelected && styles.textWhite]}>
                     {item.weekday}
                   </Text>
-                  <Text style={[styles.dayNum, isSelected && styles.textSelected]}>
+                  <Text style={[styles.dayNumber, isSelected && styles.textWhite]}>
                     {item.day}
                   </Text>
-                  <View style={[styles.statusPill, { backgroundColor: item.color }]}>
-                    <Text style={styles.statusPillText}>
-                      {isFull ? 'FULL' : `${item.slots} left`}
+                  <View style={[styles.slotsBadge, { backgroundColor: isSelected ? 'rgba(255,255,255,0.25)' : item.color }]}>
+                    <Text style={[styles.slotsBadgeText, { color: isSelected ? COLORS.white : (isFull ? COLORS.white : (item.status === 'filling' ? '#78350F' : COLORS.white)) }]}>
+                      {isFull ? 'फुल' : `${item.slots}`}
                     </Text>
                   </View>
                   {item.optimal && (
-                    <View style={styles.optimalStar}>
-                      <MaterialCommunityIcons name="star-circle" size={14} color={COLORS.accent} />
+                    <View style={styles.starBadge}>
+                      <MaterialCommunityIcons name="star" size={10} color={COLORS.primaryDark} />
                     </View>
                   )}
                 </TouchableOpacity>
               );
             })}
           </View>
-        </Card>
+        </View>
 
-        {/* Selected Date Summary Card */}
-        <Card
-          title={`Selected Date: ${selectedDayObj.day} April 2026 (${selectedDayObj.weekday})`}
-          icon="calendar-check"
-          iconColor={COLORS.primary}
-          badge={selectedDayObj.status.toUpperCase()}
-          badgeColor={selectedDayObj.color}
-        >
-          <View style={styles.dateSummaryBox}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.sumLabel}>Available Capacity</Text>
-              <Text style={[styles.sumVal, { color: selectedDayObj.color }]}>
-                {selectedDayObj.slots} Slot Tokens
+        {/* ─── 5. SELECTED DATE CONFIRMATION SUMMARY ─── */}
+        <View style={styles.dateSummaryCard}>
+          <View style={styles.dateSummaryHeader}>
+            <MaterialCommunityIcons name="calendar-check" size={22} color={COLORS.success} />
+            <Text style={styles.dateSummaryTitle}>
+              {selectedDayObj.day} अप्रैल 2026, {selectedDayObj.weekday}वार
+            </Text>
+          </View>
+
+          <View style={styles.dateStatsRow}>
+            <View style={styles.dateStatBox}>
+              <Text style={styles.dateStatLabel}>उपलब्ध स्लॉट</Text>
+              <Text style={[styles.dateStatValue, { color: selectedDayObj.color }]}>
+                {selectedDayObj.slots} स्लॉट खाली
               </Text>
             </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.sumLabel}>Predicted Weather</Text>
-              <Text style={styles.sumVal}>☀️ Clear & Sunny (32°C)</Text>
+            <View style={styles.dateStatDivider} />
+            <View style={styles.dateStatBox}>
+              <Text style={styles.dateStatLabel}>मौसम</Text>
+              <Text style={styles.dateStatValue}>☀️ साफ (32°C)</Text>
             </View>
           </View>
 
           {selectedDayObj.optimal && (
-            <View style={styles.optimalAdviceBox}>
-              <MaterialCommunityIcons name="lightbulb-on-outline" size={20} color={COLORS.accentDark} />
-              <Text style={styles.optimalAdviceText}>
-                <Text style={{ fontWeight: '700' }}>AI Insight: </Text>
-                Saturday 18th April has 3 digital scales operational with minimum backlog.
+            <View style={styles.aiInsightBox}>
+              <MaterialCommunityIcons name="star-outline" size={16} color={COLORS.accentDark} />
+              <Text style={styles.aiInsightText}>
+                <Text style={{ fontWeight: '800' }}>सलाह: </Text>
+                शनिवार 18 अप्रैल को 3 डिजिटल कांटे चालू रहेंगे और तौल सबसे तेज होगी।
               </Text>
             </View>
           )}
-        </Card>
-
-        <Button
-          title="Proceed to Time Slot"
-          variant="primary"
-          size="lg"
-          iconRight="arrow-right"
-          onPress={handleNext}
-          style={{ marginTop: SPACING.sm }}
-        />
+        </View>
       </ScrollView>
+
+      {/* ─── 6. STICKY BOTTOM ACTION CTA ─── */}
+      <View style={[styles.bottomStickyBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+        <TouchableOpacity
+          style={styles.ctaButton}
+          onPress={handleNext}
+          activeOpacity={0.88}
+        >
+          <Text style={styles.ctaButtonText}>आगे: समय स्लॉट चुनें →</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -201,99 +266,198 @@ export default function CalendarScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F8FAFC',
   },
-  wizardBar: {
+
+  /* ─── 1. HEADER ─── */
+  header: {
+    backgroundColor: COLORS.primary,
+    paddingBottom: SPACING.sm + 4,
+    paddingHorizontal: SPACING.md,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    ...SHADOWS.md,
+  },
+  headerTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.surface,
-    paddingVertical: SPACING.sm + 2,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
-    paddingHorizontal: SPACING.md,
+    justifyContent: 'space-between',
   },
-  wizardStep: {
+  backButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitleBox: {
+    flex: 1,
+    marginHorizontal: SPACING.sm,
+  },
+  headerTitleText: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: COLORS.white,
+    letterSpacing: 0.3,
+  },
+  headerSubText: {
+    fontSize: 12,
+    color: COLORS.accentLight,
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  brandBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(212,168,67,0.3)',
   },
-  wizardStepActive: {},
-  wizardStepNum: {
+  brandBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.accentLight,
+  },
+
+  /* ─── 2. STEPPER ─── */
+  stepperBar: {
+    backgroundColor: COLORS.white,
+    paddingVertical: 10,
+    paddingHorizontal: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    ...SHADOWS.sm,
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  stepItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  stepDot: {
     width: 20,
     height: 20,
     borderRadius: 10,
     backgroundColor: '#E2E8F0',
-    color: COLORS.textSecondary,
-    fontSize: 11,
-    fontWeight: '700',
-    textAlign: 'center',
-    lineHeight: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  wizardStepNumActive: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  stepDotDone: {
+    backgroundColor: COLORS.success,
+  },
+  stepDotActive: {
     backgroundColor: COLORS.primary,
-    color: COLORS.white,
+  },
+  stepDotText: {
     fontSize: 11,
     fontWeight: '700',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  wizardStepText: {
-    fontSize: 12,
     color: COLORS.textSecondary,
-    fontWeight: '500',
   },
-  wizardStepTextActive: {
+  stepDotTextActive: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.white,
+  },
+  stepLabel: {
     fontSize: 12,
-    color: COLORS.primary,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  stepLabelDone: {
+    fontSize: 12,
     fontWeight: '700',
+    color: COLORS.success,
   },
-  wizardLine: {
-    width: 24,
-    height: 2,
-    backgroundColor: COLORS.border,
-    marginHorizontal: 8,
+  stepLabelActive: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.primary,
   },
+
+  /* ─── SCROLL CONTENT ─── */
   scrollContent: {
     padding: SPACING.md,
-    paddingBottom: SPACING.xxl,
   },
-  centrePill: {
+
+  /* ─── 3. MANDI PILL ─── */
+  mandiSummaryPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    padding: SPACING.md,
-    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.white,
+    padding: 12,
+    borderRadius: RADIUS.lg,
     marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
     gap: 10,
     ...SHADOWS.sm,
   },
-  pillTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+  mandiIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mandiPillTitle: {
+    fontSize: 14,
+    fontWeight: '800',
     color: COLORS.text,
   },
-  pillSub: {
+  mandiPillSub: {
     fontSize: 11,
     color: COLORS.textSecondary,
-    marginTop: 1,
+    marginTop: 2,
+    fontWeight: '500',
   },
-  legendContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#F8FAFC',
-    padding: SPACING.sm + 2,
-    borderRadius: RADIUS.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
+
+  /* ─── 4. CALENDAR CARD ─── */
+  calendarCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    borderWidth: 1.5,
     borderColor: COLORS.border,
+    marginBottom: SPACING.md,
+    ...SHADOWS.sm,
   },
-  legendItem: {
+  monthHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    marginBottom: 12,
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  monthTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  monthTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: COLORS.text,
+  },
+  legendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  legendDotBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -303,107 +467,165 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  legendLabel: {
-    fontSize: 10,
+  legendText: {
+    fontSize: 11,
+    fontWeight: '700',
     color: COLORS.textSecondary,
-    fontWeight: '600',
   },
-  instructionText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.md,
-  },
+
+  /* ─── DAYS GRID ─── */
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
     justifyContent: 'space-between',
+    gap: 8,
   },
-  dayBox: {
-    width: '23%',
+  dayTile: {
+    width: '22.5%',
     backgroundColor: '#F8FAFC',
     borderRadius: RADIUS.md,
     paddingVertical: 10,
+    paddingHorizontal: 4,
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: COLORS.border,
     position: 'relative',
   },
-  dayBoxSelected: {
-    borderColor: COLORS.primary,
+  dayTileSelected: {
     backgroundColor: COLORS.primary,
+    borderColor: COLORS.primaryDark,
+    ...SHADOWS.md,
   },
-  dayBoxFull: {
-    backgroundColor: '#FFF5F5',
-    borderColor: '#FED7D7',
-    opacity: 0.65,
+  dayTileFull: {
+    opacity: 0.5,
+    backgroundColor: '#F1F5F9',
   },
-  weekdayText: {
+  weekdayLabel: {
     fontSize: 11,
+    fontWeight: '700',
     color: COLORS.textSecondary,
-    fontWeight: '600',
   },
-  dayNum: {
+  dayNumber: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '900',
     color: COLORS.text,
     marginVertical: 2,
   },
-  textSelected: {
-    color: COLORS.white,
-  },
-  statusPill: {
-    paddingHorizontal: 4,
+  slotsBadge: {
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     marginTop: 2,
   },
-  statusPillText: {
-    color: COLORS.white,
-    fontSize: 8,
+  slotsBadgeText: {
+    fontSize: 10,
     fontWeight: '800',
   },
-  optimalStar: {
+  textWhite: {
+    color: COLORS.white,
+  },
+  starBadge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
+    top: 3,
+    right: 3,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: COLORS.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  dateSummaryBox: {
+
+  /* ─── 5. DATE SUMMARY ─── */
+  dateSummaryCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    ...SHADOWS.sm,
+  },
+  dateSummaryHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#F8FAFC',
-    padding: SPACING.sm + 4,
-    borderRadius: RADIUS.md,
-    marginVertical: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    alignItems: 'center',
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    paddingBottom: 8,
+    marginBottom: 10,
   },
-  summaryItem: {},
-  sumLabel: {
+  dateSummaryTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: COLORS.text,
+  },
+  dateStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  dateStatBox: {
+    flex: 1,
+  },
+  dateStatLabel: {
     fontSize: 11,
+    fontWeight: '600',
     color: COLORS.textSecondary,
   },
-  sumVal: {
-    fontSize: 13,
-    fontWeight: '700',
+  dateStatValue: {
+    fontSize: 14,
+    fontWeight: '900',
     color: COLORS.text,
     marginTop: 2,
   },
-  optimalAdviceBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.accentLight + '44',
-    padding: SPACING.sm + 4,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.accent,
-    gap: 8,
-    marginTop: SPACING.xs,
+  dateStatDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: COLORS.border,
+    marginHorizontal: 12,
   },
-  optimalAdviceText: {
+  aiInsightBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF9C3',
+    padding: 8,
+    borderRadius: RADIUS.sm,
+    marginTop: 10,
+    gap: 6,
+  },
+  aiInsightText: {
     fontSize: 11,
-    color: COLORS.primaryDark,
+    color: '#854D0E',
     flex: 1,
-    lineHeight: 15,
+    lineHeight: 16,
+  },
+
+  /* ─── 6. STICKY CTA ─── */
+  bottomStickyBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.white,
+    paddingTop: 10,
+    paddingHorizontal: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    ...SHADOWS.lg,
+  },
+  ctaButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.lg,
+    paddingVertical: 14,
+    ...SHADOWS.md,
+  },
+  ctaButtonText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: COLORS.white,
+    letterSpacing: 0.3,
   },
 });
