@@ -20,9 +20,8 @@ export default function LiveQueueScreen({ navigation }) {
   const insets = useSafeAreaInsets();
 
   const [secondsRemaining, setSecondsRemaining] = useState(1320); // 22 minutes
-  const [facilitiesExpanded, setFacilitiesExpanded] = useState(false);
 
-  // Auto-delay alert after 30 seconds as specified in PRD 7.6
+  // Auto-delay alert simulation
   useEffect(() => {
     const delayTimer = setTimeout(() => {
       triggerManualDelayAlert(true);
@@ -41,15 +40,23 @@ export default function LiveQueueScreen({ navigation }) {
   const formatCountdown = (totalSecs) => {
     const m = Math.floor(totalSecs / 60);
     const s = totalSecs % 60;
-    return `${m}म ${s < 10 ? '0' : ''}${s}से`;
+    return `${m} मिनट ${s < 10 ? '0' : ''}${s} सेकंड`;
   };
 
   const handleCallCentre = () => {
-    Alert.alert('📞 मंडी हेल्पलाइन', 'Berasia Procurement Hub\n+91 755 2891043');
+    Alert.alert('📞 मंडी सहायता', 'बैरसिया उपार्जन केंद्र सहायता नंबर:\n+91 755 2891043\n\n(सुबह 8:00 से शाम 6:00)');
   };
 
   const handleOpenMap = () => {
-    Alert.alert('🗺 रास्ता', 'GPS Navigation खुल रहा है...\nBerasia Cooperative Procurement Hub');
+    Alert.alert('🗺 रास्ता (GPS)', 'बैरसिया उपार्जन केंद्र (NH-46 जंक्शन) का नक्शा खुल रहा है...');
+  };
+
+  const handlePlayVoiceGuide = () => {
+    Alert.alert(
+      '🔊 लाइव कतार सहायक (Voice Guide)',
+      `नमस्ते किसान भाई!\n\n• अभी टोकन #${queueState.nowServing} की तौल चल रही है।\n• आपका टोकन #${queueState.yourTokenNumber} है।\n• आपसे पहले ${queueState.farmersAhead} किसान कतार में हैं।\n• आपकी बारी लगभग ${queueState.estimatedTurnTime} बजे आएगी।`,
+      [{ text: 'समझ गया (OK)' }]
+    );
   };
 
   const topPadding = Math.max(
@@ -57,342 +64,148 @@ export default function LiveQueueScreen({ navigation }) {
     Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
   ) + 8;
 
-  const { nowServing, yourTokenNumber, farmersAhead, hasDelayAlert, delayMinutes, newETA, estimatedTurnTime } = queueState;
+  const { nowServing, yourTokenNumber, farmersAhead, hasDelayAlert, delayMinutes, estimatedTurnTime } = queueState;
 
-  // Determine action state
   const isMyTurn = farmersAhead === 0;
-  const isApproaching = farmersAhead <= 2 && !isMyTurn;
-
-  // Farmer dots for visual queue
-  const farmerDots = Array.from({ length: Math.min(farmersAhead, 6) });
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
 
-      {/* ─── COMPACT HEADER ─── */}
+      {/* ─── 1. HEADER ─── */}
       <View style={[styles.header, { paddingTop: topPadding }]}>
-        <View style={styles.headerLeft}>
-          <View style={styles.logoDot}>
-            <MaterialCommunityIcons name="grain" size={18} color={COLORS.accent} />
+        <View style={styles.headerTopRow}>
+          <View style={styles.headerLeft}>
+            <View style={styles.liveDot} />
+            <Text style={styles.headerTitleText}>लाइव टोकन व कतार</Text>
           </View>
-          <View>
-            <Text style={styles.appName}>ProcurePulse</Text>
-            <Text style={styles.appSub}>e-Uparjan 2.0 · MP</Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.callBtn} onPress={handleCallCentre}>
-          <MaterialCommunityIcons name="phone" size={20} color={COLORS.white} />
-        </TouchableOpacity>
-      </View>
 
-      {/* Page title strip */}
-      <View style={styles.pageTitleStrip}>
-        <MaterialCommunityIcons name="tractor" size={20} color={COLORS.accent} />
-        <Text style={styles.pageTitle}>मंडी की लाइव स्थिति</Text>
-        <View style={styles.livePill}>
-          <View style={styles.liveDot} />
-          <Text style={styles.liveText}>LIVE</Text>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.voiceBtn} onPress={handlePlayVoiceGuide} activeOpacity={0.8}>
+              <MaterialCommunityIcons name="volume-high" size={16} color={COLORS.primaryDark} />
+              <Text style={styles.voiceBtnText}>सुनें</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.callBtn} onPress={handleCallCentre} activeOpacity={0.8}>
+              <MaterialCommunityIcons name="phone" size={18} color={COLORS.white} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 90 }]}
         showsVerticalScrollIndicator={false}
       >
-
-        {/* ─── 1. MANDI LOCATION ─── */}
+        {/* Mandi Strip */}
         <View style={styles.mandiCard}>
-          <View style={styles.mandiLeft}>
-            <MaterialCommunityIcons name="map-marker" size={28} color={COLORS.error} />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={styles.mandiName}>
-                {activeBooking?.centre?.toUpperCase() || 'BERASIA MANDI'}
-              </Text>
-              <Text style={styles.mandiSub}>
-                {activeBooking?.centreAddress || 'Near NH-46, Berasia, Bhopal'}
-              </Text>
-            </View>
+          <View style={styles.mandiInfo}>
+            <Text style={styles.mandiNameText}>
+              🏪 {activeBooking?.centre?.split('(')[0] || 'बैरसिया उपार्जन केंद्र'}
+            </Text>
+            <Text style={styles.mandiSubText}>
+              📍 {activeBooking?.centreAddress || 'NH-46 जंक्शन, बैरसिया, भोपाल'}
+            </Text>
           </View>
-          <TouchableOpacity style={styles.dirBtn} onPress={handleOpenMap}>
-            <MaterialCommunityIcons name="directions" size={20} color={COLORS.primary} />
-            <Text style={styles.dirBtnText}>रास्ता देखें</Text>
+          <TouchableOpacity style={styles.dirBtn} onPress={handleOpenMap} activeOpacity={0.75}>
+            <MaterialCommunityIcons name="directions" size={16} color={COLORS.primary} />
+            <Text style={styles.dirBtnText}>रास्ता</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ─── 2. DELAY / STATUS ALERT ─── */}
-        {hasDelayAlert ? (
-          <View style={styles.delayCard}>
-            {/* STOP signal */}
-            <View style={styles.delayTopRow}>
-              <View style={styles.stopSign}>
-                <MaterialCommunityIcons name="hand-back-right" size={32} color="#fff" />
-              </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.delayHeading}>मंडी में देरी है</Text>
-                <Text style={styles.delayEnglish}>There is a delay at the mandi</Text>
-              </View>
-              <TouchableOpacity onPress={() => triggerManualDelayAlert(false)} style={styles.dismissX}>
+        {/* ─── DELAY ALERT IF ACTIVE ─── */}
+        {hasDelayAlert && (
+          <View style={styles.delayBanner}>
+            <View style={styles.delayTop}>
+              <MaterialCommunityIcons name="alert-circle" size={20} color="#DC2626" />
+              <Text style={styles.delayTitle}>मंडी में {delayMinutes} मिनट की देरी है</Text>
+              <TouchableOpacity onPress={() => triggerManualDelayAlert(false)}>
                 <MaterialCommunityIcons name="close" size={18} color="#991B1B" />
               </TouchableOpacity>
             </View>
-
-            {/* Big delay number */}
-            <View style={styles.delayTimeBox}>
-              <Text style={styles.delayMinutesNum}>{delayMinutes}</Text>
-              <Text style={styles.delayMinutesLabel}>मिनट की देरी</Text>
-            </View>
-
-            {/* Instruction rows */}
-            <View style={styles.delayInstructionRow}>
-              <MaterialCommunityIcons name="close-octagon" size={22} color="#DC2626" />
-              <Text style={styles.delayInstructionText}>अभी घर से मत निकलें</Text>
-            </View>
-
-            <View style={styles.newEtaBox}>
-              <MaterialCommunityIcons name="clock-outline" size={20} color="#92400E" />
-              <View style={{ marginLeft: 8 }}>
-                <Text style={styles.newEtaLabel}>आपका नया समय</Text>
-                <Text style={styles.newEtaTime}>{newETA}</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={styles.ackBtn}
-              onPress={() => Alert.alert('✓ समझ गए', `आपकी नई मंडी का समय: ${newETA} है।\nतब निकलें।`)}
-            >
-              <Text style={styles.ackBtnText}>समय समझ गया  ✓</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          /* ON-TIME green advisory */
-          <View style={styles.onTimeCard}>
-            <View style={styles.onTimeLeft}>
-              <MaterialCommunityIcons name="check-circle" size={28} color={COLORS.success} />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.onTimeTitle}>सब ठीक है</Text>
-                <Text style={styles.onTimeSub}>No delay at mandi</Text>
-              </View>
-            </View>
-            <View style={styles.countdownPill}>
-              <Text style={styles.countdownVal}>{formatCountdown(secondsRemaining)}</Text>
-              <Text style={styles.countdownLabel}>निकलने में</Text>
-            </View>
+            <Text style={styles.delayDesc}>
+              कांटे पर नमी जांच के कारण थोड़ा समय लग रहा है। कृपया घर से 15 मिनट देरी से निकलें।
+            </Text>
           </View>
         )}
 
-        {/* ─── 3. MY TOKEN — PRIMARY HERO ─── */}
-        <View style={styles.tokenHeroCard}>
-          <View style={styles.tokenHeroHeader}>
-            <MaterialCommunityIcons name="ticket-confirmation" size={22} color={COLORS.accent} />
-            <Text style={styles.tokenHeroLabel}>आपका टोकन</Text>
-            <Text style={styles.tokenHeroLabelEn}>YOUR TOKEN</Text>
+        {/* ─── 2. MAIN QUEUE STATUS HERO ─── */}
+        <View style={styles.queueHeroCard}>
+          <View style={styles.queueTokensRow}>
+            {/* Now Serving */}
+            <View style={styles.tokenBoxServing}>
+              <Text style={styles.tokenServingLabel}>🟢 अभी तौल चल रही है</Text>
+              <Text style={styles.tokenServingNum}>#{nowServing}</Text>
+              <Text style={styles.tokenServingSub}>कांटे पर मौजूद</Text>
+            </View>
+
+            {/* Divider */}
+            <View style={styles.tokenDivider} />
+
+            {/* Your Token */}
+            <View style={styles.tokenBoxYour}>
+              <Text style={styles.tokenYourLabel}>🎫 आपका टोकन</Text>
+              <Text style={styles.tokenYourNum}>#{yourTokenNumber}</Text>
+              <Text style={styles.tokenYourSub}>गेट पास टोकन</Text>
+            </View>
           </View>
 
-          <Text style={styles.tokenHeroNumber}>#{yourTokenNumber}</Text>
+          {/* Turn status */}
+          <View style={styles.turnStatusStrip}>
+            {isMyTurn ? (
+              <View style={styles.myTurnBox}>
+                <MaterialCommunityIcons name="check-decagram" size={24} color="#15803D" />
+                <Text style={styles.myTurnText}>🎉 आपकी बारी आ गई! सीधे कांटे पर जाएं।</Text>
+              </View>
+            ) : (
+              <View style={styles.waitingStatusBox}>
+                <View style={styles.statMetric}>
+                  <Text style={styles.statMetricNum}>{farmersAhead}</Text>
+                  <Text style={styles.statMetricLabel}>किसान आपसे आगे</Text>
+                </View>
+                <View style={styles.statMetricDivider} />
+                <View style={styles.statMetric}>
+                  <Text style={styles.statMetricNum}>{estimatedTurnTime}</Text>
+                  <Text style={styles.statMetricLabel}>अनुमानित समय</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
 
-          {/* Farmer dots visual */}
-          <View style={styles.farmerDotsRow}>
-            {farmerDots.map((_, i) => (
-              <MaterialCommunityIcons key={i} name="account-cowboy-hat" size={26} color="#D97706" style={{ marginRight: 4 }} />
-            ))}
-            {farmersAhead > 6 && (
-              <Text style={styles.moreFarmers}>+{farmersAhead - 6}</Text>
-            )}
-            {farmersAhead > 0 && (
-              <MaterialCommunityIcons name="chevron-right" size={22} color={COLORS.textMuted} />
-            )}
-            <MaterialCommunityIcons name="tractor" size={28} color={COLORS.primary} />
+        {/* ─── 3. DEPARTURE GUIDANCE CARD ─── */}
+        <View style={styles.departureCard}>
+          <View style={styles.departureHeader}>
+            <MaterialCommunityIcons name="tractor" size={22} color="#15803D" />
+            <Text style={styles.departureTitle}>घर से निकलने का सही समय</Text>
           </View>
 
-          <Text style={styles.farmersAheadText}>
-            {farmersAhead === 0
-              ? '🟢 आप अगले हैं!'
-              : `आपसे पहले ${farmersAhead} किसान हैं`}
+          <Text style={styles.departureTimeBig}>11:15 AM (लगभग {formatCountdown(secondsRemaining)} बाद)</Text>
+          <Text style={styles.departureSub}>
+            इस समय निकलने पर आप सीधे 11:35 AM पर कांटे पर पहुंचेंगे और बिना इंतजार तौल होगी।
           </Text>
         </View>
 
-        {/* ─── 4. LIVE QUEUE FLOW ─── */}
-        <View style={styles.queueFlowCard}>
-          {/* Now serving */}
-          <View style={styles.queueRow}>
-            <View style={[styles.queueBadge, styles.queueBadgeGreen]}>
-              <View style={styles.queueGreenDot} />
-              <Text style={styles.queueBadgeText}>अभी चल रहा है</Text>
+        {/* ─── 4. WEIGHBRIDGE FACILITY STATUS ─── */}
+        <View style={styles.facilityCard}>
+          <Text style={styles.facilityCardTitle}>मंडी तौल व्यवस्था (Live Updates):</Text>
+          <View style={styles.facilityGrid}>
+            <View style={styles.facilityItem}>
+              <Text style={styles.facilityVal}>🟢 चालू (2 कांटे)</Text>
+              <Text style={styles.facilityLabel}>इलेक्ट्रॉनिक वे-ब्रिज</Text>
             </View>
-            <Text style={styles.queueTokenNum}>#{nowServing}</Text>
-          </View>
-
-          {/* Arrow */}
-          <View style={styles.queueArrowWrap}>
-            <View style={styles.queueArrowLine} />
-            <MaterialCommunityIcons name="chevron-down" size={22} color={COLORS.textMuted} />
-          </View>
-
-          {/* Farmers between */}
-          {farmersAhead > 0 && (
-            <>
-              <View style={styles.queueBetweenRow}>
-                <MaterialCommunityIcons name="account-group" size={20} color="#D97706" />
-                <Text style={styles.queueBetweenText}>{farmersAhead} किसान बाकी</Text>
-              </View>
-              <View style={styles.queueArrowWrap}>
-                <View style={styles.queueArrowLine} />
-                <MaterialCommunityIcons name="chevron-down" size={22} color={COLORS.textMuted} />
-              </View>
-            </>
-          )}
-
-          {/* Your token */}
-          <View style={styles.queueRow}>
-            <View style={[styles.queueBadge, styles.queueBadgeYellow]}>
-              <MaterialCommunityIcons name="ticket-confirmation" size={14} color="#92400E" />
-              <Text style={[styles.queueBadgeText, { color: '#92400E' }]}>आपका नंबर</Text>
+            <View style={styles.facilityItem}>
+              <Text style={styles.facilityVal}>⚡ तेज़ (3 मिनट/नमूना)</Text>
+              <Text style={styles.facilityLabel}>नमी परीक्षण लैब</Text>
             </View>
-            <Text style={[styles.queueTokenNum, { color: COLORS.primary }]}>#{yourTokenNumber}</Text>
-          </View>
-
-          {/* ETA strip */}
-          <View style={styles.etaStrip}>
-            <MaterialCommunityIcons name="clock-outline" size={18} color={COLORS.primary} />
-            <Text style={styles.etaLabel}>आपकी बारी का समय</Text>
-            <Text style={styles.etaTime}>
-              {hasDelayAlert ? newETA : estimatedTurnTime}
-            </Text>
           </View>
         </View>
 
-        {/* ─── 5. WHAT SHOULD I DO? ─── */}
-        <View style={[
-          styles.actionCard,
-          isMyTurn ? styles.actionCardGreen : hasDelayAlert ? styles.actionCardRed : isApproaching ? styles.actionCardOrange : styles.actionCardBlue
-        ]}>
-          <Text style={styles.actionCardTitle}>अभी क्या करें?</Text>
-
-          {isMyTurn ? (
-            <>
-              <View style={styles.actionRow}>
-                <MaterialCommunityIcons name="check-circle" size={28} color={COLORS.success} />
-                <Text style={styles.actionText}>अब आपकी बारी है!</Text>
-              </View>
-              <View style={styles.actionRow}>
-                <MaterialCommunityIcons name="tractor" size={28} color={COLORS.primary} />
-                <Text style={styles.actionText}>तुरंत तौल केंद्र पर जाएं</Text>
-              </View>
-            </>
-          ) : hasDelayAlert ? (
-            <>
-              <View style={styles.actionRow}>
-                <MaterialCommunityIcons name="hand-back-right" size={28} color="#DC2626" />
-                <Text style={[styles.actionText, { color: '#991B1B' }]}>अभी घर से मत निकलें</Text>
-              </View>
-              <View style={styles.actionRow}>
-                <MaterialCommunityIcons name="clock-outline" size={28} color="#B45309" />
-                <Text style={[styles.actionText, { color: '#92400E' }]}>{newETA} के बाद आएं</Text>
-              </View>
-            </>
-          ) : isApproaching ? (
-            <>
-              <View style={styles.actionRow}>
-                <MaterialCommunityIcons name="tractor" size={28} color={COLORS.primary} />
-                <Text style={styles.actionText}>अब मंडी के लिए निकल सकते हैं</Text>
-              </View>
-            </>
-          ) : (
-            <>
-              <View style={styles.actionRow}>
-                <MaterialCommunityIcons name="home-clock" size={28} color={COLORS.primary} />
-                <Text style={styles.actionText}>घर पर रुकें, समय आने पर निकलें</Text>
-              </View>
-              <View style={styles.actionRow}>
-                <MaterialCommunityIcons name="clock-outline" size={24} color={COLORS.textSecondary} />
-                <Text style={[styles.actionText, { color: COLORS.textSecondary, fontSize: 15 }]}>
-                  {hasDelayAlert ? newETA : estimatedTurnTime} पर आएं
-                </Text>
-              </View>
-            </>
-          )}
-        </View>
-
-        {/* ─── 6. GATE PASS ─── */}
-        <TouchableOpacity
-          style={styles.gatePassBtn}
-          onPress={() => Alert.alert('🎫 गेट पास', `Token: ${activeBooking?.token || '#MP-WHT-2026-0019'}\nQR Code खुल रहा है...`)}
-          activeOpacity={0.85}
-        >
-          <MaterialCommunityIcons name="qrcode-scan" size={30} color={COLORS.white} />
-          <View style={{ marginLeft: 12 }}>
-            <Text style={styles.gatePassTitle}>गेट पास दिखाएं</Text>
-            <Text style={styles.gatePassSub}>Show Gate Pass / QR</Text>
-          </View>
-          <MaterialCommunityIcons name="chevron-right" size={24} color="rgba(255,255,255,0.7)" style={{ marginLeft: 'auto' }} />
+        {/* Advance Token Demo Button */}
+        <TouchableOpacity style={styles.demoAdvanceBtn} onPress={advanceQueueToken} activeOpacity={0.7}>
+          <MaterialCommunityIcons name="fast-forward" size={16} color={COLORS.primary} />
+          <Text style={styles.demoAdvanceText}>टोकन आगे बढ़ाएं (Demo Test)</Text>
         </TouchableOpacity>
-
-        {/* ─── 7. MANDI FACILITIES (Collapsible) ─── */}
-        <View style={styles.facilitiesCard}>
-          <TouchableOpacity
-            style={styles.facilitiesHeader}
-            onPress={() => setFacilitiesExpanded(!facilitiesExpanded)}
-          >
-            <MaterialCommunityIcons name="store" size={20} color={COLORS.primary} />
-            <Text style={styles.facilitiesTitle}>मंडी में उपलब्ध</Text>
-            <MaterialCommunityIcons
-              name={facilitiesExpanded ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color={COLORS.textSecondary}
-              style={{ marginLeft: 'auto' }}
-            />
-          </TouchableOpacity>
-
-          {facilitiesExpanded && (
-            <View style={styles.facilitiesList}>
-              {[
-                { icon: 'water-check', label: 'Moisture Testing Lab' },
-                { icon: 'scale-bathroom', label: 'Electronic Weighbridge (×2)' },
-                { icon: 'seat', label: 'Farmer Rest Shed & RO Water' },
-                { icon: 'clipboard-account', label: 'DBT Grievance Desk' },
-              ].map((f, i) => (
-                <View key={i} style={styles.facilityRow}>
-                  <MaterialCommunityIcons name="check-circle" size={16} color={COLORS.success} />
-                  <Text style={styles.facilityText}>{f.label}</Text>
-                </View>
-              ))}
-              <TouchableOpacity style={styles.callCentreRow} onPress={handleCallCentre}>
-                <MaterialCommunityIcons name="phone" size={16} color={COLORS.primary} />
-                <Text style={styles.callCentreText}>मंडी से बात करें · +91 755 2891043</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-
-        {/* ─── SIH 2026 JUDGE SIMULATION CONTROLS ─── */}
-        <View style={styles.simCard}>
-          <View style={styles.simHeader}>
-            <MaterialCommunityIcons name="tune-vertical" size={18} color="#166534" />
-            <Text style={styles.simTitle}>SIH 2026 — Judge Simulation Controls</Text>
-          </View>
-          <Text style={styles.simDesc}>Trigger live mandi dynamics for demo:</Text>
-          <View style={styles.simBtnRow}>
-            <TouchableOpacity
-              style={[styles.simBtn, hasDelayAlert ? styles.simBtnOutline : styles.simBtnDanger]}
-              onPress={() => triggerManualDelayAlert(!hasDelayAlert)}
-            >
-              <MaterialCommunityIcons
-                name={hasDelayAlert ? 'refresh' : 'alert-circle'}
-                size={16}
-                color={hasDelayAlert ? '#166534' : '#fff'}
-              />
-              <Text style={[styles.simBtnText, hasDelayAlert && { color: '#166534' }]}>
-                {hasDelayAlert ? 'Reset Delay' : 'Simulate 47m Bottleneck'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.simBtnGold} onPress={advanceQueueToken}>
-              <MaterialCommunityIcons name="skip-next" size={16} color={COLORS.primaryDark} />
-              <Text style={[styles.simBtnText, { color: COLORS.primaryDark }]}>Advance Queue +1</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
       </ScrollView>
     </View>
   );
@@ -401,628 +214,317 @@ export default function LiveQueueScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F1F5F9',
-  },
-  scroll: {
-    padding: SPACING.md,
-    paddingBottom: 80,
+    backgroundColor: '#F7F9FC',
   },
 
-  // ── Header ──
+  /* ─── 1. HEADER ─── */
   header: {
     backgroundColor: COLORS.primary,
+    paddingBottom: SPACING.sm + 4,
     paddingHorizontal: SPACING.md,
-    paddingBottom: 10,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    ...SHADOWS.md,
+  },
+  headerTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
-  logoDot: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  liveDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#22C55E',
+  },
+  headerTitleText: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: COLORS.white,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  voiceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: RADIUS.sm,
+  },
+  voiceBtnText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
+  },
+  callBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(212,168,67,0.5)',
-  },
-  appName: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  appSub: {
-    color: COLORS.accentLight,
-    fontSize: 11,
-  },
-  callBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
-  // Page title strip
-  pageTitleStrip: {
-    backgroundColor: COLORS.primaryDark,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 10,
-    gap: 8,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    ...SHADOWS.md,
-  },
-  pageTitle: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: '800',
-    flex: 1,
-  },
-  livePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(220,38,38,0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    gap: 5,
-    borderWidth: 1,
-    borderColor: '#DC2626',
-  },
-  liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#DC2626',
-  },
-  liveText: {
-    color: '#FCA5A5',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-
-  // ── Mandi Card ──
-  mandiCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
+  /* ─── SCROLL CONTENT ─── */
+  scrollContent: {
     padding: SPACING.md,
+    gap: 12,
+  },
+
+  mandiCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: SPACING.md,
+    backgroundColor: COLORS.white,
+    padding: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    ...SHADOWS.sm,
+    borderColor: '#DDE4EC',
   },
-  mandiLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  mandiInfo: {
     flex: 1,
   },
-  mandiName: {
-    fontSize: 16,
-    fontWeight: '800',
+  mandiNameText: {
+    fontSize: 14,
+    fontWeight: '900',
     color: COLORS.text,
   },
-  mandiSub: {
-    fontSize: 12,
+  mandiSubText: {
+    fontSize: 11,
     color: COLORS.textSecondary,
     marginTop: 2,
   },
   dirBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: COLORS.accentLight,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.accent,
+    gap: 4,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: RADIUS.sm,
   },
   dirBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
     color: COLORS.primary,
   },
 
-  // ── Delay Card ──
-  delayCard: {
-    backgroundColor: '#FEF2F2',
-    borderWidth: 2,
-    borderColor: '#DC2626',
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    ...SHADOWS.sm,
-  },
-  delayTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  stopSign: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#DC2626',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#991B1B',
-  },
-  delayHeading: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#991B1B',
-  },
-  delayEnglish: {
-    fontSize: 12,
-    color: '#B91C1C',
-    marginTop: 2,
-  },
-  dismissX: {
-    padding: 6,
-    alignSelf: 'flex-start',
-  },
-  delayTimeBox: {
+  /* Delay Banner */
+  delayBanner: {
     backgroundColor: '#FEE2E2',
     borderRadius: RADIUS.md,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#FECACA',
-  },
-  delayMinutesNum: {
-    fontSize: 72,
-    fontWeight: '900',
-    color: '#DC2626',
-    lineHeight: 78,
-  },
-  delayMinutesLabel: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#991B1B',
-    marginTop: 4,
-  },
-  delayInstructionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#fff',
-    borderRadius: RADIUS.md,
     padding: 12,
-    marginBottom: 10,
     borderWidth: 1,
     borderColor: '#FECACA',
   },
-  delayInstructionText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#991B1B',
-  },
-  newEtaBox: {
+  delayTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFBEB',
-    borderRadius: RADIUS.md,
-    padding: 14,
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  delayTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#B91C1C',
+    flex: 1,
+    marginLeft: 6,
+  },
+  delayDesc: {
+    fontSize: 11,
+    color: '#991B1B',
+    lineHeight: 16,
+  },
+
+  /* Queue Hero */
+  queueHeroCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: '#DDE4EC',
+    ...SHADOWS.sm,
+  },
+  queueTokensRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 14,
   },
-  newEtaLabel: {
-    fontSize: 12,
-    color: '#92400E',
-    fontWeight: '600',
-  },
-  newEtaTime: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#B45309',
-    marginTop: 2,
-  },
-  ackBtn: {
-    backgroundColor: '#DC2626',
-    borderRadius: RADIUS.md,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  ackBtnText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '800',
-  },
-
-  // ── On-time card ──
-  onTimeCard: {
-    backgroundColor: '#F0FDF4',
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-    ...SHADOWS.sm,
-  },
-  onTimeLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  tokenBoxServing: {
     flex: 1,
-  },
-  onTimeTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.success,
-  },
-  onTimeSub: {
-    fontSize: 12,
-    color: '#166534',
-    marginTop: 2,
-  },
-  countdownPill: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: RADIUS.md,
     alignItems: 'center',
   },
-  countdownVal: {
-    fontSize: 16,
+  tokenServingLabel: {
+    fontSize: 11,
     fontWeight: '800',
-    color: COLORS.accent,
+    color: '#15803D',
   },
-  countdownLabel: {
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
+  tokenServingNum: {
+    fontSize: 34,
+    fontWeight: '900',
+    color: '#15803D',
+    marginVertical: 2,
+  },
+  tokenServingSub: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+  },
+  tokenDivider: {
+    width: 1,
+    height: 60,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 8,
+  },
+  tokenBoxYour: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  tokenYourLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  tokenYourNum: {
+    fontSize: 34,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
+    marginVertical: 2,
+  },
+  tokenYourSub: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
   },
 
-  // ── Token Hero ──
-  tokenHeroCard: {
-    backgroundColor: COLORS.primaryDark,
-    borderRadius: RADIUS.xl,
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.md,
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-    ...SHADOWS.lg,
-  },
-  tokenHeroHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  tokenHeroLabel: {
-    color: COLORS.accentLight,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  tokenHeroLabelEn: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 12,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  tokenHeroNumber: {
-    fontSize: 96,
-    fontWeight: '900',
-    color: COLORS.white,
-    lineHeight: 104,
-    letterSpacing: -2,
-  },
-  farmerDotsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  moreFarmers: {
-    color: '#D97706',
-    fontSize: 16,
-    fontWeight: '800',
-    marginRight: 4,
-  },
-  farmersAheadText: {
-    color: COLORS.accentLight,
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 4,
-    textAlign: 'center',
-  },
-
-  // ── Queue Flow ──
-  queueFlowCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    ...SHADOWS.sm,
-  },
-  queueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  queueBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  queueBadgeGreen: {
-    backgroundColor: '#DCFCE7',
-  },
-  queueBadgeYellow: {
-    backgroundColor: '#FEF3C7',
-  },
-  queueGreenDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#16A34A',
-  },
-  queueBadgeText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#166534',
-  },
-  queueTokenNum: {
-    fontSize: 40,
-    fontWeight: '900',
-    color: COLORS.text,
-  },
-  queueArrowWrap: {
-    alignItems: 'center',
-    paddingVertical: 2,
-  },
-  queueArrowLine: {
-    width: 2,
-    height: 12,
-    backgroundColor: COLORS.borderLight,
-  },
-  queueBetweenRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#FFF7ED',
-    borderRadius: RADIUS.sm,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
-  },
-  queueBetweenText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#92400E',
-  },
-  etaStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#EFF6FF',
+  turnStatusStrip: {
+    backgroundColor: '#F8FAFC',
     borderRadius: RADIUS.md,
     padding: 12,
-    marginTop: 12,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: '#E2E8F0',
   },
-  etaLabel: {
-    fontSize: 13,
-    color: COLORS.primary,
-    fontWeight: '600',
-    flex: 1,
-  },
-  etaTime: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-
-  // ── What to do? ──
-  actionCard: {
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1.5,
-    ...SHADOWS.sm,
-  },
-  actionCardGreen: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#86EFAC',
-  },
-  actionCardRed: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#FECACA',
-  },
-  actionCardOrange: {
-    backgroundColor: '#FFF7ED',
-    borderColor: '#FDE68A',
-  },
-  actionCardBlue: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#BFDBFE',
-  },
-  actionCardTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  actionRow: {
+  myTurnBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 10,
+    gap: 8,
   },
-  actionText: {
+  myTurnText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#15803D',
+    flex: 1,
+  },
+  waitingStatusBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  statMetric: {
+    alignItems: 'center',
+  },
+  statMetricNum: {
     fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    flex: 1,
-    lineHeight: 24,
-  },
-
-  // ── Gate Pass ──
-  gatePassBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.lg,
-    paddingVertical: 20,
-    paddingHorizontal: SPACING.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-    ...SHADOWS.md,
-  },
-  gatePassTitle: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  gatePassSub: {
-    color: COLORS.accentLight,
-    fontSize: 12,
-    marginTop: 2,
-  },
-
-  // ── Facilities ──
-  facilitiesCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    ...SHADOWS.sm,
-  },
-  facilitiesHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  facilitiesTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '900',
     color: COLORS.text,
   },
-  facilitiesList: {
-    marginTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.borderLight,
-    paddingTop: 12,
-    gap: 8,
+  statMetricLabel: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    marginTop: 1,
   },
-  facilityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  facilityText: {
-    fontSize: 13,
-    color: COLORS.text,
-  },
-  callCentreRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 6,
-    backgroundColor: '#EFF6FF',
-    padding: 10,
-    borderRadius: RADIUS.sm,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-  },
-  callCentreText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.primary,
+  statMetricDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#CBD5E1',
   },
 
-  // ── SIH Simulation ──
-  simCard: {
-    backgroundColor: '#F0FDF4',
-    borderWidth: 1,
-    borderColor: '#86EFAC',
+  /* Departure Card */
+  departureCard: {
+    backgroundColor: '#DCFCE7',
     borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
   },
-  simHeader: {
+  departureHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     marginBottom: 4,
   },
-  simTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#166534',
-  },
-  simDesc: {
-    fontSize: 11,
+  departureTitle: {
+    fontSize: 13,
+    fontWeight: '900',
     color: '#15803D',
-    marginBottom: SPACING.sm,
   },
-  simBtnRow: {
-    flexDirection: 'row',
-    gap: 8,
+  departureTimeBig: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#166534',
+    marginVertical: 2,
   },
-  simBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    borderRadius: RADIUS.sm,
-  },
-  simBtnDanger: {
-    backgroundColor: '#DC2626',
-  },
-  simBtnOutline: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: '#166534',
-  },
-  simBtnGold: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    borderRadius: RADIUS.sm,
-    backgroundColor: COLORS.accent,
-  },
-  simBtnText: {
+  departureSub: {
     fontSize: 11,
+    color: '#166534',
+    lineHeight: 16,
+  },
+
+  /* Facility Card */
+  facilityCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.md,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#DDE4EC',
+  },
+  facilityCardTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  facilityGrid: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  facilityItem: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: RADIUS.sm,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  facilityVal: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  facilityLabel: {
+    fontSize: 10,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  demoAdvanceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+  },
+  demoAdvanceText: {
+    fontSize: 11,
+    color: COLORS.primary,
     fontWeight: '700',
-    color: COLORS.white,
   },
 });

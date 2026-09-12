@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING } from '../utils/theme';
+import { COLORS, SPACING, SHADOWS } from '../utils/theme';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import BookingStack from './BookingStack';
 import LiveQueueScreen from '../screens/queue/LiveQueueScreen';
@@ -17,8 +17,8 @@ export default function MainTabs() {
   const { queueState } = useFarmer();
   const insets = useSafeAreaInsets();
 
-  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 20 : 12);
-  const tabHeight = 55 + bottomInset;
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 20 : 8);
+  const tabHeight = 56 + bottomInset;
 
   return (
     <Tab.Navigator
@@ -30,19 +30,15 @@ export default function MainTabs() {
         tabBarStyle: {
           backgroundColor: COLORS.primaryDark,
           borderTopWidth: 1,
-          borderTopColor: 'rgba(212, 168, 67, 0.25)',
+          borderTopColor: 'rgba(255, 255, 255, 0.1)',
           height: tabHeight,
           paddingBottom: bottomInset,
           paddingTop: 8,
-          elevation: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -3 },
-          shadowOpacity: 0.15,
-          shadowRadius: 5,
+          ...SHADOWS.lg,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '600',
+          fontWeight: '700',
           marginTop: 2,
         },
       }}
@@ -82,17 +78,18 @@ export default function MainTabs() {
         component={LiveQueueScreen}
         options={{
           tabBarLabel: 'Live Queue',
-          tabBarBadge: queueState.hasDelayAlert ? '⚠️' : undefined,
+          tabBarBadge: queueState.hasDelayAlert ? '!' : undefined,
           tabBarBadgeStyle: {
             backgroundColor: COLORS.error,
             color: COLORS.white,
-            fontSize: 9,
+            fontSize: 10,
+            fontWeight: '900',
           },
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
               name={focused ? 'radar' : 'radar'}
               size={24}
-              color={queueState.hasDelayAlert ? COLORS.error : color}
+              color={queueState.hasDelayAlert ? '#EF4444' : color}
             />
           ),
         }}
@@ -105,7 +102,7 @@ export default function MainTabs() {
           tabBarLabel: 'Payments',
           tabBarIcon: ({ color, size, focused }) => (
             <MaterialCommunityIcons
-              name={focused ? 'cash-multiple' : 'cash'}
+              name={focused ? 'cash-check' : 'cash'}
               size={24}
               color={color}
             />
