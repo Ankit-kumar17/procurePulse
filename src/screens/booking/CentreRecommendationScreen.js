@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
   StatusBar,
   Platform,
 } from 'react-native';
@@ -52,34 +53,45 @@ export default function CentreRecommendationScreen({ route, navigation }) {
     setExplainModalVisible(true);
   };
 
+  const handlePlayVoiceGuide = () => {
+    Alert.alert(
+      '🔊 आवाज सहायक (Voice Guide)',
+      'नमस्ते किसान भाई! बेरसिया केंद्र आपके लिए सबसे सही है।\n\n• यहाँ केवल 41 मिनट इंतजार है।\n• आपका लगभग 1.5 घंटा बचेगा।\n• आज 48 स्लॉट खाली हैं।',
+      [{ text: 'समझ गया (OK)' }]
+    );
+  };
+
   const topPadding = Math.max(
     insets.top,
     Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
   ) + 8;
 
-  // Helper for human explanation
-  const getSimpleReason = (centre) => {
+  // Illiterate-friendly traffic light reasons
+  const getTrafficLightDetails = (centre) => {
     if (centre.recommended) {
       return {
-        text: 'थोड़ा दूर है, लेकिन यहां इंतजार बहुत कम है।',
-        pill1: '🚜 +3.2 km',
-        pill2: '⏰ 97 मिनट कम इंतजार',
-        isPositive: true,
+        tag: '⭐ सबसे सही मंडी',
+        advice: '🟢 यहाँ तौल जल्दी होगी — आपका 1.5 घंटा बचेगा',
+        trafficColor: COLORS.success,
+        waitBadge: 'कम इंतजार (Fast)',
+        isRecommended: true,
       };
     }
     if (centre.wait > 100) {
       return {
-        text: '⚠️ पास है, लेकिन बहुत भारी भीड़ व लंबा इंतजार है।',
-        pill1: '📍 5.2 km पास',
-        pill2: '⏳ ~2.3 घंटे इंतजार',
-        isPositive: false,
+        tag: '⚠️ भारी जाम व भीड़',
+        advice: '🔴 पास है लेकिन बहुत भारी भीड़ व लंबा इंतजार है (~2.3 घंटे)',
+        trafficColor: COLORS.error,
+        waitBadge: 'भारी भीड़ (Heavy Delay)',
+        isRecommended: false,
       };
     }
     return {
-      text: '🟡 इंतजार कम है, लेकिन मंडी काफी दूर है।',
-      pill1: '📍 11.8 km दूर',
-      pill2: '⚡ 27 मिनट इंतजार',
-      isPositive: null,
+      tag: '🟡 दूर की मंडी',
+      advice: '🟡 इंतजार कम है, लेकिन मंडी 12 km दूर है',
+      trafficColor: '#D97706',
+      waitBadge: 'मध्यम (Moderate)',
+      isRecommended: false,
     };
   };
 
@@ -87,7 +99,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
 
-      {/* ─── 1. COMPACT MOBILE HEADER ─── */}
+      {/* ─── 1. COMPACT HEADER WITH VOICE ASSISTANT ─── */}
       <View style={[styles.header, { paddingTop: topPadding }]}>
         <View style={styles.headerTopRow}>
           <TouchableOpacity
@@ -104,10 +116,16 @@ export default function CentreRecommendationScreen({ route, navigation }) {
             <Text style={styles.headerSubText}>चरण 2 / 4 • सबसे अच्छी मंडी</Text>
           </View>
 
-          <View style={styles.brandBadge}>
-            <MaterialCommunityIcons name="grain" size={16} color={COLORS.accent} />
-            <Text style={styles.brandBadgeText}>e-Uparjan</Text>
-          </View>
+          {/* Audio Voice Guide Button */}
+          <TouchableOpacity
+            style={styles.voiceButton}
+            onPress={handlePlayVoiceGuide}
+            activeOpacity={0.8}
+            accessibilityLabel="आवाज से सुनें"
+          >
+            <MaterialCommunityIcons name="volume-high" size={18} color={COLORS.primaryDark} />
+            <Text style={styles.voiceButtonText}>सुनें</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -154,33 +172,23 @@ export default function CentreRecommendationScreen({ route, navigation }) {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 115 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ─── 3. SIMPLE HUMAN ADVICE BANNER ─── */}
-        <View style={styles.adviceBanner}>
-          <View style={styles.adviceIconCircle}>
-            <MaterialCommunityIcons name="star-face" size={22} color={COLORS.primaryDark} />
+        {/* ─── 3. SIMPLE QUESTION & VOICE ASSISTANT CALLOUT ─── */}
+        <View style={styles.topQuestionCard}>
+          <View style={styles.questionIconBox}>
+            <MaterialCommunityIcons name="storefront" size={24} color={COLORS.primary} />
           </View>
-          <View style={styles.adviceContent}>
-            <View style={styles.adviceTagRow}>
-              <Text style={styles.adviceTagText}>⭐ हमारी सलाह</Text>
-            </View>
-            <Text style={styles.adviceTitle}>
-              बेरसिया केंद्र (Berasia Hub) में भीड़ कम है और आपकी तौल जल्दी होगी।
-            </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.questionMainText}>🏪 किस मंडी में अनाज ले जाना है?</Text>
+            <Text style={styles.questionSubText}>पास की और कम भीड़ वाली मंडी चुनें</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionHeading}>उपलब्ध उपार्जन केंद्र (Mandis)</Text>
-
-        {/* ─── 4. MANDI CARDS ─── */}
+        {/* ─── 4. MANDI SELECTION CARDS ─── */}
         <View style={styles.cardsList}>
           {centres.map((centre) => {
             const isSelected = selectedCentre?.id === centre.id;
-            const simpleReason = getSimpleReason(centre);
-
-            // Wait time color indicator
+            const details = getTrafficLightDetails(centre);
             const isHighWait = centre.wait > 100;
-            const waitColor = isHighWait ? COLORS.error : COLORS.success;
-            const waitBg = isHighWait ? '#FEE2E2' : '#DCFCE7';
 
             return (
               <TouchableOpacity
@@ -193,30 +201,35 @@ export default function CentreRecommendationScreen({ route, navigation }) {
                 onPress={() => handleSelectCentre(centre)}
                 activeOpacity={0.88}
               >
-                {/* Top Row: Name + Badges */}
+                {/* Top Badge & Status */}
                 <View style={styles.cardHeaderRow}>
-                  <View style={styles.cardTitleBox}>
+                  <View style={styles.mandiTitleCol}>
                     <Text style={[styles.mandiName, isSelected && styles.mandiNameSelected]}>
-                      🏪 {centre.name.split('(')[0].trim()}
+                      {centre.name.split('(')[0].trim()}
                     </Text>
                     <Text style={styles.mandiAddress} numberOfLines={1}>
                       📍 {centre.address}
                     </Text>
                   </View>
 
-                  {centre.recommended && (
-                    <View style={styles.recommendedBadge}>
-                      <MaterialCommunityIcons name="star" size={13} color={COLORS.primaryDark} />
-                      <Text style={styles.recommendedBadgeText}>हमारी सलाह</Text>
-                    </View>
-                  )}
+                  <View style={[
+                    styles.trafficBadge,
+                    { backgroundColor: details.isRecommended ? COLORS.accent : (isHighWait ? '#FEE2E2' : '#FEF3C7') }
+                  ]}>
+                    <Text style={[
+                      styles.trafficBadgeText,
+                      { color: details.isRecommended ? COLORS.primaryDark : (isHighWait ? COLORS.error : '#92400E') }
+                    ]}>
+                      {details.tag}
+                    </Text>
+                  </View>
                 </View>
 
-                {/* 3 Metrics: Distance | Wait | Slots */}
+                {/* 3 Glanceable Metric Boxes */}
                 <View style={styles.metricsRow}>
                   <View style={styles.metricBox}>
                     <View style={styles.metricTop}>
-                      <MaterialCommunityIcons name="map-marker-distance" size={16} color={COLORS.primary} />
+                      <MaterialCommunityIcons name="map-marker-distance" size={17} color={COLORS.primary} />
                       <Text style={styles.metricValue}>{centre.distance} km</Text>
                     </View>
                     <Text style={styles.metricSub}>दूरी</Text>
@@ -224,14 +237,14 @@ export default function CentreRecommendationScreen({ route, navigation }) {
 
                   <View style={styles.metricDivider} />
 
-                  <View style={[styles.metricBox, { backgroundColor: waitBg, borderRadius: 8 }]}>
+                  <View style={[styles.metricBox, { backgroundColor: details.isRecommended ? '#DCFCE7' : (isHighWait ? '#FEE2E2' : '#FEF9C3'), borderRadius: 8 }]}>
                     <View style={styles.metricTop}>
-                      <MaterialCommunityIcons name="clock-outline" size={16} color={waitColor} />
-                      <Text style={[styles.metricValue, { color: waitColor }]}>
-                        {centre.wait} min
+                      <MaterialCommunityIcons name="clock-outline" size={17} color={details.trafficColor} />
+                      <Text style={[styles.metricValue, { color: details.trafficColor }]}>
+                        {centre.wait} मिनट
                       </Text>
                     </View>
-                    <Text style={[styles.metricSub, { color: waitColor, fontWeight: '700' }]}>
+                    <Text style={[styles.metricSub, { color: details.trafficColor, fontWeight: '800' }]}>
                       इंतजार
                     </Text>
                   </View>
@@ -240,40 +253,29 @@ export default function CentreRecommendationScreen({ route, navigation }) {
 
                   <View style={styles.metricBox}>
                     <View style={styles.metricTop}>
-                      <MaterialCommunityIcons name="calendar-check" size={16} color={COLORS.info} />
+                      <MaterialCommunityIcons name="package-variant" size={17} color={COLORS.info} />
                       <Text style={styles.metricValue}>{centre.availableSlots}</Text>
                     </View>
-                    <Text style={styles.metricSub}>आज के स्लॉट</Text>
+                    <Text style={styles.metricSub}>खाली स्लॉट</Text>
                   </View>
                 </View>
 
-                {/* Simple Human Reason Strip */}
+                {/* One Simple Hindi Advice Line */}
                 <View style={[
-                  styles.reasonStrip,
-                  centre.recommended && styles.reasonStripRecommended,
-                  isHighWait && styles.reasonStripWarning,
+                  styles.adviceStrip,
+                  details.isRecommended && styles.adviceStripGreen,
+                  isHighWait && styles.adviceStripRed,
                 ]}>
                   <Text style={[
-                    styles.reasonMainText,
-                    centre.recommended && styles.reasonMainTextRecommended,
-                    isHighWait && styles.reasonMainTextWarning,
+                    styles.adviceStripText,
+                    details.isRecommended && styles.adviceStripTextGreen,
+                    isHighWait && styles.adviceStripTextRed,
                   ]}>
-                    {simpleReason.text}
+                    {details.advice}
                   </Text>
-
-                  {simpleReason.pill1 && (
-                    <View style={styles.pillsRow}>
-                      <View style={styles.reasonPill}>
-                        <Text style={styles.reasonPillText}>{simpleReason.pill1}</Text>
-                      </View>
-                      <View style={styles.reasonPill}>
-                        <Text style={styles.reasonPillText}>{simpleReason.pill2}</Text>
-                      </View>
-                    </View>
-                  )}
                 </View>
 
-                {/* Bottom Action / Why Button Row */}
+                {/* Bottom Card Footer: Why Link & Selection Pill */}
                 <View style={styles.cardFooter}>
                   {centre.recommended ? (
                     <TouchableOpacity
@@ -294,14 +296,14 @@ export default function CentreRecommendationScreen({ route, navigation }) {
                   ]}>
                     <MaterialCommunityIcons
                       name={isSelected ? "check-circle" : "radiobox-blank"}
-                      size={15}
+                      size={16}
                       color={isSelected ? COLORS.white : COLORS.textSecondary}
                     />
                     <Text style={[
                       styles.selectPillText,
                       isSelected && styles.selectPillTextActive
                     ]}>
-                      {isSelected ? 'यही मंडी चुनी गई' : 'यह मंडी चुनें'}
+                      {isSelected ? '✓ यह मंडी चुनी गई' : 'यह मंडी चुनें'}
                     </Text>
                   </View>
                 </View>
@@ -317,7 +319,7 @@ export default function CentreRecommendationScreen({ route, navigation }) {
           <View style={styles.selectedMandiStrip}>
             <MaterialCommunityIcons name="check-circle" size={16} color={COLORS.success} />
             <Text style={styles.selectedMandiStripText} numberOfLines={1}>
-              <Text style={{ fontWeight: '800', color: COLORS.primaryDark }}>
+              <Text style={{ fontWeight: '900', color: COLORS.primaryDark }}>
                 {selectedCentre.name.split('(')[0].trim()}
               </Text>
               {' '}चुनी गई
@@ -388,21 +390,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 1,
   },
-  brandBadge: {
+  voiceButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(212,168,67,0.3)',
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: RADIUS.md,
+    ...SHADOWS.sm,
   },
-  brandBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.accentLight,
+  voiceButtonText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: COLORS.primaryDark,
   },
 
   /* ─── 2. STEPPER ─── */
@@ -469,57 +470,39 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
   },
 
-  /* ─── 3. ADVICE BANNER ─── */
-  adviceBanner: {
+  /* ─── 3. QUESTION CARD ─── */
+  topQuestionCard: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FEF9C3',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: 12,
     borderWidth: 1.5,
-    borderColor: '#FDE047',
+    borderColor: '#E2E8F0',
     marginBottom: SPACING.md,
     gap: 10,
     ...SHADOWS.sm,
   },
-  adviceIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.accent,
+  questionIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  questionMainText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: COLORS.text,
+  },
+  questionSubText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
     marginTop: 2,
   },
-  adviceContent: {
-    flex: 1,
-  },
-  adviceTagRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  adviceTagText: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#854D0E',
-  },
-  adviceTitle: {
-    fontSize: 13,
-    color: COLORS.text,
-    fontWeight: '700',
-    lineHeight: 18,
-  },
 
-  /* ─── SECTION HEADING ─── */
-  sectionHeading: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: COLORS.text,
-    marginBottom: 10,
-  },
-
-  /* ─── 4. CARDS LIST ─── */
+  /* ─── 4. MANDI CARDS ─── */
   cardsList: {
     gap: 12,
   },
@@ -545,7 +528,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 8,
   },
-  cardTitleBox: {
+  mandiTitleCol: {
     flex: 1,
   },
   mandiName: {
@@ -562,19 +545,14 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 2,
   },
-  recommendedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: COLORS.accent,
+  trafficBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
   },
-  recommendedBadgeText: {
+  trafficBadgeText: {
     fontSize: 11,
     fontWeight: '900',
-    color: COLORS.primaryDark,
   },
 
   /* ─── METRICS ─── */
@@ -617,48 +595,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',
   },
 
-  /* ─── REASON STRIP ─── */
-  reasonStrip: {
+  /* ─── ADVICE STRIP ─── */
+  adviceStrip: {
     backgroundColor: '#F1F5F9',
     borderRadius: RADIUS.sm,
     padding: 8,
     marginBottom: 10,
   },
-  reasonStripRecommended: {
-    backgroundColor: '#FEF9C3',
+  adviceStripGreen: {
+    backgroundColor: '#DCFCE7',
   },
-  reasonStripWarning: {
+  adviceStripRed: {
     backgroundColor: '#FEE2E2',
   },
-  reasonMainText: {
+  adviceStripText: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.text,
+    color: '#92400E',
   },
-  reasonMainTextRecommended: {
-    color: '#854D0E',
+  adviceStripTextGreen: {
+    color: '#15803D',
   },
-  reasonMainTextWarning: {
+  adviceStripTextRed: {
     color: COLORS.error,
-  },
-  pillsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 6,
-  },
-  reasonPill: {
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-  },
-  reasonPillText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.text,
   },
 
   /* ─── FOOTER ─── */
