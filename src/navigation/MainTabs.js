@@ -18,7 +18,7 @@ export default function MainTabs() {
   const insets = useSafeAreaInsets();
 
   const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 20 : 12);
-  const tabHeight = 60 + bottomInset;
+  const tabHeight = 55 + bottomInset;
 
   return (
     <Tab.Navigator
