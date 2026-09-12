@@ -1,48 +1,60 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, RADIUS } from '../utils/theme';
 
 export default function Badge({
   label,
-  variant = 'default', // 'success' | 'warning' | 'error' | 'info' | 'gold' | 'default'
+  variant = 'default', // 'success' | 'warning' | 'error' | 'info' | 'gold' | 'navy' | 'default'
   icon,
-  size = 'md',        // 'sm' | 'md'
+  size = 'md',        // 'sm' | 'md' | 'lg'
+  onPress,
   style,
   textStyle,
 }) {
   const getBadgeColors = () => {
     switch (variant) {
       case 'success':
-        return { bg: COLORS.successLight, text: COLORS.success, border: 'rgba(46,139,87,0.3)' };
+        return { bg: COLORS.successLight, text: COLORS.success, border: 'rgba(33,140,90,0.3)' };
       case 'warning':
-        return { bg: COLORS.warningLight, text: COLORS.warning, border: 'rgba(245,158,11,0.3)' };
+        return { bg: COLORS.warningLight, text: COLORS.warning, border: 'rgba(197,138,19,0.3)' };
       case 'error':
-        return { bg: COLORS.errorLight, text: COLORS.error, border: 'rgba(220,38,38,0.3)' };
+        return { bg: COLORS.errorLight, text: COLORS.error, border: 'rgba(199,58,58,0.3)' };
       case 'info':
-        return { bg: COLORS.infoLight, text: COLORS.info, border: 'rgba(37,99,235,0.3)' };
+        return { bg: COLORS.infoLight, text: COLORS.info, border: 'rgba(61,113,133,0.3)' };
       case 'gold':
-        return { bg: COLORS.accentLight, text: COLORS.accentDark, border: 'rgba(212,168,67,0.4)' };
+        return { bg: COLORS.accentLight, text: COLORS.accentDark, border: 'rgba(214,166,44,0.4)' };
+      case 'navy':
+        return { bg: COLORS.primaryDark, text: COLORS.white, border: COLORS.primary };
       default:
-        return { bg: '#F1F5F9', text: COLORS.textSecondary, border: COLORS.border };
+        return { bg: '#EAEFEA', text: COLORS.textSecondary, border: COLORS.border };
     }
   };
 
   const colors = getBadgeColors();
+  const Container = onPress ? TouchableOpacity : View;
+
+  const getIconSize = () => {
+    if (size === 'sm') return 12;
+    if (size === 'lg') return 18;
+    return 14;
+  };
 
   return (
-    <View
+    <Container
       style={[
         styles.badge,
-        size === 'sm' ? styles.badge_sm : styles.badge_md,
+        styles[`badge_${size}`],
         { backgroundColor: colors.bg, borderColor: colors.border },
         style,
       ]}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.75 : 1}
     >
       {icon && (
         <MaterialCommunityIcons
           name={icon}
-          size={size === 'sm' ? 12 : 14}
+          size={getIconSize()}
           color={colors.text}
           style={styles.icon}
         />
@@ -50,14 +62,14 @@ export default function Badge({
       <Text
         style={[
           styles.text,
-          size === 'sm' ? styles.text_sm : styles.text_md,
+          styles[`text_${size}`],
           { color: colors.text },
           textStyle,
         ]}
       >
         {label}
       </Text>
-    </View>
+    </Container>
   );
 }
 
@@ -70,24 +82,30 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   badge_sm: {
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     paddingVertical: 2,
   },
   badge_md: {
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
+  badge_lg: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
   icon: {
-    marginRight: 4,
+    marginRight: 5,
   },
   text: {
     fontWeight: '700',
-    letterSpacing: 0.2,
   },
   text_sm: {
-    fontSize: 10,
+    fontSize: 11,
   },
   text_md: {
     fontSize: 12,
+  },
+  text_lg: {
+    fontSize: 14,
   },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../utils/theme';
+import { COLORS, SPACING, RADIUS, SHADOWS, TYPOGRAPHY } from '../utils/theme';
 
 export default function Card({
   title,
@@ -16,6 +16,8 @@ export default function Card({
   style,
   headerStyle,
   highlight = false,
+  selected = false,
+  variant = 'default', // 'default' | 'hero' | 'success' | 'warning' | 'error'
 }) {
   const Container = onPress ? TouchableOpacity : View;
 
@@ -23,7 +25,9 @@ export default function Card({
     <Container
       style={[
         styles.card,
+        styles[`variant_${variant}`],
         highlight && styles.highlightCard,
+        selected && styles.selectedCard,
         style,
       ]}
       onPress={onPress}
@@ -33,20 +37,66 @@ export default function Card({
         <View style={[styles.headerRow, headerStyle]}>
           <View style={styles.headerLeft}>
             {icon && (
-              <View style={[styles.iconContainer, { backgroundColor: iconColor + '15' }]}>
-                <MaterialCommunityIcons name={icon} size={20} color={iconColor} />
+              <View
+                style={[
+                  styles.iconContainer,
+                  {
+                    backgroundColor:
+                      variant === 'hero' ? 'rgba(255,255,255,0.15)' : (iconColor + '18'),
+                  },
+                ]}
+              >
+                <MaterialCommunityIcons
+                  name={icon}
+                  size={20}
+                  color={variant === 'hero' ? COLORS.accent : iconColor}
+                />
               </View>
             )}
             <View style={styles.titleWrapper}>
-              {title && <Text style={styles.cardTitle}>{title}</Text>}
-              {subtitle && <Text style={styles.cardSubtitle}>{subtitle}</Text>}
+              {title && (
+                <Text
+                  style={[
+                    styles.cardTitle,
+                    variant === 'hero' && styles.textHeroTitle,
+                  ]}
+                >
+                  {title}
+                </Text>
+              )}
+              {subtitle && (
+                <Text
+                  style={[
+                    styles.cardSubtitle,
+                    variant === 'hero' && styles.textHeroSubtitle,
+                  ]}
+                >
+                  {subtitle}
+                </Text>
+              )}
             </View>
           </View>
 
           <View style={styles.headerRight}>
             {badge && (
-              <View style={[styles.badgePill, { backgroundColor: (badgeColor || COLORS.accent) + '22' }]}>
-                <Text style={[styles.badgeText, { color: badgeColor || COLORS.accentDark }]}>
+              <View
+                style={[
+                  styles.badgePill,
+                  {
+                    backgroundColor:
+                      badgeColor ? (badgeColor + '22') : (variant === 'hero' ? 'rgba(214,166,44,0.25)' : COLORS.accentLight),
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.badgeText,
+                    {
+                      color:
+                        badgeColor || (variant === 'hero' ? COLORS.accent : COLORS.accentDark),
+                    },
+                  ]}
+                >
                   {badge}
                 </Text>
               </View>
@@ -71,9 +121,35 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     ...SHADOWS.sm,
   },
+  variant_default: {
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+  },
+  variant_hero: {
+    backgroundColor: COLORS.primaryDark,
+    borderColor: COLORS.primary,
+    ...SHADOWS.md,
+  },
+  variant_success: {
+    backgroundColor: COLORS.successLight,
+    borderColor: '#C0E2CD',
+  },
+  variant_warning: {
+    backgroundColor: COLORS.warningLight,
+    borderColor: '#F8E4A0',
+  },
+  variant_error: {
+    backgroundColor: COLORS.errorLight,
+    borderColor: '#F7C7C7',
+  },
   highlightCard: {
-    borderColor: COLORS.success,
+    borderColor: COLORS.primary,
     borderWidth: 1.5,
+  },
+  selectedCard: {
+    borderColor: COLORS.primary,
+    borderWidth: 2,
+    backgroundColor: COLORS.primarySoft,
   },
   headerRow: {
     flexDirection: 'row',
@@ -98,15 +174,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 16,
-    fontWeight: '800',
     color: COLORS.text,
   },
   cardSubtitle: {
-    fontSize: 12,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
-    fontWeight: '500',
     marginTop: 1,
+  },
+  textHeroTitle: {
+    color: COLORS.white,
+  },
+  textHeroSubtitle: {
+    color: 'rgba(255,255,255,0.80)',
   },
   headerRight: {
     flexDirection: 'row',

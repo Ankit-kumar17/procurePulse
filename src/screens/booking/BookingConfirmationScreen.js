@@ -6,13 +6,16 @@ import {
   ScrollView,
   TouchableOpacity,
   Share,
-  Platform,
-  StatusBar,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY, SHADOWS } from '../../utils/theme';
+import Header from '../../components/Header';
+import Card from '../../components/Card';
+import Badge from '../../components/Badge';
+import Button from '../../components/Button';
+import InfoRow from '../../components/InfoRow';
 
 export default function BookingConfirmationScreen({ route, navigation }) {
   const { booking } = route.params || {};
@@ -28,45 +31,33 @@ export default function BookingConfirmationScreen({ route, navigation }) {
     }
   };
 
-  const topPadding = Math.max(
-    insets.top,
-    Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20
-  ) + 8;
-
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
-
-      {/* ─── 1. HEADER ─── */}
-      <View style={[styles.header, { paddingTop: topPadding }]}>
-        <View style={styles.headerTopRow}>
+      {/* ─── HEADER ─── */}
+      <Header
+        title="गेट पास व पर्ची"
+        subtitle="ई-उपार्जन 2.0 डिजिटल टोकन"
+        showBack={true}
+        onBackPress={() => navigation.navigate('Dashboard')}
+        rightElement={
           <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.navigate('Dashboard')}
-            activeOpacity={0.7}
+            style={styles.shareHeaderBtn}
+            onPress={handleShare}
+            activeOpacity={0.75}
           >
-            <MaterialCommunityIcons name="close" size={22} color={COLORS.white} />
-          </TouchableOpacity>
-
-          <View style={styles.headerTitleBox}>
-            <Text style={styles.headerTitleText}>गेट पास व पर्ची</Text>
-            <Text style={styles.headerSubText}>ई-उपार्जन 2.0 डिजिटल टोकन</Text>
-          </View>
-
-          <TouchableOpacity style={styles.shareIconBtn} onPress={handleShare} activeOpacity={0.75}>
             <MaterialCommunityIcons name="share-variant" size={20} color={COLORS.white} />
           </TouchableOpacity>
-        </View>
-      </View>
+        }
+      />
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 90 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
       >
         {/* ─── SUCCESS HERO CARD ─── */}
-        <View style={styles.passCard}>
+        <Card style={styles.passCard}>
           <View style={styles.confirmedBanner}>
-            <MaterialCommunityIcons name="check-circle" size={22} color="#15803D" />
+            <MaterialCommunityIcons name="check-circle" size={22} color={COLORS.success} />
             <Text style={styles.confirmedBannerText}>स्लॉट सफलतापूर्वक बुक हो गया!</Text>
           </View>
 
@@ -78,59 +69,68 @@ export default function BookingConfirmationScreen({ route, navigation }) {
 
           {/* QR Code Container */}
           <View style={styles.qrBox}>
-            <QRCode
-              value={booking?.qrData || `PROCUREPULSE:TOKEN=${booking?.token || 'MP-WHT-2026-1049'}`}
-              size={150}
-              color={COLORS.primaryDark}
-              backgroundColor="white"
-            />
+            <View style={styles.qrInner}>
+              <QRCode
+                value={booking?.qrData || `PROCUREPULSE:TOKEN=${booking?.token || 'MP-WHT-2026-1049'}`}
+                size={150}
+                color={COLORS.primaryDark}
+                backgroundColor="white"
+              />
+            </View>
             <Text style={styles.qrSub}>मंडी गेट स्कैनर पर यह कोड दिखाएं</Text>
           </View>
 
           {/* Booking Info Grid */}
           <View style={styles.infoTable}>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>उपार्जन केंद्र</Text>
-              <Text style={styles.infoVal}>{booking?.centre?.split('(')[0] || 'बैरसिया उपार्जन केंद्र'}</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>तौल दिनांक व समय</Text>
-              <Text style={styles.infoVal}>{booking?.date || '18 अप्रैल 2026'} ({booking?.timeSlot || '11:00 AM - 12:00 PM'})</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>फसल व मात्रा</Text>
-              <Text style={styles.infoVal}>{booking?.crop || 'गेहूं'} • {booking?.quantity || '2,000 kg'}</Text>
-            </View>
+            <InfoRow
+              icon="storefront"
+              label="उपार्जन केंद्र"
+              value={booking?.centre?.split('(')[0] || 'बैरसिया उपार्जन केंद्र'}
+            />
+            <InfoRow
+              icon="calendar-clock"
+              label="तौल दिनांक व समय"
+              value={`${booking?.date || '18 अप्रैल 2026'} (${booking?.timeSlot || '11:00 AM - 12:00 PM'})`}
+            />
+            <InfoRow
+              icon="barley"
+              label="फसल व मात्रा"
+              value={`${booking?.crop || 'गेहूं'} • ${booking?.quantity || '2,000 kg'}`}
+            />
           </View>
 
           {/* Recommended Arrival Window */}
           <View style={styles.arrivalCallout}>
-            <MaterialCommunityIcons name="clock-fast" size={22} color="#854D0E" />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.arrivalTitle}>मंडी पहुंचने का सही समय:</Text>
-              <Text style={styles.arrivalTime}>{booking?.recommendedArrival || '11:35 AM – 11:50 AM'}</Text>
-              <Text style={styles.arrivalNote}>इस समय पहुंचने पर आपको कतार में खड़ा नहीं रहना पड़ेगा।</Text>
+            <View style={styles.arrivalRow}>
+              <MaterialCommunityIcons name="clock-fast" size={24} color={COLORS.accentDark} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.arrivalTitle}>मंडी पहुंचने का सही समय:</Text>
+                <Text style={styles.arrivalTime}>{booking?.recommendedArrival || '11:35 AM – 11:50 AM'}</Text>
+                <Text style={styles.arrivalNote}>इस समय पहुंचने पर आपको कतार में खड़ा नहीं रहना पड़ेगा।</Text>
+              </View>
             </View>
           </View>
-        </View>
+        </Card>
 
         {/* Action Buttons */}
-        <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.shareBtn} onPress={handleShare} activeOpacity={0.85}>
-            <MaterialCommunityIcons name="whatsapp" size={20} color="#15803D" />
-            <Text style={styles.shareBtnText}>पर्ची शेयर करें</Text>
-          </TouchableOpacity>
+        <View style={styles.actionsColumn}>
+          <Button
+            title="पर्ची व्हाट्सएप पर शेयर करें"
+            variant="soft"
+            size="lg"
+            icon="whatsapp"
+            fullWidth
+            onPress={handleShare}
+          />
 
-          <TouchableOpacity
-            style={styles.homeBtn}
+          <Button
+            title="लाइव कतार देखें →"
+            variant="primary"
+            size="lg"
+            icon="radar"
+            fullWidth
             onPress={() => navigation.navigate('LiveQueue')}
-            activeOpacity={0.88}
-          >
-            <MaterialCommunityIcons name="radar" size={20} color={COLORS.white} />
-            <Text style={styles.homeBtnText}>लाइव कतार देखें</Text>
-          </TouchableOpacity>
+          />
         </View>
       </ScrollView>
     </View>
@@ -140,201 +140,115 @@ export default function BookingConfirmationScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: COLORS.background,
   },
-
-  /* ─── 1. HEADER ─── */
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingBottom: SPACING.sm + 4,
-    paddingHorizontal: SPACING.md,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    ...SHADOWS.md,
-  },
-  headerTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  shareHeaderBtn: {
+    padding: SPACING.xs + 2,
+    borderRadius: RADIUS.sm,
     backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  headerTitleBox: {
-    flex: 1,
-    marginHorizontal: SPACING.sm,
-  },
-  headerTitleText: {
-    fontSize: 19,
-    fontWeight: '900',
-    color: COLORS.white,
-  },
-  headerSubText: {
-    fontSize: 11,
-    color: COLORS.accentLight,
-    fontWeight: '600',
-    marginTop: 1,
-  },
-  shareIconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  /* ─── SCROLL CONTENT ─── */
   scrollContent: {
     padding: SPACING.md,
-    gap: 14,
+    gap: SPACING.md,
   },
-
   passCard: {
+    padding: SPACING.md,
+    alignItems: 'stretch',
     backgroundColor: COLORS.white,
-    borderRadius: RADIUS.lg,
-    padding: 16,
     borderWidth: 1,
-    borderColor: '#DDE4EC',
-    ...SHADOWS.sm,
+    borderColor: COLORS.border,
   },
   confirmedBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#DCFCE7',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    gap: 8,
+    backgroundColor: COLORS.successLight,
+    paddingVertical: SPACING.sm + 2,
+    paddingHorizontal: SPACING.md,
     borderRadius: RADIUS.md,
-    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#C0E2CD',
+    marginBottom: SPACING.md,
   },
   confirmedBannerText: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#15803D',
+    ...TYPOGRAPHY.label,
+    fontSize: 14,
+    color: COLORS.successDark,
   },
   tokenBox: {
+    backgroundColor: COLORS.primarySoft,
+    padding: SPACING.sm + 4,
+    borderRadius: RADIUS.md,
     alignItems: 'center',
-    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: SPACING.md,
   },
   tokenLabel: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
+    ...TYPOGRAPHY.caption,
     fontWeight: '700',
+    color: COLORS.textSecondary,
   },
   tokenValue: {
-    fontSize: 24,
-    fontWeight: '900',
+    ...TYPOGRAPHY.display,
+    fontSize: 22,
     color: COLORS.primaryDark,
-    letterSpacing: 0.5,
+    letterSpacing: 1.5,
     marginTop: 2,
   },
   qrBox: {
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F8FAFC',
+    marginVertical: SPACING.sm,
+  },
+  qrInner: {
+    padding: SPACING.sm,
+    backgroundColor: COLORS.white,
     borderRadius: RADIUS.md,
-    padding: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 14,
+    borderColor: COLORS.border,
+    ...SHADOWS.sm,
   },
   qrSub: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
+    fontWeight: '700',
     color: COLORS.textSecondary,
-    fontWeight: '600',
-    marginTop: 8,
+    marginTop: SPACING.sm,
   },
   infoTable: {
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingTop: 8,
-    marginBottom: 12,
-    gap: 8,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  infoVal: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.text,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   arrivalCallout: {
+    marginTop: SPACING.sm,
+    padding: SPACING.sm + 4,
+    backgroundColor: COLORS.accentLight,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: '#F8E4A0',
+  },
+  arrivalRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    backgroundColor: '#FEF3C7',
-    padding: 12,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
   },
   arrivalTitle: {
+    ...TYPOGRAPHY.label,
     fontSize: 12,
-    fontWeight: '700',
-    color: '#92400E',
+    color: COLORS.accentDark,
   },
   arrivalTime: {
+    ...TYPOGRAPHY.title,
     fontSize: 16,
-    fontWeight: '900',
-    color: '#78350F',
-    marginVertical: 1,
+    color: COLORS.text,
+    marginVertical: 2,
   },
   arrivalNote: {
-    fontSize: 11,
-    color: '#92400E',
-    lineHeight: 15,
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.textSecondary,
+    lineHeight: 16,
   },
-
-  /* Actions */
-  actionsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  shareBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#DCFCE7',
-    paddingVertical: 13,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-  },
-  shareBtnText: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#15803D',
-  },
-  homeBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 13,
-    borderRadius: RADIUS.md,
-    ...SHADOWS.md,
-  },
-  homeBtnText: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: COLORS.white,
+  actionsColumn: {
+    gap: SPACING.sm,
   },
 });

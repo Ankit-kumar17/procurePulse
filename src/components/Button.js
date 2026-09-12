@@ -6,24 +6,26 @@ import { COLORS, SPACING, RADIUS, SHADOWS } from '../utils/theme';
 export default function Button({
   title,
   onPress,
-  variant = 'primary', // 'primary' | 'secondary' | 'outline' | 'gold' | 'danger' | 'ghost'
+  variant = 'primary', // 'primary' (mustard gold CTA) | 'forest' | 'secondary' | 'outline' | 'gold' | 'success' | 'danger' | 'ghost' | 'soft'
   size = 'md',        // 'sm' | 'md' | 'lg'
   icon,
   iconRight,
   loading = false,
   disabled = false,
+  fullWidth = false,
   style,
   textStyle,
 }) {
   const getContainerStyle = () => {
     const base = [styles.button, styles[`size_${size}`]];
+    if (fullWidth) base.push(styles.fullWidth);
     if (disabled) {
       base.push(styles.disabled);
       return base;
     }
     base.push(styles[`variant_${variant}`]);
-    if (variant === 'gold') base.push(SHADOWS.gold);
-    else if (variant === 'primary') base.push(SHADOWS.sm);
+    if (variant === 'primary' || variant === 'gold') base.push(SHADOWS.gold);
+    else if (variant === 'forest' || variant === 'success') base.push(SHADOWS.sm);
     return base;
   };
 
@@ -39,10 +41,10 @@ export default function Button({
 
   const getIconColor = () => {
     if (disabled) return COLORS.textMuted;
-    if (variant === 'outline' || variant === 'ghost') return COLORS.primary;
-    if (variant === 'gold') return COLORS.primaryDark;
-    if (variant === 'secondary') return COLORS.primary;
-    return COLORS.white;
+    if (variant === 'primary' || variant === 'gold') return COLORS.text;
+    if (variant === 'secondary' || variant === 'outline' || variant === 'ghost' || variant === 'soft') return COLORS.primary;
+    if (variant === 'success' || variant === 'forest' || variant === 'danger') return COLORS.white;
+    return COLORS.text;
   };
 
   return (
@@ -86,40 +88,61 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
   },
+  fullWidth: {
+    width: '100%',
+  },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconLeft: {
-    marginRight: 6,
+    marginRight: 8,
   },
   iconRight: {
-    marginLeft: 6,
+    marginLeft: 8,
   },
   size_sm: {
     paddingVertical: 8,
     paddingHorizontal: 14,
-    minHeight: 36,
+    minHeight: 38,
   },
   size_md: {
     paddingVertical: 12,
-    paddingHorizontal: 18,
+    paddingHorizontal: 20,
     minHeight: 48,
   },
   size_lg: {
-    paddingVertical: 16,
+    paddingVertical: 15,
     paddingHorizontal: 24,
-    minHeight: 56,
+    minHeight: 52,
   },
+  // Mustard Gold Primary CTA
   variant_primary: {
+    backgroundColor: COLORS.accent,
+  },
+  // Forest Green Structural Button
+  variant_forest: {
     backgroundColor: COLORS.primary,
   },
+  // Secondary White with Forest Green Border
   variant_secondary: {
-    backgroundColor: COLORS.accentLight,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
   },
   variant_gold: {
     backgroundColor: COLORS.accent,
+  },
+  // Confirmation / Success Green Button
+  variant_success: {
+    backgroundColor: COLORS.success,
+  },
+  // Soft Green Tint for auxiliary actions
+  variant_soft: {
+    backgroundColor: COLORS.primarySoft,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   variant_outline: {
     backgroundColor: 'transparent',
@@ -133,12 +156,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   disabled: {
-    backgroundColor: '#E2E8F0',
-    borderColor: '#E2E8F0',
+    backgroundColor: '#EAEFEA',
+    borderColor: '#EAEFEA',
   },
   text: {
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   text_size_sm: {
     fontSize: 13,
@@ -147,16 +170,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   text_size_lg: {
-    fontSize: 17,
+    fontSize: 16,
   },
   text_primary: {
+    color: COLORS.text,
+  },
+  text_forest: {
     color: COLORS.white,
   },
   text_secondary: {
-    color: COLORS.primaryDark,
+    color: COLORS.primary,
   },
   text_gold: {
-    color: COLORS.primaryDark,
+    color: COLORS.text,
+  },
+  text_success: {
+    color: COLORS.white,
+  },
+  text_soft: {
+    color: COLORS.primary,
   },
   text_outline: {
     color: COLORS.primary,
@@ -168,6 +200,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   disabledText: {
-    color: '#94A3B8',
+    color: COLORS.textMuted,
   },
 });
