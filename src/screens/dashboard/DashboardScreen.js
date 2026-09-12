@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,12 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
+  Platform,
+  StatusBar
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../../utils/theme';
-import Header from '../../components/Header';
-import Card from '../../components/Card';
-import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import Loader from '../../components/Loader';
 import { useFarmer } from '../../context/FarmerContext';
@@ -21,6 +21,9 @@ import { useAuth } from '../../context/AuthContext';
 export default function DashboardScreen({ navigation }) {
   const { farmer, bookings, isLoadingData, refreshData } = useFarmer();
   const { logout } = useAuth();
+  const insets = useSafeAreaInsets();
+  
+  const [isFarmerDetailsExpanded, setIsFarmerDetailsExpanded] = useState(false);
 
   const activeBooking = bookings.find((b) => b.status === 'BOOKED');
 
@@ -39,16 +42,29 @@ export default function DashboardScreen({ navigation }) {
     return <Loader message="Loading Farmer Profile..." />;
   }
 
+  const topPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 20) + 10;
+
   return (
     <View style={styles.container}>
-      <Header
-        farmerName={farmer?.name || 'Ramesh Kumar'}
-        farmerId={farmer?.farmerId || 'MP-FR-2026-0001'}
-        rightIcon="logout"
-        onRightPress={handleLogout}
-        title={`Namaste, ${farmer?.name?.split(' ')[0] || 'Farmer'} 🙏`}
-        subtitle="Rabi Procurement Season 2026-27 is Active"
-      />
+      {/* Compact Custom Header */}
+      <View style={[styles.headerContainer, { paddingTop: topPadding }]}>
+        <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
+        
+        <View style={styles.headerRow}>
+          <View style={styles.headerLeft}>
+            <View style={styles.logoCircle}>
+              <MaterialCommunityIcons name="grain" size={20} color={COLORS.accent} />
+            </View>
+            <View>
+              <Text style={styles.headerGreeting}>Namaste, {farmer?.name?.split(' ')[0] || 'Ramesh'} 🙏</Text>
+              <Text style={styles.headerSubtitle}>ProcurePulse • Rabi Season 26-27</Text>
+            </View>
+          </View>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <MaterialCommunityIcons name="logout" size={22} color={COLORS.white} />
+          </TouchableOpacity>
+        </View>
+      </View>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -57,227 +73,211 @@ export default function DashboardScreen({ navigation }) {
           <RefreshControl refreshing={isLoadingData} onRefresh={refreshData} colors={[COLORS.primary]} />
         }
       >
-        {/* Profile Summary Card */}
-        <Card goldBorder style={styles.profileCard}>
-          <View style={styles.profileRow}>
-            <View style={styles.avatarCircle}>
-              <MaterialCommunityIcons name="account" size={32} color={COLORS.primary} />
-            </View>
-            <View style={styles.profileInfo}>
-              <View style={styles.nameRow}>
-                <Text style={styles.farmerName}>{farmer?.name || 'Ramesh Kumar'}</Text>
-                <Badge label="e-KYC Verified" variant="success" size="sm" icon="check-decagram" />
-              </View>
-              <Text style={styles.farmerIdText}>Farmer ID: {farmer?.farmerId || 'MP-FR-2026-0001'}</Text>
-              <Text style={styles.profileAddress} numberOfLines={1}>
-                {farmer?.address || 'Pipariya, Berasia, Bhopal'}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.statsStrip}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Crop</Text>
-              <Text style={styles.statVal}>{farmer?.crop || 'Wheat'}</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Entitlement</Text>
-              <Text style={styles.statVal}>{farmer?.entitlement || '2000 kg'}</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>MSP Rate</Text>
-              <Text style={[styles.statVal, { color: COLORS.success }]}>₹2,275/Qtl</Text>
-            </View>
-          </View>
-        </Card>
-
-        {/* Active Booking Card with Dynamic Arrival Window */}
+        
+        {/* Primary Booking Area */}
         {activeBooking ? (
-          <Card
-            title="Active Slot Booking"
-            subtitle="Procurement appointment scheduled"
-            icon="calendar-clock"
-            iconColor={COLORS.primary}
-            badge="BOOKED"
-            badgeColor={COLORS.warning}
-            highlight
-            style={styles.activeBookingCard}
-          >
-            <View style={styles.bookingTopRow}>
-              <View style={styles.tokenBox}>
-                <Text style={styles.tokenLabel}>TOKEN NUMBER</Text>
-                <Text style={styles.tokenValue}>{activeBooking.token}</Text>
+          <View style={styles.bookingContainer}>
+            {/* 1. Main Booking Card */}
+            <View style={styles.bookingCard}>
+              <View style={styles.bookingHeader}>
+                <View style={styles.statusBadge}>
+                  <View style={styles.statusDot} />
+                  <Text style={styles.statusText}>BOOKING CONFIRMED</Text>
+                </View>
+                <TouchableOpacity 
+                  style={styles.gatePassMiniBtn}
+                  onPress={() => navigation.navigate('LiveQueue')}
+                >
+                  <MaterialCommunityIcons name="qrcode-scan" size={14} color={COLORS.primary} />
+                  <Text style={styles.gatePassMiniText}>Gate Pass</Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                style={styles.qrShortcut}
+
+              <Text style={styles.tokenNumber}>{activeBooking.token}</Text>
+              
+              <View style={styles.bookingDetailsList}>
+                <View style={styles.detailItem}>
+                  <MaterialCommunityIcons name="storefront-outline" size={16} color={COLORS.textSecondary} />
+                  <Text style={styles.detailItemText} numberOfLines={1}>{activeBooking.centre}</Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <MaterialCommunityIcons name="calendar-month-outline" size={16} color={COLORS.textSecondary} />
+                  <Text style={styles.detailItemText}>{activeBooking.date} • {activeBooking.timeSlot}</Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <MaterialCommunityIcons name="scale" size={16} color={COLORS.textSecondary} />
+                  <Text style={styles.detailItemText}>{activeBooking.quantity} ({activeBooking.crop})</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* 2. Arrival Window Section */}
+            <View style={styles.arrivalSection}>
+              <View style={styles.arrivalTopRow}>
+                <View style={styles.arrivalTitleBox}>
+                  <MaterialCommunityIcons name="clock-alert-outline" size={18} color="#92400E" />
+                  <Text style={styles.arrivalTitle}>Your Arrival Window</Text>
+                </View>
+              </View>
+              <Text style={styles.arrivalTime}>{activeBooking.recommendedArrival || '11:35 AM – 11:50 AM'}</Text>
+              <Text style={styles.arrivalDesc}>Please arrive during this 15-minute window.</Text>
+              
+              <TouchableOpacity 
+                style={styles.primaryCta}
                 onPress={() => navigation.navigate('LiveQueue')}
               >
-                <MaterialCommunityIcons name="qrcode-scan" size={28} color={COLORS.primary} />
-                <Text style={styles.qrShortcutText}>View Gate Pass</Text>
+                <MaterialCommunityIcons name="tractor" size={20} color={COLORS.white} />
+                <Text style={styles.primaryCtaText}>I'm On My Way</Text>
               </TouchableOpacity>
             </View>
-
-            <View style={styles.bookingDetailsBox}>
-              <View style={styles.detailRow}>
-                <MaterialCommunityIcons name="storefront-outline" size={18} color={COLORS.textSecondary} />
-                <Text style={styles.detailText} numberOfLines={1}>{activeBooking.centre}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <MaterialCommunityIcons name="calendar-month-outline" size={18} color={COLORS.textSecondary} />
-                <Text style={styles.detailText}>{activeBooking.date} • {activeBooking.timeSlot}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <MaterialCommunityIcons name="scale" size={18} color={COLORS.textSecondary} />
-                <Text style={styles.detailText}>Quantity: {activeBooking.quantity} ({activeBooking.crop})</Text>
-              </View>
-            </View>
-
-            {/* Dynamic Arrival Window Highlight */}
-            <View style={styles.dynamicArrivalBanner}>
-              <MaterialCommunityIcons name="clock-alert-outline" size={22} color={COLORS.accentDark} />
-              <View style={{ flex: 1, marginLeft: 8 }}>
-                <Text style={styles.arrivalTitle}>Dynamic Arrival Window</Text>
-                <Text style={styles.arrivalTime}>{activeBooking.recommendedArrival || '11:35 AM – 11:50 AM'}</Text>
-                <Text style={styles.arrivalNote}>
-                  Arrive strictly in this 15-minute window to avoid tractor idling and gate congestion.
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.bookingActionRow}>
-              <Button
-                title="Track Live Gate Queue"
-                variant="gold"
-                size="md"
-                icon="radar"
-                onPress={() => navigation.navigate('LiveQueue')}
-                style={{ flex: 1 }}
-              />
-            </View>
-          </Card>
+          </View>
         ) : (
-          <Card style={styles.noBookingCard}>
-            <View style={styles.noBookingContent}>
-              <MaterialCommunityIcons name="calendar-plus" size={40} color={COLORS.accentDark} />
-              <Text style={styles.noBookingTitle}>No Active Booking</Text>
-              <Text style={styles.noBookingSubtitle}>
-                Book a smart procurement slot to avoid long lines at the mandi.
-              </Text>
-              <Button
-                title="Book Procurement Slot"
-                variant="primary"
-                size="md"
-                icon="plus-circle"
-                onPress={() => navigation.navigate('BookSlot')}
-                style={{ marginTop: SPACING.md }}
-              />
-            </View>
-          </Card>
+          <View style={styles.noBookingCard}>
+            <MaterialCommunityIcons name="calendar-blank-outline" size={40} color={COLORS.textMuted} />
+            <Text style={styles.noBookingTitle}>No Active Booking</Text>
+            <Text style={styles.noBookingDesc}>Book a slot to sell your crop at the mandi.</Text>
+            <Button
+              title="Book Procurement Slot"
+              variant="primary"
+              size="md"
+              onPress={() => navigation.navigate('BookSlot')}
+              style={{ marginTop: 12 }}
+            />
+          </View>
         )}
 
-        {/* Quick Actions Grid */}
-        <Text style={styles.sectionHeading}>Quick Services / त्वरित सेवाएं</Text>
-        <View style={styles.quickGrid}>
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={() => navigation.navigate('BookSlot')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.quickIconCircle, { backgroundColor: '#E0F2FE' }]}>
-              <MaterialCommunityIcons name="calendar-check" size={26} color="#0284C7" />
-            </View>
-            <Text style={styles.quickTitle}>Book Slot</Text>
-            <Text style={styles.quickDesc}>Smart Mandi AI</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={() => navigation.navigate('LiveQueue')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.quickIconCircle, { backgroundColor: '#FEF3C7' }]}>
-              <MaterialCommunityIcons name="radar" size={26} color="#D97706" />
-            </View>
-            <Text style={styles.quickTitle}>Live Queue</Text>
-            <Text style={styles.quickDesc}>Token & Delay ETA</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={() => navigation.navigate('Payments')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.quickIconCircle, { backgroundColor: '#DCFCE7' }]}>
-              <MaterialCommunityIcons name="cash-multiple" size={26} color="#16A34A" />
-            </View>
-            <Text style={styles.quickTitle}>Payments</Text>
-            <Text style={styles.quickDesc}>DBT Status & Receipt</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={() => navigation.navigate('Grievance')}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.quickIconCircle, { backgroundColor: '#FEE2E2' }]}>
-              <MaterialCommunityIcons name="bullhorn" size={26} color="#DC2626" />
-            </View>
-            <Text style={styles.quickTitle}>Grievance</Text>
-            <Text style={styles.quickDesc}>Complaints & Help</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* My Land Holdings */}
-        <Card
-          title="Registered Land Holdings"
-          subtitle="Revenue Records (RCMS MP Integration)"
-          icon="terrain"
-          iconColor={COLORS.primary}
-          badge={`${farmer?.landHoldings?.length || 0} Parcels`}
-          badgeColor={COLORS.primary}
-        >
-          {(farmer?.landHoldings || []).map((land, idx) => (
-            <View key={land.id || idx} style={styles.landRow}>
-              <View style={styles.landIconBox}>
-                <MaterialCommunityIcons name="map-marker-radius" size={20} color={COLORS.primary} />
+        {/* 3. Live Queue Preview */}
+        {activeBooking && (
+          <View style={styles.queuePreviewCard}>
+            <View style={styles.queuePreviewHeader}>
+              <View style={styles.queueTitleRow}>
+                <View style={styles.redDot} />
+                <Text style={styles.queuePreviewTitle}>Live Queue</Text>
               </View>
-              <View style={styles.landTextBox}>
-                <View style={styles.khasraTitleRow}>
-                  <Text style={styles.khasraTitle}>Khasra #{land.khasra}</Text>
-                  <Text style={styles.landArea}>{land.area} Hectares</Text>
-                </View>
-                <Text style={styles.landLocation}>
-                  {land.village}, {land.tehsil}, {land.district}
-                </Text>
-                <Text style={styles.landCropBadge}>🌾 {land.crop || 'Wheat (Sharbati)'}</Text>
-              </View>
+              <TouchableOpacity onPress={() => navigation.navigate('LiveQueue')}>
+                <Text style={styles.viewQueueLink}>View Live Queue →</Text>
+              </TouchableOpacity>
             </View>
-          ))}
-        </Card>
-
-        {/* Bank & DBT Status */}
-        <Card
-          title="Bank & Direct Benefit Transfer (DBT)"
-          subtitle="Aadhaar-Linked Account"
-          icon="bank-check"
-          iconColor={COLORS.success}
-          badge="NPCI Linked"
-          badgeColor={COLORS.success}
-        >
-          <View style={styles.bankDetailRow}>
-            <View>
-              <Text style={styles.bankName}>{farmer?.bankAccount?.bank || 'State Bank of India'}</Text>
-              <Text style={styles.bankAccount}>A/C: {farmer?.bankAccount?.account || '30489218392'}</Text>
-              <Text style={styles.bankIfsc}>IFSC: {farmer?.bankAccount?.ifsc || 'SBIN0001234'}</Text>
-            </View>
-            <View style={styles.dbtVerifiedPill}>
-              <MaterialCommunityIcons name="shield-check" size={20} color={COLORS.success} />
-              <Text style={styles.dbtVerifiedText}>Active DBT</Text>
+            <View style={styles.queueStatsRow}>
+              <Text style={styles.queueStatText}>4 farmers ahead</Text>
+              <Text style={styles.queueStatDivider}>•</Text>
+              <Text style={styles.queueStatText}>Estimated wait: ~18 min</Text>
             </View>
           </View>
-        </Card>
+        )}
+
+        {/* 4. Quick Actions */}
+        <View style={styles.sectionWrapper}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.quickGrid}>
+            <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('BookSlot')}>
+              <View style={[styles.quickIconBox, { backgroundColor: '#E0F2FE' }]}>
+                <MaterialCommunityIcons name="map-marker-path" size={22} color="#0284C7" />
+              </View>
+              <Text style={styles.quickBtnText}>Directions</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('LiveQueue')}>
+              <View style={[styles.quickIconBox, { backgroundColor: '#FEF3C7' }]}>
+                <MaterialCommunityIcons name="qrcode-scan" size={22} color="#D97706" />
+              </View>
+              <Text style={styles.quickBtnText}>Gate Pass</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('Payments')}>
+              <View style={[styles.quickIconBox, { backgroundColor: '#DCFCE7' }]}>
+                <MaterialCommunityIcons name="cash-multiple" size={22} color="#16A34A" />
+              </View>
+              <Text style={styles.quickBtnText}>Payments</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('Grievance')}>
+              <View style={[styles.quickIconBox, { backgroundColor: '#FEE2E2' }]}>
+                <MaterialCommunityIcons name="bullhorn" size={22} color="#DC2626" />
+              </View>
+              <Text style={styles.quickBtnText}>Grievance</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* 5. Collapsible Farmer Details */}
+        <View style={styles.sectionWrapper}>
+          <View style={styles.farmerDetailsCard}>
+            <View style={styles.farmerCompactRow}>
+              <View style={styles.farmerAvatar}>
+                <MaterialCommunityIcons name="account" size={24} color={COLORS.primary} />
+              </View>
+              <View style={styles.farmerCompactInfo}>
+                <View style={styles.farmerNameRow}>
+                  <Text style={styles.farmerName}>{farmer?.name || 'Ramesh Kumar'}</Text>
+                  <MaterialCommunityIcons name="check-decagram" size={16} color={COLORS.success} />
+                </View>
+                <Text style={styles.farmerId}>Farmer ID: {farmer?.farmerId || 'MP-FR-2026-0001'}</Text>
+              </View>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.expandDetailsBtn}
+              onPress={() => setIsFarmerDetailsExpanded(!isFarmerDetailsExpanded)}
+            >
+              <Text style={styles.expandDetailsText}>
+                {isFarmerDetailsExpanded ? 'Hide Details' : 'View Farmer Details'}
+              </Text>
+              <MaterialCommunityIcons 
+                name={isFarmerDetailsExpanded ? "chevron-up" : "chevron-down"} 
+                size={18} 
+                color={COLORS.primary} 
+              />
+            </TouchableOpacity>
+
+            {isFarmerDetailsExpanded && (
+              <View style={styles.expandedDetailsContainer}>
+                <View style={styles.divider} />
+                
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Address</Text>
+                  <Text style={styles.infoValue}>{farmer?.address || 'Pipariya, Berasia, Bhopal'}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Crop</Text>
+                  <Text style={styles.infoValue}>{farmer?.crop || 'Wheat'}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Entitlement</Text>
+                  <Text style={styles.infoValue}>{farmer?.entitlement || '2000 kg'}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>MSP Rate</Text>
+                  <Text style={[styles.infoValue, { color: COLORS.success, fontWeight: '700' }]}>₹2,275/Qtl</Text>
+                </View>
+
+                {/* Land Holdings Summary */}
+                <Text style={styles.subSectionTitle}>Land Holdings (RCMS Linked)</Text>
+                {(farmer?.landHoldings || []).map((land, idx) => (
+                  <View key={land.id || idx} style={styles.landRow}>
+                    <Text style={styles.landText}>
+                      Khasra #{land.khasra} • {land.area} Hectares
+                    </Text>
+                    <Text style={styles.landSubtext}>
+                      {land.village}, {land.tehsil}
+                    </Text>
+                  </View>
+                ))}
+
+                {/* Bank / DBT Summary */}
+                <Text style={styles.subSectionTitle}>Bank & DBT (Aadhaar Linked)</Text>
+                <View style={styles.bankRow}>
+                  <View>
+                    <Text style={styles.bankText}>{farmer?.bankAccount?.bank || 'State Bank of India'}</Text>
+                    <Text style={styles.bankSubtext}>A/C: {farmer?.bankAccount?.account || '30489218392'} • IFSC: {farmer?.bankAccount?.ifsc || 'SBIN0001234'}</Text>
+                  </View>
+                  <MaterialCommunityIcons name="shield-check" size={20} color={COLORS.success} />
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+
       </ScrollView>
     </View>
   );
@@ -286,150 +286,156 @@ export default function DashboardScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F1F5F9', // Very light neutral background
   },
   scrollContent: {
     padding: SPACING.md,
     paddingBottom: SPACING.xxl,
   },
-  profileCard: {
-    marginBottom: SPACING.md,
+  headerContainer: {
+    backgroundColor: COLORS.primary,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    ...SHADOWS.sm,
   },
-  profileRow: {
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  avatarCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: COLORS.accentLight,
+  logoCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: COLORS.accent,
+    borderWidth: 1,
+    borderColor: 'rgba(212,168,67,0.5)',
   },
-  profileInfo: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  farmerName: {
-    fontSize: 16,
+  headerGreeting: {
+    color: COLORS.white,
+    fontSize: 18,
     fontWeight: '700',
-    color: COLORS.text,
   },
-  farmerIdText: {
+  headerSubtitle: {
+    color: COLORS.accentLight,
     fontSize: 12,
-    color: COLORS.primary,
-    fontWeight: '600',
+    fontWeight: '500',
     marginTop: 2,
   },
-  profileAddress: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
+  logoutButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  statsStrip: {
+  
+  // Booking Area
+  bookingContainer: {
+    marginBottom: SPACING.md,
+  },
+  bookingCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    ...SHADOWS.sm,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderBottomWidth: 0,
+  },
+  bookingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#16A34A',
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#16A34A',
+  },
+  gatePassMiniBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.md,
-    padding: SPACING.sm + 2,
-    marginTop: SPACING.md,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statLabel: {
+  gatePassMiniText: {
     fontSize: 11,
-    color: COLORS.textSecondary,
-  },
-  statVal: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: COLORS.border,
-  },
-  activeBookingCard: {
-    marginBottom: SPACING.md,
-  },
-  bookingTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: COLORS.primaryDark,
-    borderRadius: RADIUS.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
-  },
-  tokenLabel: {
-    color: COLORS.accentLight,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  tokenValue: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-    marginTop: 2,
-  },
-  qrShortcut: {
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: RADIUS.sm,
-  },
-  qrShortcutText: {
-    fontSize: 9,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.primary,
-    marginTop: 2,
   },
-  bookingDetailsBox: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.md,
-    padding: SPACING.sm + 4,
+  tokenNumber: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 12,
+    letterSpacing: 0.5,
+  },
+  bookingDetailsList: {
     gap: 6,
-    marginBottom: SPACING.sm,
   },
-  detailRow: {
+  detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  detailText: {
+  detailItemText: {
     fontSize: 13,
-    color: COLORS.text,
+    color: COLORS.textSecondary,
     flex: 1,
   },
-  dynamicArrivalBanner: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  
+  // Arrival Section
+  arrivalSection: {
     backgroundColor: '#FFFBEB',
+    padding: SPACING.md,
+    borderBottomLeftRadius: RADIUS.lg,
+    borderBottomRightRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: '#FDE68A',
-    borderRadius: RADIUS.md,
-    padding: SPACING.sm + 4,
-    marginBottom: SPACING.sm,
+  },
+  arrivalTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  arrivalTitleBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   arrivalTitle: {
     fontSize: 12,
@@ -437,163 +443,272 @@ const styles = StyleSheet.create({
     color: '#92400E',
   },
   arrivalTime: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '800',
     color: '#B45309',
-    marginTop: 2,
-  },
-  arrivalNote: {
-    fontSize: 11,
-    color: '#78350F',
-    marginTop: 3,
-    lineHeight: 15,
-  },
-  bookingActionRow: {
     marginTop: 4,
   },
-  noBookingCard: {
-    marginBottom: SPACING.md,
+  arrivalDesc: {
+    fontSize: 12,
+    color: '#78350F',
+    marginTop: 4,
+    marginBottom: 12,
   },
-  noBookingContent: {
+  primaryCta: {
+    backgroundColor: COLORS.primary,
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: RADIUS.md,
+    gap: 8,
+    ...SHADOWS.sm,
+  },
+  primaryCtaText: {
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  
+  // No Booking
+  noBookingCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.xl,
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    ...SHADOWS.sm,
   },
   noBookingTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: COLORS.text,
-    marginTop: SPACING.sm,
+    marginTop: 8,
   },
-  noBookingSubtitle: {
-    fontSize: 12,
+  noBookingDesc: {
+    fontSize: 13,
     color: COLORS.textSecondary,
     textAlign: 'center',
     marginTop: 4,
   },
-  sectionHeading: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  quickGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: SPACING.md,
-  },
-  quickCard: {
-    width: '48%',
-    backgroundColor: COLORS.surface,
+  
+  // Queue Preview
+  queuePreviewCard: {
+    backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
-    alignItems: 'center',
+    marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
     ...SHADOWS.sm,
   },
-  quickIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  queuePreviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: 6,
   },
-  quickTitle: {
+  queueTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  redDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#DC2626',
+  },
+  queuePreviewTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: COLORS.text,
   },
-  quickDesc: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  landRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.md,
-    padding: SPACING.sm + 4,
-    marginBottom: SPACING.sm,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  landIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.primary + '12',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  landTextBox: {
-    flex: 1,
-  },
-  khasraTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  khasraTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+  viewQueueLink: {
+    fontSize: 12,
+    fontWeight: '600',
     color: COLORS.primary,
   },
-  landArea: {
-    fontSize: 12,
+  queueStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  queueStatText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  queueStatDivider: {
+    fontSize: 13,
+    color: COLORS.border,
+  },
+  
+  // Sections
+  sectionWrapper: {
+    marginBottom: SPACING.md,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 10,
+  },
+  
+  // Quick Actions Grid
+  quickGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  quickBtn: {
+    width: '23%',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    paddingVertical: 12,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    ...SHADOWS.sm,
+  },
+  quickIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  quickBtnText: {
+    fontSize: 11,
     fontWeight: '600',
     color: COLORS.text,
   },
-  landLocation: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 1,
+  
+  // Farmer Details Collapsible
+  farmerDetailsCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    ...SHADOWS.sm,
   },
-  landCropBadge: {
-    fontSize: 11,
-    color: COLORS.accentDark,
-    fontWeight: '600',
-    marginTop: 3,
-  },
-  bankDetailRow: {
+  farmerCompactRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 12,
+  },
+  farmerAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.accentLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: COLORS.accent,
+  },
+  farmerCompactInfo: {
+    flex: 1,
+  },
+  farmerNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  farmerName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  farmerId: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  expandDetailsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#F8FAFC',
-    borderRadius: RADIUS.md,
-    padding: SPACING.md,
+    paddingVertical: 8,
+    borderRadius: RADIUS.sm,
+    marginTop: 12,
+    gap: 6,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  bankName: {
-    fontSize: 14,
+  expandDetailsText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
+  expandedDetailsContainer: {
+    marginTop: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.borderLight,
+    marginBottom: 12,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  infoLabel: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  infoValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: 16,
+  },
+  subSectionTitle: {
+    fontSize: 13,
     fontWeight: '700',
     color: COLORS.text,
+    marginTop: 12,
+    marginBottom: 6,
   },
-  bankAccount: {
+  landRow: {
+    backgroundColor: '#F8FAFC',
+    padding: 8,
+    borderRadius: RADIUS.sm,
+    marginBottom: 6,
+  },
+  landText: {
     fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  landSubtext: {
+    fontSize: 11,
     color: COLORS.textSecondary,
     marginTop: 2,
   },
-  bankIfsc: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-    marginTop: 2,
-  },
-  dbtVerifiedPill: {
+  bankRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.successLight,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: RADIUS.md,
-    gap: 4,
+    backgroundColor: '#F8FAFC',
+    padding: 8,
+    borderRadius: RADIUS.sm,
   },
-  dbtVerifiedText: {
+  bankText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  bankSubtext: {
     fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.success,
+    color: COLORS.textSecondary,
+    marginTop: 2,
   },
 });
