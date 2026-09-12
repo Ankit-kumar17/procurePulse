@@ -24,7 +24,7 @@ export default function PaymentStatusScreen({ navigation }) {
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [receiptModalVisible, setReceiptModalVisible] = useState(false);
   const [retryingId, setRetryingId] = useState(null);
-  const [expandedErrorId, setExpandedErrorId] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState('ALL'); // ALL, SUCCESS, INITIATED, FAILED
 
   const handleOpenReceipt = (payment) => {
     setSelectedReceipt(payment);
@@ -57,7 +57,7 @@ export default function PaymentStatusScreen({ navigation }) {
   const handlePlayVoiceGuide = () => {
     Alert.alert(
       '🔊 भुगतान सहायक (Voice Guide)',
-      'नमस्ते किसान भाई!\n\n• ₹27,300 आपके खाते में आ चुके हैं।\n• ₹18,200 बैंक द्वारा 24-48 घंटे में जमा होंगे।\n• ₹27,200 बैंक विवरण के कारण रुका है, कृपया "दोबारा पैसा भेजें" दबाएं।',
+      'नमस्ते किसान भाई!\n\n• ₹27,300 आपके खाते में जमा हो चुके हैं।\n• ₹18,200 बैंक द्वारा 24 घंटे में जमा होंगे।\n• ₹27,200 बैंक समस्या के कारण अटका है, कृपया "दोबारा भेजें" दबाएं।',
       [{ text: 'समझ गया (OK)' }]
     );
   };
@@ -80,7 +80,7 @@ export default function PaymentStatusScreen({ navigation }) {
     .filter((p) => p.status === 'FAILED')
     .reduce((acc, p) => acc + p.netAmount, 0);
 
-  // Helper to format crop names without nested parentheses
+  // Helper to format crop names cleanly
   const getCleanCropInfo = (rawCrop) => {
     if (rawCrop.includes('Wheat') || rawCrop.includes('गेहूं')) {
       const variety = rawCrop.includes('Lokwan')
@@ -88,12 +88,12 @@ export default function PaymentStatusScreen({ navigation }) {
         : rawCrop.includes('Sharbati')
         ? 'Sharbati'
         : 'A-Grade';
-      return { hindi: '🌾 गेहूं', eng: variety };
+      return { icon: '🌾', name: 'गेहूं', variety };
     }
     if (rawCrop.includes('Chana') || rawCrop.includes('चना') || rawCrop.includes('Gram')) {
-      return { hindi: '🌱 चना', eng: 'Desi Chana' };
+      return { icon: '🌱', name: 'चना', variety: 'Desi Chana' };
     }
-    return { hindi: rawCrop, eng: '' };
+    return { icon: '🌾', name: rawCrop, variety: '' };
   };
 
   // Helper to format mandi names cleanly
@@ -106,21 +106,26 @@ export default function PaymentStatusScreen({ navigation }) {
 
   // Helper to format dates cleanly
   const getCleanDate = (rawDate) => {
-    if (rawDate === '2026-03-29') return '29 मार्च 2026';
-    if (rawDate === '2026-04-05') return '05 अप्रैल 2026';
-    if (rawDate === '2026-02-14') return '14 फरवरी 2026';
+    if (rawDate === '2026-03-29') return '29 मार्च';
+    if (rawDate === '2026-04-05') return '05 अप्रैल';
+    if (rawDate === '2026-02-14') return '14 फरवरी';
     return rawDate;
   };
+
+  const filteredPayments = payments.filter((item) => {
+    if (selectedFilter === 'ALL') return true;
+    return item.status === selectedFilter;
+  });
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
 
-      {/* ─── 1. COMPACT HEADER ─── */}
+      {/* ─── 1. TOP HEADER ─── */}
       <View style={[styles.header, { paddingTop: topPadding }]}>
         <View style={styles.headerTopRow}>
           <View style={styles.headerTitleBox}>
-            <Text style={styles.headerTitleText}>₹ भुगतान इतिहास</Text>
+            <Text style={styles.headerTitleText}>₹ फसल भुगतान</Text>
             <Text style={styles.headerSubText}>खाते में आया पैसा व रसीदें</Text>
           </View>
 
@@ -131,7 +136,7 @@ export default function PaymentStatusScreen({ navigation }) {
             activeOpacity={0.8}
             accessibilityLabel="आवाज से सुनें"
           >
-            <MaterialCommunityIcons name="volume-high" size={17} color={COLORS.primaryDark} />
+            <MaterialCommunityIcons name="volume-high" size={18} color={COLORS.primaryDark} />
             <Text style={styles.voiceButtonText}>सुनें</Text>
           </TouchableOpacity>
         </View>
@@ -146,48 +151,90 @@ export default function PaymentStatusScreen({ navigation }) {
           <View style={styles.passbookHeader}>
             <View style={styles.bankTag}>
               <MaterialCommunityIcons name="bank" size={16} color={COLORS.primary} />
-              <Text style={styles.bankTagText}>भारतीय स्टेट बैंक (SBI ••••8392)</Text>
+              <Text style={styles.bankTagText}>SBI खाता (••••8392)</Text>
             </View>
             <View style={styles.verifiedBadge}>
-              <MaterialCommunityIcons name="shield-check" size={12} color={COLORS.success} />
+              <MaterialCommunityIcons name="check-circle" size={12} color="#15803D" />
               <Text style={styles.verifiedBadgeText}>सत्यापित</Text>
             </View>
           </View>
 
           <View style={styles.passbookBody}>
-            <Text style={styles.passbookLabel}>कुल मिला पैसा (Total Credited)</Text>
+            <Text style={styles.passbookLabel}>कुल मिला पैसा (Credited)</Text>
             <Text style={styles.passbookAmount}>₹{totalReceived.toLocaleString('en-IN')}</Text>
           </View>
 
-          {/* 3 Status Overview Pills */}
+          {/* 3 Quick Filter / Summary Pills */}
           <View style={styles.overviewPillsRow}>
-            <View style={[styles.overviewPill, { backgroundColor: '#DCFCE7' }]}>
-              <Text style={[styles.overviewPillText, { color: '#15803D' }]}>
+            <TouchableOpacity
+              style={[
+                styles.overviewPill,
+                { backgroundColor: selectedFilter === 'SUCCESS' ? '#15803D' : '#DCFCE7' },
+              ]}
+              onPress={() => setSelectedFilter(selectedFilter === 'SUCCESS' ? 'ALL' : 'SUCCESS')}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.overviewPillText,
+                  { color: selectedFilter === 'SUCCESS' ? '#FFFFFF' : '#15803D' },
+                ]}
+              >
                 🟢 ₹{totalReceived.toLocaleString('en-IN')} मिला
               </Text>
-            </View>
-            <View style={[styles.overviewPill, { backgroundColor: '#FEF3C7' }]}>
-              <Text style={[styles.overviewPillText, { color: '#B45309' }]}>
-                🟡 ₹{totalPending.toLocaleString('en-IN')} आने वाला
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.overviewPill,
+                { backgroundColor: selectedFilter === 'INITIATED' ? '#B45309' : '#FEF3C7' },
+              ]}
+              onPress={() => setSelectedFilter(selectedFilter === 'INITIATED' ? 'ALL' : 'INITIATED')}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.overviewPillText,
+                  { color: selectedFilter === 'INITIATED' ? '#FFFFFF' : '#B45309' },
+                ]}
+              >
+                🟡 ₹{totalPending.toLocaleString('en-IN')} आ रहा है
               </Text>
-            </View>
-            <View style={[styles.overviewPill, { backgroundColor: '#FEE2E2' }]}>
-              <Text style={[styles.overviewPillText, { color: '#B91C1C' }]}>
-                🔴 ₹{totalFailed.toLocaleString('en-IN')} रुका है
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.overviewPill,
+                { backgroundColor: selectedFilter === 'FAILED' ? '#B91C1C' : '#FEE2E2' },
+              ]}
+              onPress={() => setSelectedFilter(selectedFilter === 'FAILED' ? 'ALL' : 'FAILED')}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.overviewPillText,
+                  { color: selectedFilter === 'FAILED' ? '#FFFFFF' : '#B91C1C' },
+                ]}
+              >
+                🔴 ₹{totalFailed.toLocaleString('en-IN')} अटका है
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* ─── 3. SECTION HEADER ─── */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>🌾 बिक्री और भुगतान सूची</Text>
-          <Text style={styles.sectionSub}>आपकी फसल बिक्री का रिकॉर्ड ({payments.length})</Text>
+          <Text style={styles.sectionTitle}>आपकी फसल बिक्री व भुगतान</Text>
+          <Text style={styles.sectionSub}>
+            {selectedFilter === 'ALL'
+              ? `कुल रिकॉर्ड: ${payments.length}`
+              : `फिल्टर लागू (${filteredPayments.length})`}
+          </Text>
         </View>
 
-        {/* ─── 4. CLEAN WHITE PAYMENT CARDS ─── */}
+        {/* ─── 4. ULTRA-EASY PAYMENT CARDS ─── */}
         <View style={styles.cardsList}>
-          {payments.map((item) => {
+          {filteredPayments.map((item) => {
             const isSuccess = item.status === 'SUCCESS';
             const isFailed = item.status === 'FAILED';
             const isInitiated = item.status === 'INITIATED';
@@ -196,7 +243,7 @@ export default function PaymentStatusScreen({ navigation }) {
             const mandiName = getCleanMandiName(item.centre);
             const formattedDate = getCleanDate(item.procurementDate);
 
-            // Quantity formatting
+            // Clean weight representation
             const kgVal = item.quantity?.split('(')[0]?.trim() || item.quantity;
             const qtlVal = item.quantity?.includes('Qtl')
               ? item.quantity.split('(')[1]?.replace(')', '')
@@ -204,119 +251,140 @@ export default function PaymentStatusScreen({ navigation }) {
 
             return (
               <View key={item.id} style={styles.cleanCard}>
-                {/* Top Row: Crop & Clean Status Badge */}
-                <View style={styles.cardHeaderRow}>
-                  <View style={styles.cropTitleBox}>
-                    <Text style={styles.cropTitle}>{cropInfo.hindi}</Text>
-                    {cropInfo.eng ? (
-                      <Text style={styles.cropSubtitle}>{cropInfo.eng}</Text>
-                    ) : null}
-                  </View>
-
-                  {isSuccess && (
-                    <View style={styles.statusTagSuccess}>
-                      <Text style={styles.statusTagTextSuccess}>🟢 ₹{item.netAmount.toLocaleString('en-IN')} मिला</Text>
-                    </View>
-                  )}
-
-                  {isInitiated && (
-                    <View style={styles.statusTagPending}>
-                      <Text style={styles.statusTagTextPending}>🟡 ₹{item.netAmount.toLocaleString('en-IN')} आ रहा है</Text>
-                    </View>
-                  )}
-
-                  {isFailed && (
-                    <View style={styles.statusTagFailed}>
-                      <Text style={styles.statusTagTextFailed}>🔴 ₹{item.netAmount.toLocaleString('en-IN')} रुका है</Text>
-                    </View>
-                  )}
-                </View>
-
-                {/* Details Row */}
-                <View style={styles.cardMetaRow}>
-                  <Text style={styles.metaItem}>📍 {mandiName}</Text>
-                  <Text style={styles.metaDot}>•</Text>
-                  <Text style={styles.metaItem}>📅 {formattedDate}</Text>
-                </View>
-
-                <View style={styles.quantityContainer}>
-                  <Text style={styles.quantityVal}>
-                    ⚖️ {kgVal} {qtlVal ? `(${qtlVal})` : ''}
-                  </Text>
-                </View>
-
-                {/* Pending Note */}
-                {isInitiated && (
-                  <View style={styles.pendingNote}>
-                    <Text style={styles.pendingNoteText}>
-                      ⏳ बैंक द्वारा 24 से 48 घंटे में सीधे खाते में जमा होगा।
+                {/* TOP ROW: Crop on Left, Rupee Amount on Right */}
+                <View style={styles.cardTopRow}>
+                  <View style={styles.cropDetailsBox}>
+                    <Text style={styles.cropTitle}>
+                      {cropInfo.icon} {cropInfo.name}
+                      {cropInfo.variety ? (
+                        <Text style={styles.cropVariety}> ({cropInfo.variety})</Text>
+                      ) : null}
+                    </Text>
+                    <Text style={styles.metaLine}>
+                      📍 {mandiName} • 📅 {formattedDate}
+                    </Text>
+                    <Text style={styles.weightLine}>
+                      ⚖️ {kgVal} {qtlVal ? `• ${qtlVal}` : ''}
                     </Text>
                   </View>
-                )}
 
-                {/* Failed Error Note & Action */}
-                {isFailed && (
-                  <View style={styles.failedContainer}>
-                    <Text style={styles.failedMainText}>
-                      ⚠️ बैंक खाता / IFSC में त्रुटि के कारण रुका है
-                    </Text>
-                    <Text style={styles.failedSubText}>
-                      कृपया नीचे बटन दबाकर दोबारा भुगतान प्रक्रिया शुरू करें:
-                    </Text>
-
-                    <TouchableOpacity
-                      style={styles.retryButton}
-                      onPress={() => handleRetry(item.id)}
-                      disabled={retryingId === item.id}
-                      activeOpacity={0.85}
+                  {/* Amount & Status Badge */}
+                  <View style={styles.amountBox}>
+                    <Text
+                      style={[
+                        styles.rupeeAmount,
+                        isSuccess && { color: '#15803D' },
+                        isInitiated && { color: '#B45309' },
+                        isFailed && { color: '#B91C1C' },
+                      ]}
                     >
-                      {retryingId === item.id ? (
-                        <ActivityIndicator color={COLORS.white} size="small" />
-                      ) : (
-                        <View style={styles.retryButtonContent}>
-                          <MaterialCommunityIcons name="refresh" size={16} color={COLORS.white} />
-                          <Text style={styles.retryButtonText}>दोबारा पैसा भेजें (Retry)</Text>
-                        </View>
-                      )}
-                    </TouchableOpacity>
+                      ₹{item.netAmount.toLocaleString('en-IN')}
+                    </Text>
 
-                    <TouchableOpacity
-                      style={styles.errorExpandBtn}
-                      onPress={() => setExpandedErrorId(expandedErrorId === item.id ? null : item.id)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.errorExpandText}>
-                        ⓘ {expandedErrorId === item.id ? 'विवरण छिपाएं' : 'तकनीकी कारण देखें'}
-                      </Text>
-                    </TouchableOpacity>
+                    {isSuccess && (
+                      <View style={styles.badgeSuccess}>
+                        <Text style={styles.badgeSuccessText}>🟢 मिला</Text>
+                      </View>
+                    )}
 
-                    {expandedErrorId === item.id && (
-                      <View style={styles.techErrorBox}>
-                        <Text style={styles.techErrorText}>
-                          {item.failureReason || 'IFSC code mismatch during PFMS routing.'}
-                        </Text>
+                    {isInitiated && (
+                      <View style={styles.badgePending}>
+                        <Text style={styles.badgePendingText}>🟡 आ रहा है</Text>
+                      </View>
+                    )}
+
+                    {isFailed && (
+                      <View style={styles.badgeFailed}>
+                        <Text style={styles.badgeFailedText}>🔴 अटका है</Text>
                       </View>
                     )}
                   </View>
+                </View>
+
+                {/* ─── STATUS & ACTIONS SECTION ─── */}
+
+                {/* Case 1: SUCCESS */}
+                {isSuccess && (
+                  <View style={styles.cardBottomRow}>
+                    <View style={styles.successNoteRow}>
+                      <MaterialCommunityIcons name="check-circle" size={15} color="#15803D" />
+                      <Text style={styles.successNoteText}>बैंक खाते में जमा हो गया</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.receiptBtn}
+                      onPress={() => handleOpenReceipt(item)}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialCommunityIcons name="file-document-outline" size={15} color={COLORS.primary} />
+                      <Text style={styles.receiptBtnText}>रसीद देखें</Text>
+                    </TouchableOpacity>
+                  </View>
                 )}
 
-                <View style={styles.divider} />
+                {/* Case 2: INITIATED / PENDING */}
+                {isInitiated && (
+                  <View style={styles.cardBottomRow}>
+                    <View style={styles.pendingNoteRow}>
+                      <MaterialCommunityIcons name="clock-outline" size={15} color="#B45309" />
+                      <Text style={styles.pendingNoteText}>24 घंटे में जमा होगा</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.receiptBtn}
+                      onPress={() => handleOpenReceipt(item)}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialCommunityIcons name="file-document-outline" size={15} color={COLORS.primary} />
+                      <Text style={styles.receiptBtnText}>रसीद देखें</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
 
-                {/* View Slip Action */}
-                <TouchableOpacity
-                  style={styles.slipActionRow}
-                  onPress={() => handleOpenReceipt(item)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.slipActionText}>📄 रसीद देखें →</Text>
-                </TouchableOpacity>
+                {/* Case 3: FAILED / ACTION NEEDED (Super Simple for Farmer) */}
+                {isFailed && (
+                  <View style={styles.failedActionBox}>
+                    <View style={styles.failedNoteRow}>
+                      <MaterialCommunityIcons name="alert-circle-outline" size={16} color="#DC2626" />
+                      <Text style={styles.failedNoteText}>
+                        बैंक खाते की समस्या के कारण पैसा रुका है
+                      </Text>
+                    </View>
+
+                    {/* Simple 2 Buttons: [ 🔄 दोबारा भेजें ] & [ 📄 रसीद ] */}
+                    <View style={styles.failedButtonsRow}>
+                      <TouchableOpacity
+                        style={styles.retryBtn}
+                        onPress={() => handleRetry(item.id)}
+                        disabled={retryingId === item.id}
+                        activeOpacity={0.85}
+                      >
+                        {retryingId === item.id ? (
+                          <ActivityIndicator color={COLORS.white} size="small" />
+                        ) : (
+                          <>
+                            <MaterialCommunityIcons name="refresh" size={16} color={COLORS.white} />
+                            <Text style={styles.retryBtnText}>दोबारा भेजें (Retry)</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.receiptBtnSecondary}
+                        onPress={() => handleOpenReceipt(item)}
+                        activeOpacity={0.7}
+                      >
+                        <MaterialCommunityIcons name="file-document-outline" size={15} color={COLORS.text} />
+                        <Text style={styles.receiptBtnSecondaryText}>रसीद</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
               </View>
             );
           })}
         </View>
       </ScrollView>
 
-      {/* ─── 5. DETAILED WEIGHMENT & PAYOUT MODAL ─── */}
+      {/* ─── 5. OFFICIAL WEIGHMENT & PAYOUT RECEIPT MODAL ─── */}
       <Modal
         visible={receiptModalVisible}
         transparent
@@ -341,14 +409,24 @@ export default function PaymentStatusScreen({ navigation }) {
                   <View style={styles.receiptNumberBadge}>
                     <Text style={styles.receiptNumberText}>रसीद क्र.: {selectedReceipt.receiptNo}</Text>
                   </View>
-                  <View style={[
-                    styles.receiptStatusPill,
-                    { backgroundColor: selectedReceipt.status === 'SUCCESS' ? '#DCFCE7' : '#FEF3C7' }
-                  ]}>
-                    <Text style={[
-                      styles.receiptStatusPillText,
-                      { color: selectedReceipt.status === 'SUCCESS' ? '#15803D' : '#92400E' }
-                    ]}>
+                  <View
+                    style={[
+                      styles.receiptStatusPill,
+                      {
+                        backgroundColor:
+                          selectedReceipt.status === 'SUCCESS' ? '#DCFCE7' : '#FEF3C7',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.receiptStatusPillText,
+                        {
+                          color:
+                            selectedReceipt.status === 'SUCCESS' ? '#15803D' : '#92400E',
+                        },
+                      ]}
+                    >
                       {selectedReceipt.status === 'SUCCESS' ? '✓ जमा हुआ' : 'प्रक्रिया में'}
                     </Text>
                   </View>
@@ -356,7 +434,7 @@ export default function PaymentStatusScreen({ navigation }) {
 
                 <View style={styles.receiptTable}>
                   <View style={styles.tableRow}>
-                    <Text style={styles.tLabel}>तौल पर्ची</Text>
+                    <Text style={styles.tLabel}>तौल पर्ची क्र.</Text>
                     <Text style={styles.tVal}>{selectedReceipt.weighmentSlipNo}</Text>
                   </View>
                   <View style={styles.tableRow}>
@@ -383,14 +461,16 @@ export default function PaymentStatusScreen({ navigation }) {
                   </View>
                   <View style={[styles.tableRow, styles.totalRow]}>
                     <Text style={styles.totalLabel}>कुल शुद्ध राशि</Text>
-                    <Text style={styles.totalVal}>₹{selectedReceipt.netAmount.toLocaleString('en-IN')}</Text>
+                    <Text style={styles.totalVal}>
+                      ₹{selectedReceipt.netAmount.toLocaleString('en-IN')}
+                    </Text>
                   </View>
                 </View>
 
                 <View style={styles.bankVerifyBox}>
                   <MaterialCommunityIcons name="shield-check" size={20} color={COLORS.success} />
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.bankVerifyTitle}>आधार सीडेड SBI खाते में जमा</Text>
+                    <Text style={styles.bankVerifyTitle}>आधार लिंक SBI खाते में भुगतान</Text>
                     <Text style={styles.bankVerifySub}>खाता क्र.: ••••8392</Text>
                   </View>
                 </View>
@@ -460,15 +540,15 @@ const styles = StyleSheet.create({
   voiceButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
     backgroundColor: COLORS.accent,
-    paddingHorizontal: 11,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: RADIUS.md,
     ...SHADOWS.sm,
   },
   voiceButtonText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '900',
     color: COLORS.primaryDark,
   },
@@ -483,9 +563,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: 16,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginBottom: 20,
+    marginBottom: 18,
     ...SHADOWS.sm,
   },
   passbookHeader: {
@@ -511,12 +591,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 3,
     backgroundColor: '#DCFCE7',
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 4,
   },
   verifiedBadgeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
     color: '#15803D',
   },
@@ -529,9 +609,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   passbookAmount: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '900',
-    color: COLORS.success,
+    color: '#15803D',
     marginTop: 2,
   },
   overviewPillsRow: {
@@ -539,14 +619,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 6,
-    marginTop: 4,
+    marginTop: 6,
   },
   overviewPill: {
     flex: 1,
-    paddingVertical: 6,
+    paddingVertical: 7,
     paddingHorizontal: 4,
-    borderRadius: 6,
+    borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   overviewPillText: {
     fontSize: 11,
@@ -558,7 +639,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '900',
     color: COLORS.text,
   },
@@ -568,7 +649,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
 
-  /* ─── 4. CARDS LIST ─── */
+  /* ─── 4. ULTRA-EASY PAYMENT CARDS ─── */
   cardsList: {
     gap: 14,
   },
@@ -576,170 +657,183 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: 16,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#E2E8F0',
     ...SHADOWS.sm,
   },
-  cardHeaderRow: {
+  cardTopRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
-  cropTitleBox: {
+  cropDetailsBox: {
     flex: 1,
+    paddingRight: 8,
   },
   cropTitle: {
     fontSize: 17,
     fontWeight: '900',
     color: COLORS.text,
   },
-  cropSubtitle: {
+  cropVariety: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  metaLine: {
     fontSize: 12,
     color: COLORS.textSecondary,
     fontWeight: '600',
-    marginTop: 1,
-  },
-  statusTagSuccess: {
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  statusTagTextSuccess: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#15803D',
-  },
-  statusTagPending: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  statusTagTextPending: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#B45309',
-  },
-  statusTagFailed: {
-    backgroundColor: '#FEE2E2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  statusTagTextFailed: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#B91C1C',
-  },
-  cardMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
-  },
-  metaItem: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
-  },
-  metaDot: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-  },
-  quantityContainer: {
     marginTop: 4,
   },
-  quantityVal: {
+  weightLine: {
     fontSize: 13,
     fontWeight: '700',
     color: COLORS.primaryDark,
+    marginTop: 3,
   },
-  pendingNote: {
-    backgroundColor: '#FFFBEB',
-    padding: 8,
+  amountBox: {
+    alignItems: 'flex-end',
+  },
+  rupeeAmount: {
+    fontSize: 19,
+    fontWeight: '900',
+  },
+  badgeSuccess: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 6,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
+    marginTop: 4,
+  },
+  badgeSuccessText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#15803D',
+  },
+  badgePending: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginTop: 4,
+  },
+  badgePendingText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#B45309',
+  },
+  badgeFailed: {
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginTop: 4,
+  },
+  badgeFailedText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#B91C1C',
+  },
+
+  /* ─── CARD BOTTOM ROWS (CLEAN & SEAMLESS) ─── */
+  cardBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  successNoteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  successNoteText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#15803D',
+  },
+  pendingNoteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   pendingNoteText: {
     fontSize: 12,
-    color: '#92400E',
     fontWeight: '700',
+    color: '#B45309',
   },
-  failedContainer: {
-    backgroundColor: '#FFF5F5',
-    padding: 10,
-    borderRadius: 6,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#FECACA',
-  },
-  failedMainText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.error,
-  },
-  failedSubText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    marginTop: 2,
-  },
-  retryButton: {
-    backgroundColor: COLORS.error,
-    paddingVertical: 9,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-    ...SHADOWS.sm,
-  },
-  retryButtonContent: {
+  receiptBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
   },
-  retryButtonText: {
+  receiptBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+
+  /* ─── FAILED / ACTION BOX (EASY & UNCLUTTERED) ─── */
+  failedActionBox: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#FEE2E2',
+  },
+  failedNoteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 8,
+  },
+  failedNoteText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+  failedButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  retryBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#DC2626',
+    paddingVertical: 10,
+    borderRadius: 8,
+    ...SHADOWS.sm,
+  },
+  retryBtnText: {
     fontSize: 13,
     fontWeight: '900',
     color: COLORS.white,
   },
-  errorExpandBtn: {
-    alignSelf: 'center',
-    paddingTop: 6,
-  },
-  errorExpandText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    textDecorationLine: 'underline',
-  },
-  techErrorBox: {
-    backgroundColor: COLORS.white,
-    padding: 6,
-    borderRadius: 4,
-    marginTop: 6,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  techErrorText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  slipActionRow: {
+  receiptBtnSecondary: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 10,
+    borderRadius: 8,
   },
-  slipActionText: {
+  receiptBtnSecondaryText: {
     fontSize: 12,
     fontWeight: '800',
-    color: COLORS.primary,
+    color: COLORS.text,
   },
 
   /* ─── 5. MODAL ─── */
