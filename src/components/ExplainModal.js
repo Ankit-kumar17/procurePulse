@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SPACING, RADIUS, SHADOWS } from '../utils/theme';
-import Button from './Button';
 
 export default function ExplainModal({ visible, onClose, centre }) {
   if (!centre) return null;
@@ -11,86 +10,90 @@ export default function ExplainModal({ visible, onClose, centre }) {
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.modalCard}>
+          {/* Header */}
           <View style={styles.modalHeader}>
             <View style={styles.headerTitleBox}>
               <View style={styles.aiBadge}>
-                <MaterialCommunityIcons name="robot-outline" size={18} color={COLORS.primaryDark} />
+                <MaterialCommunityIcons name="star" size={20} color="#854D0E" />
               </View>
               <View>
-                <Text style={styles.headerTitle}>AI Recommendation Logic</Text>
-                <Text style={styles.headerSubtitle}>Why Centre B is your optimal choice</Text>
+                <Text style={styles.headerTitle}>बैरसिया केंद्र ही क्यों चुनें?</Text>
+                <Text style={styles.headerSubtitle}>ई-उपार्जन स्मार्ट विश्लेषण</Text>
               </View>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <MaterialCommunityIcons name="close" size={20} color={COLORS.textSecondary} />
+              <MaterialCommunityIcons name="close" size={22} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+            {/* Score Banner */}
             <View style={styles.scoreHero}>
               <View style={styles.scoreCircle}>
-                <Text style={styles.scoreVal}>{centre.score || 94}</Text>
-                <Text style={styles.scoreLabel}>/ 100</Text>
+                <Text style={styles.scoreVal}>94%</Text>
+                <Text style={styles.scoreLabel}>रेटिंग</Text>
               </View>
               <View style={styles.scoreTextCol}>
-                <Text style={styles.scoreTitle}>Composite Efficiency Score</Text>
+                <Text style={styles.scoreTitle}>🏆 सर्वोत्तम सुविधा व न्यूनतम समय</Text>
                 <Text style={styles.scoreDesc}>
-                  Calculated by minimizing transit cost + wait time + truck idling emissions.
+                  दूरी, कतार और कांटा स्पीड को मिलाकर सबसे फायदेमंद केंद्र।
                 </Text>
               </View>
             </View>
 
-            <Text style={styles.sectionHeading}>Decision Factors Comparison</Text>
+            <Text style={styles.sectionHeading}>आपको क्या फायदा होगा?</Text>
 
+            {/* Factor 1: Time saved */}
             <View style={styles.factorCard}>
               <View style={styles.factorRow}>
-                <MaterialCommunityIcons name="map-marker-distance" size={20} color={COLORS.primary} />
-                <Text style={styles.factorLabel}>Distance vs Centre A</Text>
-                <Text style={styles.factorVal}>+3.2 km (8.4 km total)</Text>
+                <MaterialCommunityIcons name="clock-fast" size={22} color="#15803D" />
+                <Text style={styles.factorLabel}>तौल का समय</Text>
+                <Text style={[styles.factorVal, { color: '#15803D' }]}>1.5 घंटा बचेगा</Text>
               </View>
               <Text style={styles.factorNote}>
-                Slightly further than Centre A (5.2 km), adding ~7 mins driving time.
+                कोलार मंडी में 2+ घंटे का जाम है, जबकि बैरसिया में केवल 41 मिनट में काम हो जाएगा।
               </Text>
             </View>
 
+            {/* Factor 2: Fuel saved */}
             <View style={styles.factorCard}>
               <View style={styles.factorRow}>
-                <MaterialCommunityIcons name="clock-fast" size={20} color={COLORS.success} />
-                <Text style={styles.factorLabel}>Queue Time Saved</Text>
-                <Text style={[styles.factorVal, { color: COLORS.success }]}>-97 mins (41m vs 138m)</Text>
+                <MaterialCommunityIcons name="gas-station" size={22} color="#D97706" />
+                <Text style={styles.factorLabel}>डीजल की बचत</Text>
+                <Text style={[styles.factorVal, { color: '#D97706' }]}>₹120 की बचत</Text>
               </View>
               <Text style={styles.factorNote}>
-                Centre A has a 138-minute unloading bottleneck. Centre B saves over 1.5 hours in line!
+                कतार में ट्रैक्टर चालू नहीं रखना पड़ेगा, जिससे ईंधन की सीधी बचत होगी।
               </Text>
             </View>
 
+            {/* Factor 3: Dual Weighbridge */}
             <View style={styles.factorCard}>
               <View style={styles.factorRow}>
-                <MaterialCommunityIcons name="scale-bathroom" size={20} color={COLORS.info} />
-                <Text style={styles.factorLabel}>Facility Infrastructure</Text>
-                <Text style={styles.factorVal}>Dual Electronic Scales</Text>
+                <MaterialCommunityIcons name="scale-balance" size={22} color="#2563EB" />
+                <Text style={styles.factorLabel}>कांटा व्यवस्था</Text>
+                <Text style={[styles.factorVal, { color: '#2563EB' }]}>2 इलेक्ट्रॉनिक कांटे</Text>
               </View>
               <Text style={styles.factorNote}>
-                High throughput with automated moisture analysis reduces rejection disputes.
+                स्वचालित नमी जांच लैब और डिजिटल पर्ची तुरंत मिल जाती है।
               </Text>
             </View>
 
+            {/* Final Verdict */}
             <View style={styles.summaryCallout}>
-              <MaterialCommunityIcons name="check-decagram" size={22} color={COLORS.accentDark} />
+              <MaterialCommunityIcons name="check-decagram" size={24} color="#854D0E" />
               <Text style={styles.summaryText}>
-                <Text style={{ fontWeight: '700' }}>ProcurePulse Verdict: </Text>
-                Choosing Centre B saves you ~90 minutes of total turnaround time and ₹120 in idling fuel.
+                <Text style={{ fontWeight: '900' }}>सलाह: </Text>
+                बैरसिया केंद्र जाने पर आप समय पर घर वापस लौट पाएंगे!
               </Text>
             </View>
           </ScrollView>
 
           <View style={styles.footer}>
-            <Button
-              title="Got It, Select This Centre"
-              variant="gold"
-              onPress={onClose}
-              icon="thumb-up"
-            />
+            <TouchableOpacity style={styles.selectBtn} onPress={onClose} activeOpacity={0.88}>
+              <MaterialCommunityIcons name="check" size={20} color={COLORS.white} />
+              <Text style={styles.selectBtnText}>समझ गया, यही केंद्र चुनूंगा</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -105,7 +108,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.white,
     borderTopLeftRadius: RADIUS.xl,
     borderTopRightRadius: RADIUS.xl,
     maxHeight: '85%',
@@ -119,7 +122,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
+    borderBottomColor: '#E2E8F0',
   },
   headerTitleBox: {
     flexDirection: 'row',
@@ -127,21 +130,22 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   aiBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.accentLight,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FEF3C7',
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.primaryDark,
+    fontWeight: '900',
+    color: COLORS.text,
   },
   headerSubtitle: {
     fontSize: 12,
     color: COLORS.textSecondary,
+    fontWeight: '600',
   },
   closeBtn: {
     padding: 6,
@@ -152,37 +156,38 @@ const styles = StyleSheet.create({
   scoreHero: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F8FAFC',
     padding: SPACING.md,
     borderRadius: RADIUS.lg,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: '#E2E8F0',
   },
   scoreCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
   },
   scoreVal: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '900',
     color: COLORS.accent,
   },
   scoreLabel: {
     fontSize: 10,
     color: COLORS.white,
+    fontWeight: '700',
   },
   scoreTextCol: {
     flex: 1,
   },
   scoreTitle: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '900',
     color: COLORS.text,
   },
   scoreDesc: {
@@ -193,15 +198,15 @@ const styles = StyleSheet.create({
   },
   sectionHeading: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '900',
     color: COLORS.text,
     marginBottom: SPACING.sm,
   },
   factorCard: {
     backgroundColor: '#F8FAFC',
     borderRadius: RADIUS.md,
-    padding: SPACING.sm + 4,
-    marginBottom: SPACING.sm,
+    padding: 12,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
@@ -213,41 +218,57 @@ const styles = StyleSheet.create({
   },
   factorLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '800',
     color: COLORS.text,
     flex: 1,
     marginLeft: 6,
   },
   factorVal: {
     fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.primary,
+    fontWeight: '900',
   },
   factorNote: {
     fontSize: 11,
     color: COLORS.textSecondary,
-    lineHeight: 15,
-    marginLeft: 26,
+    lineHeight: 16,
+    marginLeft: 28,
   },
   summaryCallout: {
     flexDirection: 'row',
-    backgroundColor: COLORS.accentLight + '44',
+    backgroundColor: '#FEF3C7',
     padding: SPACING.md,
     borderRadius: RADIUS.md,
     borderWidth: 1,
-    borderColor: COLORS.accent,
+    borderColor: '#FDE68A',
     marginVertical: SPACING.sm,
     gap: 10,
+    alignItems: 'center',
   },
   summaryText: {
     fontSize: 12,
-    color: COLORS.primaryDark,
+    color: '#854D0E',
     flex: 1,
     lineHeight: 17,
+    fontWeight: '600',
   },
   footer: {
     padding: SPACING.md,
     borderTopWidth: 1,
-    borderTopColor: COLORS.borderLight,
+    borderTopColor: '#E2E8F0',
+  },
+  selectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    borderRadius: RADIUS.md,
+    gap: 8,
+    ...SHADOWS.md,
+  },
+  selectBtnText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: COLORS.white,
   },
 });
